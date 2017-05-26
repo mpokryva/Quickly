@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Quickly</string>
+    <string name="message_box_hint">Send something&#8230;</string>
+</resources>
