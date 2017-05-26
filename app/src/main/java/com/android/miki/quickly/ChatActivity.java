@@ -34,7 +34,6 @@ import java.util.List;
 public class ChatActivity extends AppCompatActivity {
 
     private Button mSendButton;
-    private boolean isMessageEmpty;
     private EditText mMessageBox;
     private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     private DatabaseReference mRootRef = mDatabase.getReference();
@@ -54,7 +53,6 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
         mSendButton = (Button) findViewById(R.id.send_button);
         mMessageBox = (EditText) findViewById(R.id.message_box);
-        isMessageEmpty = true;
         chatRoom = (ChatRoom) getIntent().getSerializableExtra("chatRoom");
         messages = new ArrayList<>();
         /*
@@ -70,7 +68,8 @@ public class ChatActivity extends AppCompatActivity {
 
                 // Initialize message view (RecyclerView), after messages have been retrieved.
                 mRecyclerView = (RecyclerView) findViewById(R.id.messages_recycler_view);
-                mLayoutManager =  new LinearLayoutManager(ChatActivity.this, LinearLayoutManager.VERTICAL, false);;
+                mLayoutManager = new LinearLayoutManager(ChatActivity.this, LinearLayoutManager.VERTICAL, false);
+                ;
                 mRecyclerView.setLayoutManager(mLayoutManager);
                 SnapHelper snapHelper = new LinearSnapHelper();
                 mRecyclerView.setOnFlingListener(null);
@@ -80,7 +79,7 @@ public class ChatActivity extends AppCompatActivity {
                 VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(10); // 10dp
                 mRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
                 // Make sure messagesSize isn't negative
-                final int messagesSize = (messages.size() - 1 < 0) ? 0 : messages.size() -1;
+                final int messagesSize = (messages.size() - 1 < 0) ? 0 : messages.size() - 1;
                 mRecyclerView.scrollToPosition(messagesSize);
                 mRecyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
                     @Override
@@ -92,7 +91,7 @@ public class ChatActivity extends AppCompatActivity {
                                 public void run() {
                                     mRecyclerView.scrollToPosition(messagesSize);
                                 }
-                            },0);
+                            }, 0);
                         }
                     }
                 });
@@ -104,9 +103,6 @@ public class ChatActivity extends AppCompatActivity {
 
             }
         });
-
-
-
 
 
         mMessageBox.addTextChangedListener(new TextWatcher() {
@@ -122,12 +118,12 @@ public class ChatActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                isMessageEmpty = TextUtils.isEmpty(editable.toString());
             }
         });
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                boolean isMessageEmpty = TextUtils.isEmpty(mMessageBox.getEditableText().toString());
                 if (!isMessageEmpty) {
                     String sender = "John";
                     String messageText = mMessageBox.getText().toString();
@@ -144,19 +140,6 @@ public class ChatActivity extends AppCompatActivity {
         });
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 }
