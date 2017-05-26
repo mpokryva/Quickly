@@ -1,6 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+<RelativeLayout
+    android:id="@+id/fragment_chat"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.android.miki.quickly.ChatActivity"
+    android:background="@color/ChatActivityBackground"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/messages_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="?attr/actionBarSize">
+        </android.support.v7.widget.RecyclerView>
+
+    </FrameLayout>
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_alignParentBottom="true"
+    android:background="@android:color/white">
+    <View
+        style="@style/Divider">
+    </View>
+    <RelativeLayout
+        android:id="@+id/message_actions"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:orientation="horizontal">
+        <EditText
+            android:id="@+id/message_box"
+            android:layout_alignParentStart="true"
+            android:layout_width="match_parent"
+            android:padding="5dp"
+            android:background="@android:color/transparent"
+            android:layout_height="match_parent"
+            android:hint="@string/message_box_hint"
+            android:textSize="16sp"
+            android:layout_toStartOf="@+id/send_button"/>
+        <Button
+            android:id="@+id/send_button"
+            android:gravity="center_vertical"
+            android:layout_margin="8dp"
+            android:layout_alignParentEnd="true"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="@drawable/ic_send_black_24dp"/>
+    </RelativeLayout>
 </LinearLayout>
+
+
+
+
+</RelativeLayout>

@@ -1,8 +1,7 @@
 package com.android.miki.quickly;
 
-import com.google.firebase.database.Exclude;
-
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by mpokr on 5/22/2017.
@@ -12,7 +11,8 @@ public class ChatRoom implements Serializable{
 
     private String chatId;
     private long creationTimestamp;
-    private int numParticipants;
+    private int numUsers;
+    private List<User> users;
     private Message lastMessage;
 
     public ChatRoom() {
@@ -21,7 +21,7 @@ public class ChatRoom implements Serializable{
 
     public ChatRoom(String chatId, long creationTimeStamp, int participants, Message lastMessage) {
         this.creationTimestamp = creationTimeStamp;
-        this.numParticipants = participants;
+        this.numUsers = participants;
         this.lastMessage = lastMessage;
         this.chatId = chatId;
     }
@@ -30,8 +30,8 @@ public class ChatRoom implements Serializable{
         return creationTimestamp;
     }
 
-    public int getNumParticipants() {
-        return numParticipants;
+    public int getNumUsers() {
+        return numUsers;
     }
 
     public Message getLastMessage() {
@@ -42,5 +42,9 @@ public class ChatRoom implements Serializable{
         return chatId;
     }
 
+    public void addUser(User user) {
+        users.add(user);
+        numUsers++;
+    }
 
 }

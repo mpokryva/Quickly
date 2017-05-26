@@ -1,11 +1,17 @@
 package com.android.miki.quickly;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,11 +20,10 @@ import java.util.List;
  * Created by mpokr on 5/22/2017.
  */
 
-public class ChatSelectionActivity extends Activity {
+public class ChatSelectionActivity extends AppCompatActivity {
 
-    private RecyclerView mRecyclerView;
-    private RecyclerView.LayoutManager mLayoutManager;
-    private RecyclerView.Adapter mAdapter;
+    private ViewPager mViewPager;
+    private ChatSelectionPagerAdapter mAdapter;
     private List<ChatRoom> chatRooms;
     private ChatFinder mChatFinder;
 
@@ -27,21 +32,37 @@ public class ChatSelectionActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_selection);
+        Toolbar actionBar = (Toolbar) findViewById(R.id.action_bar);
+        setSupportActionBar(actionBar);
         chatRooms = new ArrayList<>();
         mChatFinder = new ChatFinder();
         mChatFinder.findChatRoomCallback(new SimpleCallback<List<ChatRoom>>() {
             @Override
             public void callback(List<ChatRoom> cbChatRooms) {
                 chatRooms = cbChatRooms;
-                //mRecyclerView.setHasFixedSize(true);
-                mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-                mLayoutManager = new LinearLayoutManager(ChatSelectionActivity.this, LinearLayoutManager.HORIZONTAL, false);
-                mRecyclerView.setLayoutManager(mLayoutManager);
-                SnapHelper snapHelper = new LinearSnapHelper();
-                mRecyclerView.setOnFlingListener(null);
-                snapHelper.attachToRecyclerView(mRecyclerView);
-                mAdapter = new ChatSelectionRecyclerAdapter(chatRooms);
-                mRecyclerView.setAdapter(mAdapter);
+                mViewPager = (ViewPager) findViewById(R.id.chat_selection_pager);
+                mAdapter = new ChatSelectionPagerAdapter(getSupportFragmentManager(), chatRooms);
+                mViewPager.setAdapter(mAdapter);
+                mViewPager.setPageMargin(30);
+                mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                    @Override
+                    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+                    }
+
+                    @Override
+                    public void onPageSelected(int position) {
+                        ChatFragment fragment = (ChatFragment)mAdapter.instantiateItem(mViewPager, position);
+                        ChatRoom selectedChatRoom = chatRooms.get(position);
+                        //selectedChatRoom.addUser();
+                        fragment.scrollToBottom();
+                    }
+
+                    @Override
+                    public void onPageScrollStateChanged(int state) {
+
+                    }
+                });
             }
         });
 
