@@ -9,11 +9,11 @@ import java.io.Serializable;
 public class Message implements Serializable{
 
     private long timestamp;
-    private String sender;
+    private User sender;
     private String messageText;
 
 
-    public Message(long timestamp, String sender, String messageText) {
+    public Message(long timestamp, User sender, String messageText) {
         this.timestamp = timestamp;
         this.sender = sender;
         this.messageText = messageText;
@@ -37,7 +37,7 @@ public class Message implements Serializable{
         return timestamp;
     }
 
-    public String getSender() {
+    public User getSender() {
         return sender;
     }
 

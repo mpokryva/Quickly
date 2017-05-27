@@ -24,10 +24,12 @@ import java.util.List;
 public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter {
 
     private List<ChatRoom> chatRooms;
+    private User user;
 
-    public ChatSelectionPagerAdapter(FragmentManager fm, List<ChatRoom> chatRooms) {
+    public ChatSelectionPagerAdapter(FragmentManager fm, List<ChatRoom> chatRooms, User user) {
         super(fm);
         this.chatRooms = chatRooms;
+        this.user = user;
     }
 
     @Override
@@ -36,6 +38,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter {
         Bundle args = new Bundle();
         // Pass chat room info to fragment
         args.putSerializable("chatRoom", chatRooms.get(position));
+        args.putSerializable("user", user);
         fragment.setArguments(args);
         return fragment;
     }

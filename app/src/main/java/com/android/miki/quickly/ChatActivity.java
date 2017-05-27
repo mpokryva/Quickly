@@ -36,6 +36,7 @@ public class ChatActivity extends AppCompatActivity {
     private ChatRecyclerAdapter mAdapter;
 
     private ChatRoom chatRoom;
+    private User user;
     private List<Message> messages;
 
 
@@ -66,7 +67,7 @@ public class ChatActivity extends AppCompatActivity {
                 SnapHelper snapHelper = new LinearSnapHelper();
                 mRecyclerView.setOnFlingListener(null);
                 snapHelper.attachToRecyclerView(mRecyclerView);
-                mAdapter = new ChatRecyclerAdapter(messages);
+                mAdapter = new ChatRecyclerAdapter(messages, u);
                 mRecyclerView.setAdapter(mAdapter);
                 VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(10); // 10dp
                 mRecyclerView.addItemDecoration(verticalSpaceItemDecoration);

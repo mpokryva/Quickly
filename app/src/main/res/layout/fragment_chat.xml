@@ -40,16 +40,22 @@
         android:layout_width="match_parent"
         android:layout_height="44dp"
         android:orientation="horizontal">
+        <ImageButton
+            android:id="@+id/gif_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/gif_icon"
+            android:background="@android:color/transparent"
+            android:layout_centerVertical="true"/>
         <EditText
             android:id="@+id/message_box"
-            android:layout_alignParentStart="true"
             android:layout_width="match_parent"
             android:padding="5dp"
             android:background="@android:color/transparent"
             android:layout_height="match_parent"
             android:hint="@string/message_box_hint"
             android:textSize="16sp"
-            android:layout_toStartOf="@+id/send_button"/>
+            android:layout_toEndOf="@+id/gif_button"/>
         <Button
             android:id="@+id/send_button"
             android:gravity="center_vertical"

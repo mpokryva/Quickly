@@ -3,18 +3,14 @@ package com.android.miki.quickly;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SnapHelper;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -34,7 +30,8 @@ public class ChatFragment extends Fragment {
 
 
     private Button mSendButton;
-    private EditText mMessageBox;
+    private EditText mMessageEditText;
+    private ImageButton gifButton;
     private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     private DatabaseReference mRootRef = mDatabase.getReference();
     private DatabaseReference mAvailableChatsRef = mRootRef.child("availableChats");
@@ -44,20 +41,41 @@ public class ChatFragment extends Fragment {
     private ChatRecyclerAdapter mAdapter;
 
     private ChatRoom chatRoom;
+    private User user;
     private List<Message> messages;
+    private boolean isGifDrawerOpen;
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
         mSendButton = (Button) view.findViewById(R.id.send_button);
-        mMessageBox = (EditText) view.findViewById(R.id.message_box);
+        mMessageEditText = (EditText) view.findViewById(R.id.message_box);
+        gifButton = (ImageButton) view.findViewById(R.id.gif_button);
         chatRoom = (ChatRoom) getArguments().getSerializable("chatRoom");
+        user = (User) getArguments().getSerializable("user");
         messages = new ArrayList<>();
 
 
-        // Retrieve messages from Firebase.
+        gifButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isGifDrawerOpen) {
+                    mMessageEditText.setHint(R.string.message_box_hint);
+                    gifButton.setImageResource(R.mipmap.gif_icon);
+                    isGifDrawerOpen = false;
+                } else {
+                    mMessageEditText.setHint("Search GIPHY...");
+                    gifButton.setImageResource(R.drawable.ic_close_black_24dp);
+                    isGifDrawerOpen = true;
+                }
 
+
+            }
+        });
+
+
+        // Retrieve messages from Firebase.
         mMessagesRef.child(chatRoom.getChatId()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot messageList) {
@@ -71,7 +89,7 @@ public class ChatFragment extends Fragment {
                 mLayoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false);
                 ;
                 mRecyclerView.setLayoutManager(mLayoutManager);
-                mAdapter = new ChatRecyclerAdapter(messages);
+                mAdapter = new ChatRecyclerAdapter(messages, user);
                 mRecyclerView.setAdapter(mAdapter);
                 VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(10); // 10dp
                 mRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
@@ -92,16 +110,15 @@ public class ChatFragment extends Fragment {
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                boolean isMessageEmpty = TextUtils.isEmpty(mMessageBox.getEditableText().toString());
+                boolean isMessageEmpty = TextUtils.isEmpty(mMessageEditText.getEditableText().toString());
                 if (!isMessageEmpty) {
-                    String sender = "John";
-                    String messageText = mMessageBox.getText().toString();
-                    Message outgoingMessage = new Message(System.currentTimeMillis(), sender, messageText);
+                    String messageText = mMessageEditText.getText().toString();
+                    Message outgoingMessage = new Message(System.currentTimeMillis(), user, messageText);
                     mMessagesRef.child(chatRoom.getChatId()).push().setValue(outgoingMessage);
                     mAvailableChatsRef.child(chatRoom.getChatId()).child("lastMessage").setValue(outgoingMessage);
                     int lastIndex = mAdapter.insertMessage(outgoingMessage);
                     mAdapter.notifyItemInserted(lastIndex);
-                    mMessageBox.setText("");
+                    mMessageEditText.setText("");
                 } else {
                     Toast.makeText(view.getContext(), "No text in message!", Toast.LENGTH_SHORT).show();
                 }

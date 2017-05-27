@@ -4,10 +4,16 @@
   "availableChats": {
     "one": {
 	// Active chat (messages sent OR participants > 1)
-      "creationTimestamp": 1957235814
-      "participants": 2
-      "lastMessage": "ghopper: Relay malfunction found. Cause: moth.",
-      "timestamp": 1459361875666
+	"creationTimestamp": 1957235814
+	"numUsers": 2
+	"users": {
+		"a2Zf3": {
+			"nickname": "John",
+			"university": "Harvard University"
+		},
+	},
+	"lastMessage": "ghopper: Relay malfunction found. Cause: moth.",
+	"timestamp": 1459361875666
     },
     "two": {
 	// Waiting for more users (no messages sent AND participants < 2)

@@ -40,10 +40,12 @@ import java.util.concurrent.TimeUnit;
 
 public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    List<Message> messages;
+    private List<Message> messages;
+    private User user;
 
-    public ChatRecyclerAdapter(List<Message> messages) {
+    public ChatRecyclerAdapter(List<Message> messages, User user) {
         this.messages = messages;
+        this.user = user;
     }
 
     @Override
@@ -83,7 +85,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             outgoingViewHolder.timeSent.setText(timeString);
         } else {
             IncomingViewHolder incomingViewHolder = (IncomingViewHolder) holder;
-            incomingViewHolder.sender.setText(message.getSender());
+            incomingViewHolder.sender.setText(message.getSender().getNickname());
             incomingViewHolder.messageText.setText(message.getMessageText());
             incomingViewHolder.timeSent.setText(timeString);
         }
@@ -91,7 +93,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Override
     public int getItemViewType(int position) {
-        if (messages.get(position).getSender().equals("Miki")) { // Outgoing messages
+        if (messages.get(position).getSender().equals(user)) { // Outgoing messages
             return 0;
         } else { // Incoming message
             return 1;
