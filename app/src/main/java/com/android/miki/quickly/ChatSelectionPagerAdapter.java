@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -25,6 +26,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter {
 
     private List<ChatRoom> chatRooms;
     private User user;
+
 
     public ChatSelectionPagerAdapter(FragmentManager fm, List<ChatRoom> chatRooms, User user) {
         super(fm);
@@ -43,13 +45,11 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter {
         return fragment;
     }
 
+
     @Override
     public int getCount() {
         return chatRooms.size();
     }
-
-
-
 
 
 }

@@ -1,6 +1,7 @@
 package com.android.miki.quickly;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,7 +11,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -36,10 +40,10 @@ public class ChatFragment extends Fragment {
     private DatabaseReference mRootRef = mDatabase.getReference();
     private DatabaseReference mAvailableChatsRef = mRootRef.child("availableChats");
     private DatabaseReference mMessagesRef = mRootRef.child("messages");
-    private RecyclerView mRecyclerView;
+    private RecyclerView mMessagesRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private ChatRecyclerAdapter mAdapter;
-
+    private GifDrawer mGifDrawer;
     private ChatRoom chatRoom;
     private User user;
     private List<Message> messages;
@@ -48,26 +52,23 @@ public class ChatFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
         mSendButton = (Button) view.findViewById(R.id.send_button);
         mMessageEditText = (EditText) view.findViewById(R.id.message_box);
         gifButton = (ImageButton) view.findViewById(R.id.gif_button);
+        mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.gif_recycler_view);
         chatRoom = (ChatRoom) getArguments().getSerializable("chatRoom");
         user = (User) getArguments().getSerializable("user");
         messages = new ArrayList<>();
-
-
+        mGifDrawer = new GifDrawer(view);
         gifButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (isGifDrawerOpen) {
-                    mMessageEditText.setHint(R.string.message_box_hint);
-                    gifButton.setImageResource(R.mipmap.gif_icon);
-                    isGifDrawerOpen = false;
+                    closeGifDrawer();
                 } else {
-                    mMessageEditText.setHint("Search GIPHY...");
-                    gifButton.setImageResource(R.drawable.ic_close_black_24dp);
-                    isGifDrawerOpen = true;
+                    openGifDrawer();
                 }
 
 
@@ -85,14 +86,14 @@ public class ChatFragment extends Fragment {
                 }
 
                 // Initialize message view (RecyclerView), after messages have been retrieved.
-                mRecyclerView = (RecyclerView) view.findViewById(R.id.messages_recycler_view);
+                mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.messages_recycler_view);
                 mLayoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false);
                 ;
-                mRecyclerView.setLayoutManager(mLayoutManager);
+                mMessagesRecyclerView.setLayoutManager(mLayoutManager);
                 mAdapter = new ChatRecyclerAdapter(messages, user);
-                mRecyclerView.setAdapter(mAdapter);
+                mMessagesRecyclerView.setAdapter(mAdapter);
                 VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(10); // 10dp
-                mRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
+                mMessagesRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
                 scrollToBottom();
 
             }
@@ -102,9 +103,6 @@ public class ChatFragment extends Fragment {
 
             }
         });
-
-
-
 
 
         mSendButton.setOnClickListener(new View.OnClickListener() {
@@ -132,15 +130,33 @@ public class ChatFragment extends Fragment {
      * Scrolls to the most recent message.
      */
     public void scrollToBottom() {
-        if (mRecyclerView != null) { // Only do this if the view for the fragment has already been created.
+        if (mMessagesRecyclerView != null) { // Only do this if the view for the fragment has already been created.
             int messagesSize = (messages.size() - 1 < 0) ? 0 : messages.size() - 1;
-            mRecyclerView.scrollToPosition(messagesSize);
+            mMessagesRecyclerView.scrollToPosition(messagesSize);
         }
     }
 
+    private void closeGifDrawer() {
+        mMessageEditText.setHint(R.string.message_box_hint);
+        gifButton.setImageResource(R.mipmap.gif_icon);
+        isGifDrawerOpen = false;
+        mGifDrawer.setGone();
+        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
+        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin - 500);
+        mMessagesRecyclerView.setLayoutParams(layoutParams);
+        scrollToBottom();
+    }
 
-
-
+    private void openGifDrawer() {
+        mMessageEditText.setHint("Search GIPHY...");
+        gifButton.setImageResource(R.drawable.ic_close_black_24dp);
+        isGifDrawerOpen = true;
+        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
+        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin + 500);
+        mMessagesRecyclerView.setLayoutParams(layoutParams);
+        scrollToBottom();
+        mGifDrawer.getTrendingGifs();
+    }
 
 
 }

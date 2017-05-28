@@ -50,7 +50,6 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
         if (messages == null) {
             Log.d("messagesNull", "messages field in ChatRecyclerAdapater is null");
         }
