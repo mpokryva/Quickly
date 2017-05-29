@@ -1,4 +1,4 @@
-package com.android.miki.quickly;
+package com.android.miki.quickly.gif_drawer;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -25,6 +25,7 @@ public class GiphyAPIRequest extends AsyncTask<String, Void, String> {
     private HttpURLConnection urlConnection;
     private static final String TAG = "GiphyAPIRequest";
     private GiphyAPIResponse giphyAPIResponse;
+    private String queryTerm;
 
     public GiphyAPIRequest(GiphyAPIResponse giphyAPIResponse) {
         this.giphyAPIResponse = giphyAPIResponse;
@@ -35,6 +36,7 @@ public class GiphyAPIRequest extends AsyncTask<String, Void, String> {
         StringBuilder result = new StringBuilder();
         try {
             URL url = new URL(strings[0]);
+            queryTerm = strings[1];
             urlConnection = (HttpURLConnection) url.openConnection();
             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
@@ -60,6 +62,7 @@ public class GiphyAPIRequest extends AsyncTask<String, Void, String> {
     protected void onPostExecute(String jsonString) {
         Log.d(TAG, jsonString);
         try {
+            Log.d(TAG+"r", "Retrieved gifs for this query: " + queryTerm);
             JSONObject jsonObject = new JSONObject(jsonString);
             JSONArray jsonArray = jsonObject.getJSONArray("data");
             List<String> urls = new ArrayList<>();
@@ -67,7 +70,7 @@ public class GiphyAPIRequest extends AsyncTask<String, Void, String> {
                 JSONObject gifInfo = jsonArray.getJSONObject(i);
                 String url = gifInfo.getJSONObject("images").getJSONObject("fixed_height").getString("url");
 
-                Log.d(TAG, url);
+               // Log.d(TAG, url);
                 urls.add(url);
             }
             giphyAPIResponse.gifURLsRetrieved(urls);
@@ -78,6 +81,8 @@ public class GiphyAPIRequest extends AsyncTask<String, Void, String> {
             e.printStackTrace();
         }
     }
+
+
 
 
 }

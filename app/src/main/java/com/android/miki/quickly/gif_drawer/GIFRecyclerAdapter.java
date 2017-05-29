@@ -1,4 +1,4 @@
-package com.android.miki.quickly;
+package com.android.miki.quickly.gif_drawer;
 
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -7,6 +7,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.android.miki.quickly.R;
+import com.android.miki.quickly.models.ChatRoom;
+import com.android.miki.quickly.models.Gif;
+import com.android.miki.quickly.models.Message;
+import com.android.miki.quickly.models.User;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
@@ -20,9 +25,15 @@ public class GIFRecyclerAdapter extends RecyclerView.Adapter<GIFRecyclerAdapter.
 
     private List<String> gifURLs;
     private static final String TAG = "GIFRecyclerAdapter";
+    private ChatRoom chatRoom;
+    private User user;
+    private GifDrawerAction gifDrawerAction;
 
-    public GIFRecyclerAdapter(List<String> gifURLs) {
+    public GIFRecyclerAdapter(List<String> gifURLs, ChatRoom chatRoom, User user, GifDrawerAction gifDrawerAction) {
         this.gifURLs = gifURLs;
+        this.chatRoom = chatRoom;
+        this.user = user;
+        this.gifDrawerAction = gifDrawerAction;
     }
 
     @Override
@@ -56,15 +67,27 @@ public class GIFRecyclerAdapter extends RecyclerView.Adapter<GIFRecyclerAdapter.
     protected class GifViewHolder extends RecyclerView.ViewHolder {
 
         private ImageView mImageViewGif;
+        private String gifURL;
 
         private GifViewHolder(View itemView) {
             super(itemView);
             mImageViewGif = (ImageView) itemView.findViewById(R.id.gif_image_view);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int width = mImageViewGif.getWidth();
+                    int height = mImageViewGif.getHeight();
+                    Message message = new Message(System.currentTimeMillis(), user, new Gif(gifURL, width, height));
+                    chatRoom.addMessage(message);
+                    gifDrawerAction.gifSent(message);
+                }
+            });
         }
 
         private void setGif(String gifURL) {
             try {
                 Glide.with(this.mImageViewGif.getContext()).load(gifURL).into(mImageViewGif);
+                this.gifURL = gifURL;
             } catch (Exception e) {
                 Log.e(TAG, "Failed to set GIF");
                 e.printStackTrace();
@@ -79,6 +102,8 @@ public class GIFRecyclerAdapter extends RecyclerView.Adapter<GIFRecyclerAdapter.
                 e.printStackTrace();
             }
         }
+
+
     }
 
 

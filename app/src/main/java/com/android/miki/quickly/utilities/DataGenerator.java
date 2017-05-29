@@ -1,5 +1,8 @@
-package com.android.miki.quickly;
+package com.android.miki.quickly.utilities;
 
+import com.android.miki.quickly.models.ChatRoom;
+import com.android.miki.quickly.models.Message;
+import com.android.miki.quickly.models.User;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -7,7 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 
 /**
  * Created by mpokr on 5/26/2017.
@@ -19,6 +21,7 @@ public class DataGenerator {
     private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     private DatabaseReference mAvailableChatsRef = mDatabase.getReference().child("availableChats");
     private DatabaseReference mMessagesRef = mDatabase.getReference().child("messages");
+    private DatabaseReference mUsersRef = mDatabase.getReference().child("users");
     // ** Field "randomSentences" is at the bottom **
 
     private void pushTestChat() {
@@ -30,7 +33,9 @@ public class DataGenerator {
         Message lastMessage = null;
         List<Message> messages = new ArrayList<>();
         for (String userName : userNames) {
-            User user = new User(userName, "Stony Brook University"); // Create a user
+            double isUserRandom = r.nextDouble();
+            String university = "Stony Brook University";
+            User user = (isUserRandom > .5) ? new User(userName, university, true) : new User(userName, university);
             String messageText = randomSentences[r.nextInt(randomSentences.length)]; // Get random message
             Message message = new Message(System.currentTimeMillis(), user, messageText);
             lastMessage = message;
@@ -47,6 +52,12 @@ public class DataGenerator {
         for (int i = 0; i < numChats; i++) {
             pushTestChat();
         }
+    }
+
+    public void deleteAllData() {
+        mAvailableChatsRef.removeValue();
+        mMessagesRef.removeValue();
+        mUsersRef.removeValue();
     }
 
     private enum Name {

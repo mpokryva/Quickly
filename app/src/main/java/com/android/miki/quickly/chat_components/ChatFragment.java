@@ -1,11 +1,12 @@
-package com.android.miki.quickly;
+package com.android.miki.quickly.chat_components;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,10 +14,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.android.miki.quickly.R;
+import com.android.miki.quickly.utilities.VerticalSpaceItemDecoration;
+import com.android.miki.quickly.gif_drawer.GifDrawer;
+import com.android.miki.quickly.gif_drawer.GifDrawerAction;
+import com.android.miki.quickly.models.ChatRoom;
+import com.android.miki.quickly.models.Message;
+import com.android.miki.quickly.models.User;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -48,6 +54,8 @@ public class ChatFragment extends Fragment {
     private User user;
     private List<Message> messages;
     private boolean isGifDrawerOpen;
+    private static final String TAG = "ChatFragment";
+    private static final int GIF_KEYBOARD_SHIFT = 500; // 500 pixels
 
 
     @Override
@@ -61,7 +69,14 @@ public class ChatFragment extends Fragment {
         chatRoom = (ChatRoom) getArguments().getSerializable("chatRoom");
         user = (User) getArguments().getSerializable("user");
         messages = new ArrayList<>();
-        mGifDrawer = new GifDrawer(view);
+        mGifDrawer = new GifDrawer(view, chatRoom, user, new GifDrawerAction() {
+            @Override
+            public void gifSent(Message message) {
+                int lastIndex = mAdapter.insertMessage(message);
+                mAdapter.notifyItemInserted(lastIndex);
+                closeGifDrawer();
+            }
+        });
         gifButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -70,8 +85,6 @@ public class ChatFragment extends Fragment {
                 } else {
                     openGifDrawer();
                 }
-
-
             }
         });
 
@@ -92,7 +105,8 @@ public class ChatFragment extends Fragment {
                 mMessagesRecyclerView.setLayoutManager(mLayoutManager);
                 mAdapter = new ChatRecyclerAdapter(messages, user);
                 mMessagesRecyclerView.setAdapter(mAdapter);
-                VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(10); // 10dp
+                // Set spaces between messages
+                VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(20); // 10dp
                 mMessagesRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
                 scrollToBottom();
 
@@ -101,6 +115,47 @@ public class ChatFragment extends Fragment {
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
+            }
+        });
+
+        mMessageEditText.addTextChangedListener(new TextWatcher() {
+            private long lastEdited;
+            private Thread thread;
+            private String query;
+            private int typingInterval = 600;
+            private Runnable runnableTextWatcher = new Runnable() {
+                @Override
+                public void run() {
+                    //
+                    while (true) {
+                        if ((System.currentTimeMillis() - lastEdited) > typingInterval) {
+                            getGifs(query);
+                            thread = null;
+                            break;
+                        }
+                    }
+                }
+            };
+
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                query = charSequence.toString().trim();
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (isGifDrawerOpen) {
+                    lastEdited = System.currentTimeMillis();
+                    if (thread == null) {
+                        thread = new Thread(runnableTextWatcher);
+                        thread.start();
+                    }
+                }
             }
         });
 
@@ -142,7 +197,8 @@ public class ChatFragment extends Fragment {
         isGifDrawerOpen = false;
         mGifDrawer.setGone();
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
-        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin - 500);
+        // 500 is an arbitrary value but it works. Will change later.
+        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin - GIF_KEYBOARD_SHIFT);
         mMessagesRecyclerView.setLayoutParams(layoutParams);
         scrollToBottom();
     }
@@ -152,10 +208,19 @@ public class ChatFragment extends Fragment {
         gifButton.setImageResource(R.drawable.ic_close_black_24dp);
         isGifDrawerOpen = true;
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
-        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin + 500);
+        // 500 is an arbitrary value but it works. Will change later.
+        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin + GIF_KEYBOARD_SHIFT);
         mMessagesRecyclerView.setLayoutParams(layoutParams);
         scrollToBottom();
         mGifDrawer.getTrendingGifs();
+    }
+
+    private void getGifs(String query) {
+        if (query.equals("")) {
+            mGifDrawer.getTrendingGifs();
+        } else {
+            mGifDrawer.translateTextToGif(query);
+        }
     }
 
 

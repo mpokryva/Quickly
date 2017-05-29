@@ -1,4 +1,4 @@
-package com.android.miki.quickly;
+package com.android.miki.quickly.models;
 
 import android.util.Log;
 
@@ -6,9 +6,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * Created by mpokr on 5/22/2017.
@@ -23,6 +21,7 @@ public class ChatRoom implements Serializable {
     private Message lastMessage;
     private transient FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     private transient DatabaseReference mAvailableChatsRef = mDatabase.getReference().child("availableChats");
+    private transient DatabaseReference mMessagesRef = mDatabase.getReference().child("messages");
 
     public ChatRoom() {
 
@@ -86,6 +85,13 @@ public class ChatRoom implements Serializable {
             mAvailableChatsRef.child(this.chatId).child("numUsers").setValue(numUsers);
         }
 
+    }
+
+    public void addMessage(Message message) {
+        if (message != null) {
+            mMessagesRef.child(this.getChatId()).push().setValue(message);
+            mAvailableChatsRef.child(this.getChatId()).child("lastMessage").setValue(message);
+        }
     }
 
 

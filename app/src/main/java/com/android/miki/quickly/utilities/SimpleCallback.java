@@ -1,4 +1,4 @@
-package com.android.miki.quickly;
+package com.android.miki.quickly.utilities;
 
 /**
  * Created by mpokr on 5/22/2017.

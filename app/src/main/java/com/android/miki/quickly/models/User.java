@@ -1,4 +1,4 @@
-package com.android.miki.quickly;
+package com.android.miki.quickly.models;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 
@@ -23,6 +23,15 @@ public class User implements Serializable{
         this.userId = FirebaseInstanceId.getInstance().getId(); // ****For now **** Change to instance ID later (maybe)
         this.nickname = nickname;
         this.university = university;
+    }
+
+    /*
+        **** TEST METHOD ONLY!!! ****
+     */
+    public User(String nickname, String university, boolean randomId) {
+        this.nickname = nickname;
+        this.university = university;
+        this.userId = UUID.randomUUID().toString();
     }
 
     public String getUserId() {

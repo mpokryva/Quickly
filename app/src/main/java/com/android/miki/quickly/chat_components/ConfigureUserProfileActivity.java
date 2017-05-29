@@ -1,4 +1,4 @@
-package com.android.miki.quickly;
+package com.android.miki.quickly.chat_components;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,17 +8,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
+import com.android.miki.quickly.R;
+import com.android.miki.quickly.models.User;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static java.util.regex.Pattern.UNICODE_CHARACTER_CLASS;
 
 /**
  * Created by mpokr on 5/26/2017.

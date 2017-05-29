@@ -1,4 +1,4 @@
-package com.android.miki.quickly;
+package com.android.miki.quickly.models;
 
 import java.io.Serializable;
 
@@ -11,12 +11,21 @@ public class Message implements Serializable{
     private long timestamp;
     private User sender;
     private String messageText;
+    private Gif gif;
 
 
     public Message(long timestamp, User sender, String messageText) {
         this.timestamp = timestamp;
         this.sender = sender;
         this.messageText = messageText;
+        this.gif = null;
+    }
+
+    public Message(long timestamp, User sender, Gif gif) {
+        this.timestamp = timestamp;
+        this.gif = gif;
+        this.sender = sender;
+        this.messageText = null;
     }
 
     public Message() {
@@ -43,5 +52,9 @@ public class Message implements Serializable{
 
     public String getMessageText() {
         return messageText;
+    }
+
+    public Gif getGif() {
+        return gif;
     }
 }

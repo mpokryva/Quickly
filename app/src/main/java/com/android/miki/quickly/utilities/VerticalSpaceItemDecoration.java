@@ -1,4 +1,4 @@
-package com.android.miki.quickly;
+package com.android.miki.quickly.utilities;
 
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;

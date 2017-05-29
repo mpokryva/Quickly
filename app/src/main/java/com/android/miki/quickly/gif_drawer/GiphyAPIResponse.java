@@ -1,4 +1,4 @@
-package com.android.miki.quickly;
+package com.android.miki.quickly.gif_drawer;
 
 import java.util.List;
 

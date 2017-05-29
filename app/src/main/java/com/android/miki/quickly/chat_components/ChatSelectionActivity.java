@@ -1,18 +1,15 @@
-package com.android.miki.quickly;
+package com.android.miki.quickly.chat_components;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.LinearSnapHelper;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SnapHelper;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.widget.Toast;
+
+import com.android.miki.quickly.R;
+import com.android.miki.quickly.utilities.SimpleCallback;
+import com.android.miki.quickly.models.ChatRoom;
+import com.android.miki.quickly.models.User;
 
 import java.util.ArrayList;
 import java.util.List;
