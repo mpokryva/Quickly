@@ -31,7 +31,7 @@ public class ChatSelectionActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_selection);
-        Toolbar actionBar = (Toolbar) findViewById(R.id.action_bar);
+        final Toolbar actionBar = (Toolbar) findViewById(R.id.action_bar);
         setSupportActionBar(actionBar);
         this.user = (User) getIntent().getSerializableExtra("user");
         chatRooms = new ArrayList<>();
@@ -44,7 +44,7 @@ public class ChatSelectionActivity extends AppCompatActivity {
                 mAdapter = new ChatSelectionPagerAdapter(getSupportFragmentManager(), chatRooms, user);
                 mViewPager.setAdapter(mAdapter);
                 mViewPager.setPageMargin(30);
-                mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                final ViewPager.OnPageChangeListener pageChangeListener = new ViewPager.OnPageChangeListener() {
                     @Override
                     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -59,6 +59,7 @@ public class ChatSelectionActivity extends AppCompatActivity {
                         currentChatRoom.removeUser(user); // Remove user from chat room they just exited
                         currentChatRoom = chatRooms.get(position); // Set currentChatRoom to the chat room the user just entered
                         currentChatRoom.addUser(user); // Add user to the chat room they just entered
+                        actionBar.setTitle(getUserString(currentChatRoom));
                         fragment.scrollToBottom(); // Scroll to bottom (last message in chat)
 
                     }
@@ -67,9 +68,25 @@ public class ChatSelectionActivity extends AppCompatActivity {
                     public void onPageScrollStateChanged(int state) {
 
                     }
+                };
+                mViewPager.addOnPageChangeListener(pageChangeListener);
+                mViewPager.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        pageChangeListener.onPageSelected(mViewPager.getCurrentItem());
+                    }
                 });
             }
         });
 
+    }
+
+
+    private String getUserString(ChatRoom chatRoom) {
+        String userString = "";
+        for (User user : chatRoom.getUsers().values()) {
+            userString += user.getNickname() + " ";
+        }
+        return userString;
     }
 }
