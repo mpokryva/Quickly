@@ -7,7 +7,7 @@
     android:layout_height="wrap_content">
 
     <LinearLayout
-        style="@style/incoming_bubble_layout">
+        style="@style/incoming_bubble_outline">
 
         <ImageView
             android:id="@+id/gif_image_view"

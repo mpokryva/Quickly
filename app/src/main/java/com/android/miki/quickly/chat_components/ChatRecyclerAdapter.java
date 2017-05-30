@@ -45,13 +45,13 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         RecyclerView.ViewHolder vh;
         if (viewType == 0) {
-            layoutRes = R.layout.outgoing_chat_bubble; // Outgoing message bubble
+            layoutRes = R.layout.outgoing_text_message; // Outgoing message bubble
         } else if (viewType == 1) {
-            layoutRes = R.layout.incoming_chat_bubble; // Incoming message bubble
+            layoutRes = R.layout.incoming_text_message; // Incoming message bubble
         } else if (viewType == 2) {
-            layoutRes = R.layout.outgoing_gif;
+            layoutRes = R.layout.outgoing_gif_message;
         } else {
-            layoutRes = R.layout.incoming_gif;
+            layoutRes = R.layout.incoming_gif_message;
         }
         View v = LayoutInflater.from(parent.getContext()).inflate(layoutRes, parent, false);
         switch (viewType) {

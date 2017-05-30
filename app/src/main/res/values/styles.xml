@@ -60,7 +60,18 @@
         <item name="android:elevation">5dp</item>
     </style>
 
-    <style name="incoming_bubble_layout">
+    <style name="incoming_bubble_outline">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_alignParentStart">true</item>
+        <item name="android:background">@drawable/incoming_chat_bubble</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:backgroundTint">@android:color/white</item>
+        <item name="android:elevation">5dp</item>
+    </style>
+
+    <style name="sender_text">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:maxWidth">100dp</item>
@@ -70,6 +81,8 @@
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">@android:color/holo_blue_light</item>
     </style>
+
+
 
 
 </resources>
