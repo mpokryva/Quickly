@@ -141,21 +141,34 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         Message message = messages.get(position);
         if (holder instanceof OutgoingTextHolder) {
             OutgoingTextHolder outgoingTextHolder = (OutgoingTextHolder) holder;
+            if (selectedMessages.get(position)) {
+                outgoingTextHolder.highlight();
+
+            }
             outgoingTextHolder.messageText.setText(message.getMessageText());
 
         } else if (holder instanceof IncomingTextHolder) {
             IncomingTextHolder incomingTextHolder = (IncomingTextHolder) holder;
+            if (selectedMessages.get(position)) {
+                incomingTextHolder.highlight();
+            }
             incomingTextHolder.sender.setText(message.getSender().getNickname());
             incomingTextHolder.messageText.setText(message.getMessageText());
             incomingTextHolder.messageText.setText(message.getMessageText());
         } else if (holder instanceof OutgoingGifHolder) {
             OutgoingGifHolder outgoingGifHolder = (OutgoingGifHolder) holder;
+            if (selectedMessages.get(position)) {
+                outgoingGifHolder.highlight();
+            }
             ImageView imageView = outgoingGifHolder.gif;
             imageView.setMinimumWidth(message.getGif().getWidth());
             imageView.setMinimumHeight(message.getGif().getHeight());
             Glide.with(imageView.getContext()).load(message.getGif().getUrl()).into(imageView);
         } else { // IncomingGifHolder
             IncomingGifHolder incomingGifHolder = ((IncomingGifHolder) holder);
+            if (selectedMessages.get(position)) {
+                incomingGifHolder.highlight();
+            }
             ImageView imageView = incomingGifHolder.gif;
             imageView.setMinimumWidth(message.getGif().getWidth());
             imageView.setMinimumHeight(message.getGif().getHeight());
@@ -218,10 +231,13 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                     mActionMode = activity.startSupportActionMode(messageSeletedCallback);
                     selectedMessages.append(getAdapterPosition(), true);
                     notifyItemChanged(getAdapterPosition());
-                    itemView.setSelected(true);
                     return true;
                 }
             });
+        }
+
+        public void highlight() {
+            itemView.setSelected(true);
         }
 
 
