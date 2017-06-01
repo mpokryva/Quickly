@@ -57,7 +57,7 @@ public class ChatActivity extends AppCompatActivity {
         /*
         Retrieve messages from Firebase.
          */
-        mMessagesRef.child(chatRoom.getChatId()).addListenerForSingleValueEvent(new ValueEventListener() {
+        mMessagesRef.child(chatRoom.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot messageList) {
                 for (DataSnapshot child : messageList.getChildren()) {
@@ -127,8 +127,8 @@ public class ChatActivity extends AppCompatActivity {
                     String sender = "John";
                     String messageText = mMessageBox.getText().toString();
                     Message outgoingMessage = new Message(System.currentTimeMillis(), sender, messageText);
-                    mMessagesRef.child(chatRoom.getChatId()).push().setValue(outgoingMessage);
-                    mAvailableChatsRef.child(chatRoom.getChatId()).child("lastMessage").setValue(outgoingMessage);
+                    mMessagesRef.child(chatRoom.getId()).push().setValue(outgoingMessage);
+                    mAvailableChatsRef.child(chatRoom.getId()).child("lastMessage").setValue(outgoingMessage);
                     int lastIndex = mAdapter.insertMessage(outgoingMessage);
                     mAdapter.notifyItemInserted(lastIndex);
                     mMessageBox.setText("");

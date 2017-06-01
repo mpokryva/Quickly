@@ -12,6 +12,7 @@ import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.User;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -84,9 +85,15 @@ public class ChatSelectionActivity extends AppCompatActivity {
 
     private String getUserString(ChatRoom chatRoom) {
         String userString = "";
-        for (User user : chatRoom.getUsers().values()) {
-            userString += user.getNickname() + " ";
+        Iterator<User> it = chatRoom.getUsers().values().iterator();
+        while (it.hasNext()) {
+            User user = it.next();
+            userString += user.getNickname();
+            if (it.hasNext()) {
+                 userString += ", ";
+            }
         }
+
         return userString;
     }
 }

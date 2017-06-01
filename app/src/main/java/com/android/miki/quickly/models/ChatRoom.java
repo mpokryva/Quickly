@@ -2,8 +2,12 @@ package com.android.miki.quickly.models;
 
 import android.util.Log;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -14,7 +18,7 @@ import java.util.HashMap;
 
 public class ChatRoom implements Serializable {
 
-    private String chatId;
+    private String id;
     private long creationTimestamp;
     private int numUsers;
     private HashMap<String, User> users = new HashMap<>();
@@ -22,17 +26,19 @@ public class ChatRoom implements Serializable {
     private transient FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     private transient DatabaseReference mAvailableChatsRef = mDatabase.getReference().child("availableChats");
     private transient DatabaseReference mMessagesRef = mDatabase.getReference().child("messages");
+    private static final String TAG = "ChatRoom";
 
     public ChatRoom() {
 
     }
 
-    public ChatRoom(String chatId, long creationTimeStamp, HashMap<String, User> users, Message lastMessage) {
+    public ChatRoom(String id, long creationTimeStamp, HashMap<String, User> users, Message lastMessage) {
         this.creationTimestamp = creationTimeStamp;
         this.users = users;
         this.numUsers = (users == null) ? 0 : users.size();
         this.lastMessage = lastMessage;
-        this.chatId = chatId;
+        this.id = id;
+        ;
     }
 
     public long getCreationTimestamp() {
@@ -47,8 +53,8 @@ public class ChatRoom implements Serializable {
         return lastMessage;
     }
 
-    public String getChatId() {
-        return chatId;
+    public String getId() {
+        return id;
     }
 
     public HashMap<String, User> getUsers() {
@@ -63,9 +69,9 @@ public class ChatRoom implements Serializable {
     public void addUser(User user) {
         if (user != null) {
             users.put(user.getUserId(), user);
-            numUsers++;
-            mAvailableChatsRef.child(this.chatId).child("users").child(user.getUserId()).setValue(user);
-            mAvailableChatsRef.child(this.chatId).child("numUsers").setValue(numUsers);
+            numUsers = users.size();
+            mAvailableChatsRef.child(id).child("users").child(user.getUserId()).setValue(user);
+            mAvailableChatsRef.child(id).child("numUsers").setValue(numUsers);
         }
     }
 
@@ -79,18 +85,45 @@ public class ChatRoom implements Serializable {
             User removedUser = users.remove(user.getUserId());
             if (removedUser == null) {
                 Log.e("removeUser", "User to remove was not found in user map.");
+            } else {
+                numUsers = users.size();
+                mAvailableChatsRef.child(id).child("users").child(user.getUserId()).removeValue();
+                mAvailableChatsRef.child(id).child("numUsers").setValue(numUsers);
             }
-            numUsers--;
-            mAvailableChatsRef.child(this.chatId).child("users").child(user.getUserId()).removeValue();
-            mAvailableChatsRef.child(this.chatId).child("numUsers").setValue(numUsers);
         }
 
     }
 
     public void addMessage(Message message) {
         if (message != null) {
-            mMessagesRef.child(this.getChatId()).push().setValue(message);
-            mAvailableChatsRef.child(this.getChatId()).child("lastMessage").setValue(message);
+            DatabaseReference messageRef = mMessagesRef.child(id).push();
+            message.setMessageIdOnce(messageRef.getKey());
+            messageRef.setValue(message);
+            mAvailableChatsRef.child(this.id).child("lastMessage").setValue(message);
+        }
+    }
+
+    public void removeMessage(Message message) {
+        if (message != null) {
+            String messageId = message.getId();
+            if (messageId != null) {
+                mMessagesRef.child(this.id).child(messageId).removeValue();
+                Query lastQuery = mMessagesRef.orderByChild("timestamp").limitToLast(1);
+                lastQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Message newLastMessage = dataSnapshot.getValue(Message.class);
+                        mAvailableChatsRef.child(ChatRoom.this.id).child("lastMessage").setValue(newLastMessage);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            } else {
+                Log.e(TAG, "Message ID not initialized");
+            }
         }
     }
 

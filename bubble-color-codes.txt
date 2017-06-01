@@ -1,0 +1,9 @@
+#EBFFFF
+#DEFFFF
+#E5FFFF
+#E4FFFF
+#c4f8f8
+#d1fafa
+
+ActionBar codes:
+#5054A3

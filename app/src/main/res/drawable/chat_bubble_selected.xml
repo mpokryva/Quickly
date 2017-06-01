@@ -1,0 +1,9 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="false" android:state_selected="true">
+        <shape xmlns:android="http://schemas.android.com/apk/res/android"
+               android:shape="rectangle">
+            <gradient android:endColor="@color/ChatActionBarBackground" android:startColor="@color/ChatActionBarBackground"/>
+            <corners android:radius="4dp"/>
+        </shape>
+    </item>
+</selector>

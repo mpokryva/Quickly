@@ -4,11 +4,11 @@
     android:id="@+id/chat_bubble"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+>
 
     <LinearLayout
         style="@style/incoming_bubble_outline">
-
 
             <TextView
                 android:id="@+id/sender"

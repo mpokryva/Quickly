@@ -4,19 +4,32 @@ package com.android.miki.quickly.chat_components;
  * Created by mpokr on 5/24/2017.
  */
 
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.view.ActionMode;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
 import com.android.miki.quickly.R;
+import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.Message;
 import com.android.miki.quickly.models.User;
 import com.bumptech.glide.Glide;
@@ -30,11 +43,60 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private List<Message> messages;
     private User user;
     private static final String TAG = "ChatRecyclerAdapter";
+    private ActionMode.Callback messageSeletedCallback;
+    private ActionMode mActionMode;
+    private ChatSelectionActivity mActivity;
+    private ChatRoom chatRoom;
+    private SparseBooleanArray selectedMessages;
 
-    public ChatRecyclerAdapter(List<Message> messages, User user) {
+    public ChatRecyclerAdapter(final ChatRoom chatRoom, List<Message> messages, User user, ChatSelectionActivity activity) {
+        this.chatRoom = chatRoom;
         this.messages = messages;
         this.user = user;
+        mActivity = activity;
+        selectedMessages = new SparseBooleanArray();
+        for (int i = 0; i < messages.size(); i++) {
+            selectedMessages.append(i, false); // fill up the array
+        }
+        messageSeletedCallback = new ActionMode.Callback() {
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                mActionMode = mode;
+                MenuInflater inflater = mode.getMenuInflater();
+                inflater.inflate(R.menu.message_selected_menu, menu);
+                return true;
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                return false;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                switch (item.getItemId()) {
+                    case (R.id.delete_message):
+                        //chatRoom.removeMessage();
+                        Log.d(TAG, "test remove");
+                        break;
+                    default:
+                        Log.d(TAG, "test exit");
+                }
+                return false;
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+
+                mActionMode = null;
+            }
+        };
     }
+
+    private void selectItem(int position) {
+
+    }
+
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -56,18 +118,18 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         View v = LayoutInflater.from(parent.getContext()).inflate(layoutRes, parent, false);
         switch (viewType) {
             case 0:
-                vh = new OutgoingTextHolder(v);
+                vh = new OutgoingTextHolder(v, mActivity);
                 break;
             case 1:
-                vh = new IncomingTextHolder(v);
+                vh = new IncomingTextHolder(v, mActivity);
                 break;
             case 2:
-                vh = new OutgoingGifHolder(v);
+                vh = new OutgoingGifHolder(v, mActivity);
                 break;
             case 3:
-                vh = new IncomingGifHolder(v);
+                vh = new IncomingGifHolder(v, mActivity);
             default:
-                vh = new OutgoingTextHolder(v);
+                vh = new OutgoingTextHolder(v, mActivity);
                 Log.e(TAG, "Unknown view holder type instantiated");
                 break;
         }
@@ -77,18 +139,8 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         Message message = messages.get(position);
-        Calendar calendar = GregorianCalendar.getInstance();
-        calendar.setTimeInMillis(message.getTimestamp());
-        int hours = calendar.get(Calendar.HOUR_OF_DAY);
-        String amOrPm = (hours < 12) ? " AM" : " PM";
-        if (hours > 12) {
-            hours -= 12;
-        }
-        int minutes = calendar.get(Calendar.MINUTE);
-        String timeString = hours + ":" + minutes + amOrPm;
         if (holder instanceof OutgoingTextHolder) {
             OutgoingTextHolder outgoingTextHolder = (OutgoingTextHolder) holder;
-
             outgoingTextHolder.messageText.setText(message.getMessageText());
 
         } else if (holder instanceof IncomingTextHolder) {
@@ -97,12 +149,14 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             incomingTextHolder.messageText.setText(message.getMessageText());
             incomingTextHolder.messageText.setText(message.getMessageText());
         } else if (holder instanceof OutgoingGifHolder) {
-            ImageView imageView = ((OutgoingGifHolder) holder).gif;
-                imageView.setMinimumWidth(message.getGif().getWidth());
+            OutgoingGifHolder outgoingGifHolder = (OutgoingGifHolder) holder;
+            ImageView imageView = outgoingGifHolder.gif;
+            imageView.setMinimumWidth(message.getGif().getWidth());
             imageView.setMinimumHeight(message.getGif().getHeight());
             Glide.with(imageView.getContext()).load(message.getGif().getUrl()).into(imageView);
         } else { // IncomingGifHolder
-            ImageView imageView = ((IncomingGifHolder) holder).gif;
+            IncomingGifHolder incomingGifHolder = ((IncomingGifHolder) holder);
+            ImageView imageView = incomingGifHolder.gif;
             imageView.setMinimumWidth(message.getGif().getWidth());
             imageView.setMinimumHeight(message.getGif().getHeight());
             Glide.with(imageView.getContext()).load(message.getGif().getUrl()).into(imageView);
@@ -149,49 +203,79 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         return messages.size();
     }
 
-    private class IncomingTextHolder extends RecyclerView.ViewHolder {
+    private abstract class MessageViewHolder extends RecyclerView.ViewHolder {
+
+
+        public MessageViewHolder(final View itemView, final ChatSelectionActivity activity) {
+            super(itemView);
+            itemView.setClickable(true);
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    if (mActionMode != null) {
+                        return false;
+                    }
+                    mActionMode = activity.startSupportActionMode(messageSeletedCallback);
+                    selectedMessages.append(getAdapterPosition(), true);
+                    notifyItemChanged(getAdapterPosition());
+                    itemView.setSelected(true);
+                    return true;
+                }
+            });
+        }
+
+
+
+
+    }
+
+
+    private class IncomingTextHolder extends MessageViewHolder {
 
         private TextView messageText;
         private TextView sender;
 
-        private IncomingTextHolder(View itemView) {
-            super(itemView);
+        private IncomingTextHolder(View itemView, ChatSelectionActivity activity) {
+            super(itemView, activity);
             messageText = (TextView) itemView.findViewById(R.id.message_text);
             sender = (TextView) itemView.findViewById(R.id.sender);
         }
+
+
     }
 
 
-    private class OutgoingTextHolder extends RecyclerView.ViewHolder {
+    private class OutgoingTextHolder extends MessageViewHolder {
 
         private TextView messageText;
 
-        private OutgoingTextHolder(View itemView) {
-            super(itemView);
+        private OutgoingTextHolder(View itemView, ChatSelectionActivity activity) {
+            super(itemView, activity);
             messageText = (TextView) itemView.findViewById(R.id.message_text);
         }
+
+
     }
 
-    private class OutgoingGifHolder extends RecyclerView.ViewHolder {
+    private class OutgoingGifHolder extends MessageViewHolder {
 
         private ImageView gif;
 
-        private OutgoingGifHolder(View itemView) {
-            super(itemView);
+        private OutgoingGifHolder(View itemView, ChatSelectionActivity activity) {
+            super(itemView, activity);
             gif = (ImageView) itemView.findViewById(R.id.gif_image_view);
         }
     }
 
-    private class IncomingGifHolder extends RecyclerView.ViewHolder {
+    private class IncomingGifHolder extends MessageViewHolder {
 
         private ImageView gif;
 
-        private IncomingGifHolder(View itemView) {
-            super(itemView);
+        private IncomingGifHolder(View itemView, ChatSelectionActivity activity) {
+            super(itemView, activity);
             gif = (ImageView) itemView.findViewById(R.id.gif_image_view);
         }
     }
-
 
 
 }

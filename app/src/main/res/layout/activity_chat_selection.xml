@@ -8,12 +8,9 @@
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/action_bar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:elevation="4dp"
-        android:background="?attr/colorPrimary"
-        app:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Dark">
+        android:theme="@style/ChatActionBar"
+        style="@style/ChatActionBar.Layout"
+        app:contentInsetStart="0dp">
     </android.support.v7.widget.Toolbar>
     <FrameLayout
         android:layout_width="match_parent"

@@ -37,9 +37,6 @@ public class GifDrawer {
         mAdapter = new GIFRecyclerAdapter(new ArrayList<String>(), chatRoom, user, gifDrawerAction); // No GIF data for now...
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
-        //VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(10); // 10dp
-        //mRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
-
     }
 
     private void setGifs(List<String> gifUrls) {

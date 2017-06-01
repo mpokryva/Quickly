@@ -1,5 +1,6 @@
 package com.android.miki.quickly.chat_components;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,6 +11,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -58,10 +60,12 @@ public class ChatFragment extends Fragment {
     private static final int GIF_KEYBOARD_SHIFT = 500; // 500 pixels
 
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
+        setHasOptionsMenu(true);
         mSendButton = (Button) view.findViewById(R.id.send_button);
         mMessageEditText = (EditText) view.findViewById(R.id.message_box);
         gifButton = (ImageButton) view.findViewById(R.id.gif_button);
@@ -90,7 +94,7 @@ public class ChatFragment extends Fragment {
 
 
         // Retrieve messages from Firebase.
-        mMessagesRef.child(chatRoom.getChatId()).addListenerForSingleValueEvent(new ValueEventListener() {
+        mMessagesRef.child(chatRoom.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot messageList) {
                 for (DataSnapshot child : messageList.getChildren()) {
@@ -103,10 +107,16 @@ public class ChatFragment extends Fragment {
                 mLayoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false);
                 ;
                 mMessagesRecyclerView.setLayoutManager(mLayoutManager);
-                mAdapter = new ChatRecyclerAdapter(messages, user);
+                mAdapter = new ChatRecyclerAdapter(chatRoom, messages, user, (ChatSelectionActivity) getActivity());
                 mMessagesRecyclerView.setAdapter(mAdapter);
+                mMessagesRecyclerView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        return false;
+                    }
+                });
                 // Set spaces between messages
-                VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(20); // 10dp
+                VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(20); // 20dp
                 mMessagesRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
                 scrollToBottom();
 
@@ -122,7 +132,7 @@ public class ChatFragment extends Fragment {
             private long lastEdited;
             private Thread thread;
             private String query;
-            private int typingInterval = 600;
+            private int typingInterval = 600;   // 600 ms
             private Runnable runnableTextWatcher = new Runnable() {
                 @Override
                 public void run() {
@@ -167,11 +177,13 @@ public class ChatFragment extends Fragment {
                 if (!isMessageEmpty) {
                     String messageText = mMessageEditText.getText().toString();
                     Message outgoingMessage = new Message(System.currentTimeMillis(), user, messageText);
-                    mMessagesRef.child(chatRoom.getChatId()).push().setValue(outgoingMessage);
-                    mAvailableChatsRef.child(chatRoom.getChatId()).child("lastMessage").setValue(outgoingMessage);
+                    chatRoom.addMessage(outgoingMessage);
                     int lastIndex = mAdapter.insertMessage(outgoingMessage);
                     mAdapter.notifyItemInserted(lastIndex);
                     mMessageEditText.setText("");
+                    scrollToBottom();
+                    InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                 } else {
                     Toast.makeText(view.getContext(), "No text in message!", Toast.LENGTH_SHORT).show();
                 }
@@ -180,6 +192,13 @@ public class ChatFragment extends Fragment {
 
         return view;
     }
+
+
+
+
+
+
+
 
     /**
      * Scrolls to the most recent message.
@@ -197,7 +216,6 @@ public class ChatFragment extends Fragment {
         isGifDrawerOpen = false;
         mGifDrawer.setGone();
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
-        // 500 is an arbitrary value but it works. Will change later.
         layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin - GIF_KEYBOARD_SHIFT);
         mMessagesRecyclerView.setLayoutParams(layoutParams);
         scrollToBottom();
@@ -208,7 +226,6 @@ public class ChatFragment extends Fragment {
         gifButton.setImageResource(R.drawable.ic_close_black_24dp);
         isGifDrawerOpen = true;
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
-        // 500 is an arbitrary value but it works. Will change later.
         layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin + GIF_KEYBOARD_SHIFT);
         mMessagesRecyclerView.setLayoutParams(layoutParams);
         scrollToBottom();

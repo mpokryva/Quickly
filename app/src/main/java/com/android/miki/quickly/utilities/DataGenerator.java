@@ -8,6 +8,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -30,21 +31,30 @@ public class DataGenerator {
         List<String> userNames = Name.randomNameList();
         Random r = new Random();
         HashMap<String, User> users = new HashMap<>();
-        Message lastMessage = null;
-        List<Message> messages = new ArrayList<>();
+        User randomUser = null;
         for (String userName : userNames) {
-            double isUserRandom = r.nextDouble();
             String university = "Stony Brook University";
-            User user = (isUserRandom > .5) ? new User(userName, university, true) : new User(userName, university);
-            String messageText = randomSentences[r.nextInt(randomSentences.length)]; // Get random message
-            Message message = new Message(System.currentTimeMillis(), user, messageText);
-            lastMessage = message;
+            User user = new User(userName, university, true);
             users.put(user.getUserId(), user); // Add user to user list
-            messages.add(message); // Add message to message list
+            randomUser = user;
         }
-        ChatRoom room = new ChatRoom(chatId, System.currentTimeMillis(), users , lastMessage);
-        newChatRef.setValue(room); // Push chat room info
-        mMessagesRef.child(chatId).setValue(messages);
+        String lastMessageText = randomSentences[r.nextInt(randomSentences.length)]; // Get random message
+        Message lastMessage;
+        if (randomUser == null) {
+            lastMessage = null;
+        } else {
+            lastMessage = new Message(System.currentTimeMillis(), randomUser, lastMessageText);;
+        }
+        ChatRoom chatRoom = new ChatRoom(chatId, System.currentTimeMillis(), users , lastMessage);
+        Iterator<User> it = users.values().iterator();
+        while (it.hasNext()) {
+            User user = it.next();
+            String text = randomSentences[r.nextInt(randomSentences.length)];
+            Message message = new Message(System.currentTimeMillis(), user, text);
+            chatRoom.addMessage(message);
+        }
+        chatRoom.addMessage(lastMessage);
+        newChatRef.setValue(chatRoom); // Push chat room info
 
     }
 
