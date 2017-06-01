@@ -71,7 +71,7 @@ public class Message implements Serializable{
         return id;
     }
 
-    public String getTimeString() {
+    public String timeString() {
         Calendar calendar = GregorianCalendar.getInstance();
         calendar.setTimeInMillis(this.getTimestamp());
         int hours = calendar.get(Calendar.HOUR_OF_DAY);

@@ -7,3 +7,5 @@
 
 ActionBar codes:
 #5054A3
+#0C7489 (turquoise)
+#767abc (purple)

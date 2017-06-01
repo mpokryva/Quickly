@@ -4,6 +4,6 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="ChatActivityBackground">#EDE8DE</color>
-    <color name="ChatActionBarBackground">#5054A3</color>
-    <color name="OutgoingChatBubbleBackground">#C9F8F8</color>
+    <color name="ChatActionBarBackground">#0C7489</color>
+    <color name="OutgoingChatBubbleBackground">#dbfafa</color>
 </resources>

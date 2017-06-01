@@ -4,12 +4,6 @@ package com.android.miki.quickly.chat_components;
  * Created by mpokr on 5/24/2017.
  */
 
-import android.graphics.Color;
-import android.graphics.ColorFilter;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
-import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -22,10 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import com.android.miki.quickly.R;
@@ -49,7 +40,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private ChatRoom chatRoom;
     private SparseBooleanArray selectedMessages;
 
-    public ChatRecyclerAdapter(final ChatRoom chatRoom, List<Message> messages, User user, ChatSelectionActivity activity) {
+    public ChatRecyclerAdapter(final ChatRoom chatRoom, final List<Message> messages, User user, final ChatSelectionActivity activity) {
         this.chatRoom = chatRoom;
         this.messages = messages;
         this.user = user;
@@ -76,25 +67,35 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                 switch (item.getItemId()) {
                     case (R.id.delete_message):
-                        //chatRoom.removeMessage();
+                        for (int i = 0; i < selectedMessages.size(); i++) {
+                            if (selectedMessages.get(i)) {
+                                Message removedMessage = messages.remove(i);
+                                chatRoom.removeMessage(removedMessage);
+                                notifyItemRemoved(i);
+                                notifyItemRangeChanged(i, messages.size());
+                                selectedMessages.delete(i);
+                            } else {
+                                selectedMessages.put(i, false); // deselect message
+                            }
+                        }
+                        mActionMode.finish();
                         Log.d(TAG, "test remove");
                         break;
                     default:
-                        Log.d(TAG, "test exit");
+                        break;
                 }
                 return false;
             }
 
             @Override
             public void onDestroyActionMode(ActionMode mode) {
-
+                for (int i = 0; i < selectedMessages.size(); i++) {
+                    selectedMessages.put(i, false);
+                }
+                notifyDataSetChanged();
                 mActionMode = null;
             }
         };
-    }
-
-    private void selectItem(int position) {
-
     }
 
 
@@ -142,15 +143,18 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         if (holder instanceof OutgoingTextHolder) {
             OutgoingTextHolder outgoingTextHolder = (OutgoingTextHolder) holder;
             if (selectedMessages.get(position)) {
-                outgoingTextHolder.highlight();
-
+                outgoingTextHolder.select();
+            } else {
+                outgoingTextHolder.deselect();
             }
             outgoingTextHolder.messageText.setText(message.getMessageText());
 
         } else if (holder instanceof IncomingTextHolder) {
             IncomingTextHolder incomingTextHolder = (IncomingTextHolder) holder;
             if (selectedMessages.get(position)) {
-                incomingTextHolder.highlight();
+                incomingTextHolder.select();
+            } else {
+                incomingTextHolder.deselect();
             }
             incomingTextHolder.sender.setText(message.getSender().getNickname());
             incomingTextHolder.messageText.setText(message.getMessageText());
@@ -158,7 +162,9 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         } else if (holder instanceof OutgoingGifHolder) {
             OutgoingGifHolder outgoingGifHolder = (OutgoingGifHolder) holder;
             if (selectedMessages.get(position)) {
-                outgoingGifHolder.highlight();
+                outgoingGifHolder.select();
+            } else {
+                outgoingGifHolder.deselect();
             }
             ImageView imageView = outgoingGifHolder.gif;
             imageView.setMinimumWidth(message.getGif().getWidth());
@@ -167,7 +173,9 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         } else { // IncomingGifHolder
             IncomingGifHolder incomingGifHolder = ((IncomingGifHolder) holder);
             if (selectedMessages.get(position)) {
-                incomingGifHolder.highlight();
+                incomingGifHolder.select();
+            } else {
+                incomingGifHolder.deselect();
             }
             ImageView imageView = incomingGifHolder.gif;
             imageView.setMinimumWidth(message.getGif().getWidth());
@@ -236,11 +244,13 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             });
         }
 
-        public void highlight() {
+        public void select() {
             itemView.setSelected(true);
         }
 
-
+        public void deselect() {
+            itemView.setSelected(false);
+        }
 
 
     }
