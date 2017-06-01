@@ -41,6 +41,7 @@
         android:visibility="gone">
     </android.support.v7.widget.RecyclerView>
     <RelativeLayout
+        android:id="@+id/testing"
         android:layout_width="match_parent"
         android:layout_height="44dp"
         android:orientation="horizontal">
@@ -58,15 +59,21 @@
             android:background="@android:color/transparent"
             android:layout_height="match_parent"
             android:hint="@string/message_box_hint"
+            android:inputType="textMultiLine"
             android:textSize="16sp"
-            android:layout_toEndOf="@+id/gif_button"/>
+            android:layout_toEndOf="@id/gif_button"
+            android:layout_toStartOf="@+id/send_button"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentTop="true"/>
         <Button
             android:id="@+id/send_button"
             android:gravity="center_vertical"
             android:layout_margin="8dp"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:layout_width="28dp"
             android:layout_height="28dp"
+            android:backgroundTint="@color/ChatActionBarBackground"
             android:background="@drawable/ic_send_black_24dp"/>
     </RelativeLayout>
 </LinearLayout>

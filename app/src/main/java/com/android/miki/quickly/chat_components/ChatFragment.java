@@ -1,6 +1,8 @@
 package com.android.miki.quickly.chat_components;
 
 import android.content.Context;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -8,6 +10,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +19,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.android.miki.quickly.R;
@@ -30,6 +35,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +65,6 @@ public class ChatFragment extends Fragment {
     private boolean isGifDrawerOpen;
     private static final String TAG = "ChatFragment";
     private static final int GIF_KEYBOARD_SHIFT = 500; // 500 pixels
-
 
 
     @Override
@@ -129,9 +135,13 @@ public class ChatFragment extends Fragment {
         });
 
         mMessageEditText.addTextChangedListener(new TextWatcher() {
+            private int oldNumLines = 1;
             private long lastEdited;
             private Thread thread;
             private String query;
+            RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.testing);
+            LinearLayout.LayoutParams llp = (LinearLayout.LayoutParams) rl.getLayoutParams();
+            private int originalMessageBoxHeight = llp.height;
             private int typingInterval = 600;   // 600 ms
             private Runnable runnableTextWatcher = new Runnable() {
                 @Override
@@ -159,6 +169,41 @@ public class ChatFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
+                Paint textPaint = mMessageEditText.getPaint();
+                Rect bounds = new Rect();
+                String text = editable.toString();
+                textPaint.getTextBounds(text, 0, text.length(), bounds);
+                int textHeight = bounds.height() * mMessageEditText.getLineCount();
+                Log.d(TAG, "text height: " + textHeight);
+                RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.testing);
+                LinearLayout.LayoutParams llp = (LinearLayout.LayoutParams) rl.getLayoutParams();
+
+                int paddingAndMargins = mMessageEditText.getPaddingBottom() + mMessageEditText.getPaddingTop() + llp.bottomMargin + llp.topMargin;
+                int editTextHeight = mMessageEditText.getHeight() - paddingAndMargins;
+                Log.d(TAG, "edittext height: " + editTextHeight);
+                Log.d(TAG, "padding&margins: " + paddingAndMargins);
+
+
+                int currentLineCount = mMessageEditText.getLineCount();
+                if (oldNumLines < currentLineCount) {
+                    llp.height += 1.5 * paddingAndMargins;
+                    rl.setLayoutParams(llp);
+                    oldNumLines = currentLineCount;
+                } else if (oldNumLines > currentLineCount) {
+                    llp.height -= 1.5 * paddingAndMargins;
+                    rl.setLayoutParams(llp);
+                    oldNumLines = currentLineCount;
+                }
+                Log.d(TAG, "" + (editTextHeight - textHeight));
+
+
+                if (text.equals("")) {
+                    llp.height = originalMessageBoxHeight;
+                    rl.setLayoutParams(llp);
+                    Log.d(TAG, "back to original");
+                }
+
+
                 if (isGifDrawerOpen) {
                     lastEdited = System.currentTimeMillis();
                     if (thread == null) {
@@ -182,7 +227,7 @@ public class ChatFragment extends Fragment {
                     mAdapter.notifyItemInserted(lastIndex);
                     mMessageEditText.setText("");
                     scrollToBottom();
-                    InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                 } else {
                     Toast.makeText(view.getContext(), "No text in message!", Toast.LENGTH_SHORT).show();
@@ -194,10 +239,20 @@ public class ChatFragment extends Fragment {
     }
 
 
-
-
-
-
+    private void resizeMessageBox(String oldText, String newText, int resizeFactor) {
+        int width = mMessageEditText.getWidth();
+        Paint textPaint = mMessageEditText.getPaint();
+        Rect bounds = new Rect();
+        textPaint.getTextBounds(newText, 0, newText.length(), bounds);
+        float textWidth = bounds.width() / resizeFactor;
+        if (textWidth >= width) {
+            RelativeLayout rl = (RelativeLayout) this.getView().findViewById(R.id.testing);
+            LinearLayout.LayoutParams llp = (LinearLayout.LayoutParams) rl.getLayoutParams();
+            llp.height += bounds.height();
+            rl.setLayoutParams(llp);
+            resizeFactor++;
+        }
+    }
 
 
     /**

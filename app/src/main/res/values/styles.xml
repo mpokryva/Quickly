@@ -9,7 +9,7 @@
     </style>
 
     <style name="ChatActionBar">
-        <item name="android:textColorPrimary">@android:color/black</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
         <item name="android:background">@color/ChatActionBarBackground</item>
     </style>
 

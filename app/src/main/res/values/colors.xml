@@ -3,7 +3,8 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
-    <color name="ChatActivityBackground">#edeeec</color>
-    <color name="ChatActionBarBackground">#FFFF</color>
-    <color name="OutgoingChatBubbleBackground">#458BFF</color>
+    <color name="ChatActivityBackground">#f8f5f2</color>
+    <color name="ChatActionBarBackground">#8ab7ff</color>
+    <color name="OutgoingChatBubbleBackground">#8ab7ff</color>
+    <color name="IncomingChatBubbleBackground">@android:color/white</color>
 </resources>
