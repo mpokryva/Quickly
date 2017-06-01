@@ -2,9 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/delete_message"
+        android:id="@+id/copy_message"
         app:showAsAction="always"
-        android:icon="@drawable/ic_delete_white_24dp"
-        android:title="Delete"
+        android:icon="@drawable/ic_content_copy_black_24dp"
+        android:title="@string/copy_menu_title"
         />
 </menu>
