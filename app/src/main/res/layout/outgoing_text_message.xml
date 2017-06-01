@@ -12,6 +12,7 @@
             android:id="@+id/message_image"
             style="@style/MessageImage"/>
         <TextView
+            android:textColor="@android:color/white"
             android:id="@+id/message_text"
             style="@style/MessageText">
         </TextView>

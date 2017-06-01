@@ -3,7 +3,7 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
-    <color name="ChatActivityBackground">#EDE8DE</color>
-    <color name="ChatActionBarBackground">#0C7489</color>
-    <color name="OutgoingChatBubbleBackground">#dbfafa</color>
+    <color name="ChatActivityBackground">#edeeec</color>
+    <color name="ChatActionBarBackground">#FFFF</color>
+    <color name="OutgoingChatBubbleBackground">#458BFF</color>
 </resources>
