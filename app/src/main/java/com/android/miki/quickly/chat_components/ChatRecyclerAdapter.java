@@ -4,6 +4,9 @@ package com.android.miki.quickly.chat_components;
  * Created by mpokr on 5/24/2017.
  */
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -17,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.android.miki.quickly.R;
@@ -38,16 +42,16 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private ActionMode mActionMode;
     private ChatSelectionActivity mActivity;
     private ChatRoom chatRoom;
-    private SparseBooleanArray selectedMessages;
+    private ArrayList<Boolean> selectedMessages;
 
     public ChatRecyclerAdapter(final ChatRoom chatRoom, final List<Message> messages, User user, final ChatSelectionActivity activity) {
         this.chatRoom = chatRoom;
         this.messages = messages;
         this.user = user;
         mActivity = activity;
-        selectedMessages = new SparseBooleanArray();
+        selectedMessages = new ArrayList<>();
         for (int i = 0; i < messages.size(); i++) {
-            selectedMessages.append(i, false); // fill up the array
+            selectedMessages.add(false); // fill up the array
         }
         messageSeletedCallback = new ActionMode.Callback() {
             @Override
@@ -66,19 +70,18 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             @Override
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                 switch (item.getItemId()) {
-                    case (R.id.delete_message):
+                    case (R.id.copy_message):
                         for (int i = 0; i < selectedMessages.size(); i++) {
+                            ClipboardManager clipboard = (ClipboardManager)activity.getSystemService(Context.CLIPBOARD_SERVICE);
                             if (selectedMessages.get(i)) {
-                                Message removedMessage = messages.remove(i);
-                                chatRoom.removeMessage(removedMessage);
-                                notifyItemRemoved(i);
-                                notifyItemRangeChanged(i, messages.size());
-                                selectedMessages.delete(i);
-                            } else {
-                                selectedMessages.put(i, false); // deselect message
+                                Message message = messages.get(i);
+                                String content = (message.getMessageText() == null) ? message.getGif().getUrl() : message.getMessageText();
+                                ClipData data = ClipData.newPlainText("test", content);
+                                clipboard.setPrimaryClip(data);
+                                break;
                             }
                         }
-                        mActionMode.finish();
+                        mActionMode.finish(); // exit out of context action bar to regular action bar
                         Log.d(TAG, "test remove");
                         break;
                     default:
@@ -90,7 +93,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             @Override
             public void onDestroyActionMode(ActionMode mode) {
                 for (int i = 0; i < selectedMessages.size(); i++) {
-                    selectedMessages.put(i, false);
+                    selectedMessages.set(i, false);
                 }
                 notifyDataSetChanged();
                 mActionMode = null;
@@ -215,7 +218,17 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     public int insertMessage(Message message) {
         messages.add(message);
+        selectedMessages.add(false);
         return messages.size() - 1;
+    }
+
+    private void deselectAll() {
+        for (int i = 0; i < selectedMessages.size(); i++) {
+            if (selectedMessages.get(i)) {
+                selectedMessages.set(i, false);
+                notifyItemChanged(i);
+            }
+        }
     }
 
 
@@ -233,11 +246,11 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
-                    if (mActionMode != null) {
-                        return false;
+                    if (mActionMode == null) {
+                        mActionMode = activity.startSupportActionMode(messageSeletedCallback);
                     }
-                    mActionMode = activity.startSupportActionMode(messageSeletedCallback);
-                    selectedMessages.append(getAdapterPosition(), true);
+                    deselectAll();
+                    selectedMessages.set(getAdapterPosition(), true);
                     notifyItemChanged(getAdapterPosition());
                     return true;
                 }
@@ -266,7 +279,6 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             messageText = (TextView) itemView.findViewById(R.id.message_text);
             sender = (TextView) itemView.findViewById(R.id.sender);
         }
-
 
     }
 
