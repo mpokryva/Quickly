@@ -60,4 +60,10 @@ public class User implements Serializable{
             return false;
         }
     }
+
+
+    @Override
+    public int hashCode() {
+        return userId.hashCode();
+    }
 }

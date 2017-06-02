@@ -11,6 +11,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Created by mpokr on 5/22/2017.
@@ -59,6 +60,10 @@ public class ChatRoom implements Serializable {
 
     public HashMap<String, User> getUsers() {
         return users;
+    }
+
+    public Iterator<User> userIterator() {
+        return users.values().iterator();
     }
 
     /**
