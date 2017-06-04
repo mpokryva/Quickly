@@ -27,12 +27,13 @@ public class ChatSelectionActivity extends AppCompatActivity {
     private ChatFinder mChatFinder;
     private User user;
     private ChatRoom currentChatRoom;
+    private Toolbar actionBar;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_selection);
-        final Toolbar actionBar = (Toolbar) findViewById(R.id.action_bar);
+        actionBar = (Toolbar) findViewById(R.id.action_bar);
         setSupportActionBar(actionBar);
         this.user = (User) getIntent().getSerializableExtra("user");
         chatRooms = new ArrayList<>();
@@ -95,5 +96,9 @@ public class ChatSelectionActivity extends AppCompatActivity {
         }
 
         return userString;
+    }
+
+    private void configureActionBar() {
+
     }
 }
