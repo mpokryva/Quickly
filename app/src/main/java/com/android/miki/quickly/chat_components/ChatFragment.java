@@ -12,6 +12,8 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -139,7 +141,7 @@ public class ChatFragment extends Fragment {
             private long lastEdited;
             private Thread thread;
             private String query;
-            RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.testing);
+            RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.message_box_layout);
             LinearLayout.LayoutParams llp = (LinearLayout.LayoutParams) rl.getLayoutParams();
             private int originalMessageBoxHeight = llp.height;
             private int typingInterval = 600;   // 600 ms
@@ -175,34 +177,30 @@ public class ChatFragment extends Fragment {
                 textPaint.getTextBounds(text, 0, text.length(), bounds);
                 int textHeight = bounds.height() * mMessageEditText.getLineCount();
                 Log.d(TAG, "text height: " + textHeight);
-                RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.testing);
+                RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.message_box_layout);
                 LinearLayout.LayoutParams llp = (LinearLayout.LayoutParams) rl.getLayoutParams();
-
                 int paddingAndMargins = mMessageEditText.getPaddingBottom() + mMessageEditText.getPaddingTop() + llp.bottomMargin + llp.topMargin;
                 int editTextHeight = mMessageEditText.getHeight() - paddingAndMargins;
                 Log.d(TAG, "edittext height: " + editTextHeight);
                 Log.d(TAG, "padding&margins: " + paddingAndMargins);
 
-
                 int currentLineCount = mMessageEditText.getLineCount();
                 if (oldNumLines < currentLineCount) {
-                    llp.height += 1.5 * paddingAndMargins;
+                    llp.height += (currentLineCount - oldNumLines) * paddingAndMargins * 1.5;
                     rl.setLayoutParams(llp);
                     oldNumLines = currentLineCount;
                 } else if (oldNumLines > currentLineCount) {
-                    llp.height -= 1.5 * paddingAndMargins;
+                    llp.height -= (oldNumLines - currentLineCount) * paddingAndMargins * 1.5;
                     rl.setLayoutParams(llp);
                     oldNumLines = currentLineCount;
                 }
                 Log.d(TAG, "" + (editTextHeight - textHeight));
-
 
                 if (text.equals("")) {
                     llp.height = originalMessageBoxHeight;
                     rl.setLayoutParams(llp);
                     Log.d(TAG, "back to original");
                 }
-
 
                 if (isGifDrawerOpen) {
                     lastEdited = System.currentTimeMillis();
@@ -238,23 +236,6 @@ public class ChatFragment extends Fragment {
         return view;
     }
 
-
-    private void resizeMessageBox(String oldText, String newText, int resizeFactor) {
-        int width = mMessageEditText.getWidth();
-        Paint textPaint = mMessageEditText.getPaint();
-        Rect bounds = new Rect();
-        textPaint.getTextBounds(newText, 0, newText.length(), bounds);
-        float textWidth = bounds.width() / resizeFactor;
-        if (textWidth >= width) {
-            RelativeLayout rl = (RelativeLayout) this.getView().findViewById(R.id.testing);
-            LinearLayout.LayoutParams llp = (LinearLayout.LayoutParams) rl.getLayoutParams();
-            llp.height += bounds.height();
-            rl.setLayoutParams(llp);
-            resizeFactor++;
-        }
-    }
-
-
     /**
      * Scrolls to the most recent message.
      */
@@ -263,6 +244,12 @@ public class ChatFragment extends Fragment {
             int messagesSize = (messages.size() - 1 < 0) ? 0 : messages.size() - 1;
             mMessagesRecyclerView.scrollToPosition(messagesSize);
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.fragment_chat_overflow_menu, menu);
     }
 
     private void closeGifDrawer() {
