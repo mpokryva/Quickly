@@ -1,6 +1,7 @@
 package com.android.miki.quickly.chat_components;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -26,6 +28,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.android.miki.quickly.R;
+import com.android.miki.quickly.recyclerview_adapters.ChatRecyclerAdapter;
 import com.android.miki.quickly.utilities.VerticalSpaceItemDecoration;
 import com.android.miki.quickly.gif_drawer.GifDrawer;
 import com.android.miki.quickly.gif_drawer.GifDrawerAction;
@@ -37,8 +40,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -250,6 +251,18 @@ public class ChatFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_chat_overflow_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.group_info:
+                Intent intent = new Intent(getContext(), GroupInfoActivity.class);
+                intent.putExtra("chatRoom", chatRoom);
+                startActivity(intent);
+         default:
+             return super.onOptionsItemSelected(item);
+        }
     }
 
     private void closeGifDrawer() {

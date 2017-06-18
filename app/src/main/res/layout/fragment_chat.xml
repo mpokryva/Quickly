@@ -32,7 +32,7 @@
     android:layout_alignParentBottom="true"
     android:background="@android:color/white">
     <View
-        style="@style/Divider">
+        style="@style/HorizontalDivider">
     </View>
     <android.support.v7.widget.RecyclerView
         android:id="@+id/gif_recycler_view"

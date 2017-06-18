@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".chat_components.ChatSelectionActivity"/>
-
+        <activity android:name=".chat_components.GroupInfoActivity"/>
 
         <activity android:name=".chat_components.ConfigureUserProfileActivity">
             <intent-filter>

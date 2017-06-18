@@ -14,7 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.android.miki.quickly.chat_components.ChatRecyclerAdapter;
+import com.android.miki.quickly.recyclerview_adapters.ChatRecyclerAdapter;
 import com.android.miki.quickly.R;
 import com.android.miki.quickly.utilities.VerticalSpaceItemDecoration;
 import com.android.miki.quickly.models.ChatRoom;

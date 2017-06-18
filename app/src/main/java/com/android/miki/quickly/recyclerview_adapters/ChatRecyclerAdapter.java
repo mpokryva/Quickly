@@ -1,4 +1,4 @@
-package com.android.miki.quickly.chat_components;
+package com.android.miki.quickly.recyclerview_adapters;
 
 /**
  * Created by mpokr on 5/24/2017.
@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.android.miki.quickly.R;
+import com.android.miki.quickly.chat_components.ChatSelectionActivity;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.Message;
 import com.android.miki.quickly.models.User;
@@ -52,6 +53,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private static final int INCOMING_TEXT = 1;
     private static final int OUTGOING_GIF = 2;
     private static final int INCOMING_GIF = 3;
+
     public ChatRecyclerAdapter(final ChatRoom chatRoom, final List<Message> messages, User user, final ChatSelectionActivity activity) {
         this.chatRoom = chatRoom;
         this.messages = messages;
@@ -65,7 +67,6 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         int j = 0;
         while (it.hasNext()) {
             User currentUser = it.next();
-            //int randomColor = colorGenerator.generateRandomColors(Color.rgb(207, 207, 207), 1)[0];
             userToColorMap.put(currentUser, randomColors[j]);
             j++;
         }
