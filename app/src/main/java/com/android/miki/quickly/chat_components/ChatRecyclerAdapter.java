@@ -48,7 +48,10 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private ChatRoom chatRoom;
     private ArrayList<Boolean> selectedMessages;
     private HashMap<User, Integer> userToColorMap;
-
+    private static final int OUTGOING_TEXT = 0;
+    private static final int INCOMING_TEXT = 1;
+    private static final int OUTGOING_GIF = 2;
+    private static final int INCOMING_GIF = 3;
     public ChatRecyclerAdapter(final ChatRoom chatRoom, final List<Message> messages, User user, final ChatSelectionActivity activity) {
         this.chatRoom = chatRoom;
         this.messages = messages;
@@ -137,16 +140,16 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         }
         View v = LayoutInflater.from(parent.getContext()).inflate(layoutRes, parent, false);
         switch (viewType) {
-            case 0:
+            case OUTGOING_TEXT:
                 vh = new OutgoingTextHolder(v, mActivity);
                 break;
-            case 1:
+            case INCOMING_TEXT:
                 vh = new IncomingTextHolder(v, mActivity);
                 break;
-            case 2:
+            case OUTGOING_GIF:
                 vh = new OutgoingGifHolder(v, mActivity);
                 break;
-            case 3:
+            case INCOMING_GIF:
                 vh = new IncomingGifHolder(v, mActivity);
             default:
                 vh = new OutgoingTextHolder(v, mActivity);
@@ -211,15 +214,15 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         Message message = messages.get(position);
         if (message.getSender().equals(user)) { // Outgoing messages
             if (message.getMessageText() != null) { // text
-                return 0;
+                return OUTGOING_TEXT;
             } else { // GifMessage
-                return 2;
+                return OUTGOING_GIF;
             }
         } else { // Incoming message
             if (message.getMessageText() != null) { // text
-                return 1;
+                return INCOMING_TEXT;
             } else { // GifMessage
-                return 3;
+                return INCOMING_GIF;
             }
         }
     }
