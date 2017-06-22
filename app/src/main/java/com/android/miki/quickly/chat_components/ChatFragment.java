@@ -114,7 +114,6 @@ public class ChatFragment extends Fragment {
                 // Initialize message view (RecyclerView), after messages have been retrieved.
                 mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.messages_recycler_view);
                 mLayoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false);
-                ;
                 mMessagesRecyclerView.setLayoutManager(mLayoutManager);
                 mAdapter = new ChatRecyclerAdapter(chatRoom, messages, user, (ChatSelectionActivity) getActivity());
                 mMessagesRecyclerView.setAdapter(mAdapter);

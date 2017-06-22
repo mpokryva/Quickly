@@ -92,7 +92,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 switch (item.getItemId()) {
                     case (R.id.copy_message):
                         for (int i = 0; i < selectedMessages.size(); i++) {
-                            ClipboardManager clipboard = (ClipboardManager)activity.getSystemService(Context.CLIPBOARD_SERVICE);
+                            ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
                             if (selectedMessages.get(i)) {
                                 Message message = messages.get(i);
                                 String content = (message.getMessageText() == null) ? message.getGif().getUrl() : message.getMessageText();
