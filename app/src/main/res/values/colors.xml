@@ -7,4 +7,5 @@
     <color name="ChatActionBarBackground">#8ab7ff</color>
     <color name="OutgoingChatBubbleBackground">#8ab7ff</color>
     <color name="IncomingChatBubbleBackground">@android:color/white</color>
+    <color name="Gray">#808080</color>
 </resources>

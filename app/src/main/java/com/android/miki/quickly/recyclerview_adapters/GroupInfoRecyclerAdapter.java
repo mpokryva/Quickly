@@ -1,7 +1,6 @@
 package com.android.miki.quickly.recyclerview_adapters;
 
 import android.support.v4.widget.NestedScrollView;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,7 +53,7 @@ public class GroupInfoRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.
                 RelativeLayout prevRl = null;
                 while (it.hasNext()) {
                     currentUser = it.next();
-                    RelativeLayout rl = (RelativeLayout) LayoutInflater.from(parent.getContext()).inflate(R.layout.user_info,
+                    RelativeLayout rl = (RelativeLayout) LayoutInflater.from(parent.getContext()).inflate(R.layout.user_details,
                             parent, false);
                     TextView name = (TextView) rl.findViewById(R.id.user_name);
                     TextView university = (TextView) rl.findViewById(R.id.university);
