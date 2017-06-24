@@ -73,7 +73,7 @@
             android:layout_centerVertical="true"
             android:layout_width="28dp"
             android:layout_height="28dp"
-            android:backgroundTint="@color/ChatActionBarBackground"
+            android:backgroundTint="@color/LightBlue"
             android:background="@drawable/ic_send_black_24dp"/>
     </RelativeLayout>
 </LinearLayout>

@@ -5,7 +5,7 @@
         <!-- Customize your theme here. -->
         <item name="windowActionModeOverlay">true</item>
         <item name="android:actionModeCloseDrawable">@drawable/ic_close_white_24dp</item>
-        <item name="android:actionModeBackground">@color/ChatActionBarBackground</item>
+        <item name="android:actionModeBackground">@color/LightBlue</item>
         <!--<item name="android:actionOverflowButtonStyle">@style/OverflowButtonStyle</item>-->
     </style>
 
@@ -15,7 +15,7 @@
 
     <style name="ChatActionBar">
         <item name="android:textColorPrimary">@android:color/white</item>
-        <item name="android:background">@color/ChatActionBarBackground</item>
+        <item name="android:background">@color/LightBlue</item>
     </style>
 
     <style name="ChatActionBar.Layout">
