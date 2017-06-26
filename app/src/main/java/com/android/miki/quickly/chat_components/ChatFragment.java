@@ -28,7 +28,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.android.miki.quickly.R;
-import com.android.miki.quickly.recyclerview_adapters.ChatRecyclerAdapter;
+import com.android.miki.quickly.group_info.GroupInfoActivity;
 import com.android.miki.quickly.utilities.VerticalSpaceItemDecoration;
 import com.android.miki.quickly.gif_drawer.GifDrawer;
 import com.android.miki.quickly.gif_drawer.GifDrawerAction;
@@ -259,8 +259,8 @@ public class ChatFragment extends Fragment {
                 Intent intent = new Intent(getContext(), GroupInfoActivity.class);
                 intent.putExtra("chatRoom", chatRoom);
                 startActivity(intent);
-         default:
-             return super.onOptionsItemSelected(item);
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 

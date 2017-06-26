@@ -16,12 +16,18 @@
     <style name="ChatActionBar">
         <item name="android:textColorPrimary">@android:color/white</item>
         <item name="android:background">@color/LightBlue</item>
+        <item name="android:homeAsUpIndicator">@drawable/ic_arrow_back_white_24dp</item>
     </style>
 
     <style name="ChatActionBar.Layout">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">?attr/actionBarSize</item>
         <item name="android:elevation">4dp</item>
+    </style>
+
+    <style name="ChangeGroupNameEditText">
+        <item name="android:colorControlNormal">@color/LightBlue</item>
+
     </style>
 
 

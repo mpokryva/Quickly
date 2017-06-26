@@ -4,4 +4,7 @@
     <string name="copy_menu_title">Copy</string>
     <string name="more">More</string>
     <string name="participants">Participants</string>
+    <string name="group_info">Group Info</string>
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
 </resources>

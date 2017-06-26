@@ -1,4 +1,4 @@
-package com.android.miki.quickly.recyclerview_adapters;
+package com.android.miki.quickly.chat_components;
 
 /**
  * Created by mpokr on 5/24/2017.
@@ -46,7 +46,6 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private ActionMode.Callback messageSeletedCallback;
     private ActionMode mActionMode;
     private ChatSelectionActivity mActivity;
-    private ChatRoom chatRoom;
     private ArrayList<Boolean> selectedMessages;
     private HashMap<User, Integer> userToColorMap;
     private static final int OUTGOING_TEXT = 0;
@@ -55,7 +54,6 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private static final int INCOMING_GIF = 3;
 
     public ChatRecyclerAdapter(final ChatRoom chatRoom, final List<Message> messages, User user, final ChatSelectionActivity activity) {
-        this.chatRoom = chatRoom;
         this.messages = messages;
         this.user = user;
         mActivity = activity;

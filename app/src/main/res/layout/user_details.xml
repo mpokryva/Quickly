@@ -20,6 +20,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/user_name"
-        android:textColor="#808080"/>
+        android:textColor="@color/MediumGray"/>
 
 </RelativeLayout>

@@ -6,8 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.android.miki.quickly.unused.ChatActivity"
-    android:background="@color/ChatActivityBackground"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:background="@color/ChatActivityBackground">
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
