@@ -29,9 +29,9 @@ public class GroupInfoRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.
     private ChatRoom chatRoom;
 
 
-    public GroupInfoRecyclerAdapter(ChatRoom chatRoom, GroupNameDialogListener infoInterface) {
+    public GroupInfoRecyclerAdapter(ChatRoom chatRoom, GroupNameDialogListener dialogListener) {
         this.chatRoom = chatRoom;
-        this.dialogListener = infoInterface;
+        this.dialogListener = dialogListener;
     }
 
     @Override

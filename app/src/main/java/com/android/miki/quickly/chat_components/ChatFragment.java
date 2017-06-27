@@ -79,7 +79,7 @@ public class ChatFragment extends Fragment {
         mMessageEditText = (EditText) view.findViewById(R.id.message_box);
         gifButton = (ImageButton) view.findViewById(R.id.gif_button);
         mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.gif_recycler_view);
-        chatRoom = (ChatRoom) getArguments().getSerializable("chatRoom");
+        chatRoom = (ChatRoom) getArguments().getSerializable(getString(R.string.chat_room));
         user = (User) getArguments().getSerializable("user");
         messages = new ArrayList<>();
         mGifDrawer = new GifDrawer(view, chatRoom, user, new GifDrawerAction() {
@@ -257,7 +257,7 @@ public class ChatFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.group_info:
                 Intent intent = new Intent(getContext(), GroupInfoActivity.class);
-                intent.putExtra("chatRoom", chatRoom);
+                intent.putExtra(getString(R.string.chat_room), chatRoom);
                 startActivity(intent);
             default:
                 return super.onOptionsItemSelected(item);

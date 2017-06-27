@@ -1,10 +1,12 @@
 package com.android.miki.quickly.chat_components;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
+import com.android.miki.quickly.R;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.User;
 
@@ -31,7 +33,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter {
         Fragment fragment = new ChatFragment();
         Bundle args = new Bundle();
         // Pass chat room info to fragment
-        args.putSerializable("chatRoom", chatRooms.get(position));
+        args.putSerializable("chatRoom" , chatRooms.get(position)); // TODO: Use string resource instead of "chatRoom"
         args.putSerializable("user", user);
         fragment.setArguments(args);
         return fragment;

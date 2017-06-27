@@ -13,4 +13,6 @@ public interface GroupNameDialogListener extends Serializable {
     void groupNameChanged(String newGroupName);
 
     void editGroupNameRequested();
+
+    void dialogClosed();
 }

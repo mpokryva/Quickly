@@ -22,11 +22,15 @@ public class GroupInfoActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
     private GroupInfoRecyclerAdapter mAdapter;
     private ChatRoom chatRoom;
+    private boolean isDialogOpen;
+    private GroupNameDialogFragment dialogFragment;
+    private GroupNameDialogListener dialogListener;
+    private String dialogText;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        chatRoom = (ChatRoom) getIntent().getSerializableExtra("chatRoom");
+        chatRoom = (ChatRoom) getIntent().getSerializableExtra(getString(R.string.chat_room));
         setContentView(R.layout.activity_group_info);
         final Toolbar actionBar = (Toolbar) findViewById(R.id.action_bar);
         setSupportActionBar(actionBar);
@@ -37,23 +41,44 @@ public class GroupInfoActivity extends AppCompatActivity {
         mRecyclerView = (RecyclerView) findViewById(R.id.group_info_recycler_view);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(layoutManager);
-        mAdapter = new GroupInfoRecyclerAdapter(chatRoom, new GroupNameDialogListener() {
-            @Override
-            public void groupNameChanged(String newGroupName) {
-                Toast.makeText(GroupInfoActivity.this, newGroupName, Toast.LENGTH_SHORT).show();
-            }
-            @Override
-            public void editGroupNameRequested() {
-                GroupNameDialogFragment dialogFragment = new GroupNameDialogFragment();
-                Bundle args = new Bundle();
-                args.putSerializable(GroupNameDialogListener.TAG, this);
-                dialogFragment.setArguments(args);
-                dialogFragment.show(getSupportFragmentManager(), GroupNameDialogFragment.TAG);
-            }
-        });
+        initializeDialogListener();
+        mAdapter = new GroupInfoRecyclerAdapter(chatRoom, dialogListener);
         VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(50); // 50dp
         mRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
         mRecyclerView.setAdapter(mAdapter);
+    }
+
+    private void initializeDialogListener() {
+        dialogListener = new GroupNameDialogListener() {
+            @Override
+            public void groupNameChanged(String newGroupName) {
+                chatRoom.setName(newGroupName);
+            }
+
+            @Override
+            public void editGroupNameRequested() {
+                makeDialog();
+            }
+
+            @Override
+            public void dialogClosed() {
+                isDialogOpen = false;
+                dialogText = null;
+            }
+        };
+    }
+
+    private void makeDialog() {
+        dialogFragment = new GroupNameDialogFragment();
+        dialogFragment.setRetainInstance(true);
+        Bundle args = new Bundle();
+        args.putSerializable(GroupNameDialogListener.TAG, dialogListener);
+        if (dialogText != null) {
+            args.putString(getString(R.string.dialog_text), dialogText);
+        }
+        dialogFragment.setArguments(args);
+        dialogFragment.show(getSupportFragmentManager(), GroupNameDialogFragment.TAG);
+        isDialogOpen = true;
     }
 
     @Override
@@ -65,4 +90,28 @@ public class GroupInfoActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (isDialogOpen) {
+            if (dialogFragment != null) {
+                dialogText = dialogFragment.getText();
+                getIntent().putExtra(getString(R.string.dialog_text), dialogText);
+                getIntent().putExtra("isDialogOpen", isDialogOpen);
+                dialogFragment.dismiss();
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isDialogOpen = getIntent().getBooleanExtra("isDialogOpen", false);
+        if (isDialogOpen) {
+            dialogText = getIntent().getStringExtra(getString(R.string.dialog_text));
+            makeDialog();
+        }
+    }
+
 }

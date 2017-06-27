@@ -19,15 +19,17 @@ import java.util.Iterator;
 
 public class ChatRoom implements Serializable {
 
+    private transient FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
+    private transient DatabaseReference mAvailableChatsRef = mDatabase.getReference().child("availableChats");
+    private transient DatabaseReference mMessagesRef = mDatabase.getReference().child("messages");
+    private static final String TAG = "ChatRoom";
     private String id;
     private long creationTimestamp;
     private int numUsers;
     private HashMap<String, User> users = new HashMap<>();
     private Message lastMessage;
-    private transient FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
-    private transient DatabaseReference mAvailableChatsRef = mDatabase.getReference().child("availableChats");
-    private transient DatabaseReference mMessagesRef = mDatabase.getReference().child("messages");
-    private static final String TAG = "ChatRoom";
+    private String name;
+
 
     public ChatRoom() {
 
@@ -39,7 +41,6 @@ public class ChatRoom implements Serializable {
         this.numUsers = (users == null) ? 0 : users.size();
         this.lastMessage = lastMessage;
         this.id = id;
-        ;
     }
 
     public long getCreationTimestamp() {
@@ -64,6 +65,15 @@ public class ChatRoom implements Serializable {
 
     public Iterator<User> userIterator() {
         return users.values().iterator();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        mAvailableChatsRef.child(id).child("name").setValue(name);
     }
 
     /**

@@ -21,24 +21,28 @@ import com.android.miki.quickly.R;
 public class GroupNameDialogFragment extends DialogFragment {
 
     public static final String TAG = GroupNameDialogFragment.class.getName();
-
+    private GroupNameDialogListener dialogListener;
+    private EditText editText;
+    private String editTextContent;
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Bundle args = this.getArguments();
+        dialogListener = (GroupNameDialogListener) args.getSerializable(GroupNameDialogListener.TAG);
+        editTextContent = args.getString(getString(R.string.dialog_text));
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         LayoutInflater inflater = getActivity().getLayoutInflater();
         builder.setView(inflater.inflate(R.layout.dialog_change_group_name, null));
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-
+                // Overwritten in onResume()
             }
         });
         builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-
+                // Overwritten in onResume()
             }
         });
         return builder.create();
@@ -52,15 +56,31 @@ public class GroupNameDialogFragment extends DialogFragment {
         okButton.setTextColor(ContextCompat.getColor(getContext(), R.color.LightBlue));
         Button cancelButton = ((AlertDialog)getDialog()).getButton(AlertDialog.BUTTON_NEGATIVE);
         cancelButton.setTextColor(ContextCompat.getColor(getContext(), R.color.LightBlue));
-        final EditText editText = (EditText) getDialog().findViewById(R.id.edittext_group_name);
+        editText = (EditText) getDialog().findViewById(R.id.edittext_group_name);
+        if (editTextContent != null) {
+            editText.setText(editTextContent);
+        }
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Bundle args = GroupNameDialogFragment.this.getArguments();
-                final GroupNameDialogListener infoInterface = (GroupNameDialogListener) args.getSerializable(GroupNameDialogListener.TAG);
-                infoInterface.groupNameChanged(editText.getText().toString());
+                dialogListener.groupNameChanged(editText.getText().toString());
+                dialogListener.dialogClosed();
                 dismiss();
             }
         });
+    }
+
+    protected String getText() {
+        return editText.getText().toString();
+    }
+
+
+
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
+        dialogListener.dialogClosed();
     }
 }
