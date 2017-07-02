@@ -9,6 +9,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,9 +20,9 @@ import java.util.Iterator;
 
 public class ChatRoom implements Serializable {
 
-    private transient FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
-    private transient DatabaseReference mAvailableChatsRef = mDatabase.getReference().child("availableChats");
-    private transient DatabaseReference mMessagesRef = mDatabase.getReference().child("messages");
+    private transient FirebaseDatabase mDatabase;// = FirebaseDatabase.getInstance();
+    private transient DatabaseReference mAvailableChatsRef;// = mDatabase.getReference().child("availableChats");
+    private transient DatabaseReference mMessagesRef;// = mDatabase.getReference().child("messages");
     private static final String TAG = "ChatRoom";
     private String id;
     private long creationTimestamp;
@@ -32,7 +33,9 @@ public class ChatRoom implements Serializable {
 
 
     public ChatRoom() {
-
+        mDatabase = FirebaseDatabase.getInstance();
+        mAvailableChatsRef = mDatabase.getReference().child("availableChats");
+        mMessagesRef = mDatabase.getReference().child("messages");
     }
 
     public ChatRoom(String id, long creationTimeStamp, HashMap<String, User> users, Message lastMessage) {
@@ -141,6 +144,16 @@ public class ChatRoom implements Serializable {
             }
         }
     }
+
+    private void readObject(java.io.ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+        mDatabase = FirebaseDatabase.getInstance();
+        mAvailableChatsRef = mDatabase.getReference().child("availableChats");
+        mMessagesRef = mDatabase.getReference().child("messages");
+    }
+
+
 
 
 }
