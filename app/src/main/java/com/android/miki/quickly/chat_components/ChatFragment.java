@@ -44,11 +44,13 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.app.Activity.RESULT_OK;
+
 /**
  * Created by mpokr on 5/25/2017.
  */
 
-public class ChatFragment extends Fragment {
+public class ChatFragment extends Fragment implements ChatRoomObserver {
 
 
     private Button mSendButton;
@@ -68,6 +70,7 @@ public class ChatFragment extends Fragment {
     private boolean isGifDrawerOpen;
     private static final String TAG = "ChatFragment";
     private static final int GIF_KEYBOARD_SHIFT = 500; // 500 pixels
+    public static int GROUP_INFO_REQUEST_CODE = 0;
 
 
     @Override
@@ -258,9 +261,19 @@ public class ChatFragment extends Fragment {
             case R.id.group_info:
                 Intent intent = new Intent(getContext(), GroupInfoActivity.class);
                 intent.putExtra(getString(R.string.chat_room), chatRoom);
-                startActivity(intent);
+                startActivityForResult(intent, GROUP_INFO_REQUEST_CODE);
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == GROUP_INFO_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                chatRoom = (ChatRoom) data.getSerializableExtra((getString(R.string.chat_room)));
+            }
         }
     }
 
@@ -294,5 +307,28 @@ public class ChatFragment extends Fragment {
         }
     }
 
+    @Override
+    public void numUsersChanged(int numUsers) {
 
+    }
+
+    @Override
+    public void userAdded(User user) {
+
+    }
+
+    @Override
+    public void userRemoved(User user) {
+
+    }
+
+    @Override
+    public void nameChanged(String name) {
+
+    }
+
+    @Override
+    public void messageAdded(Message message) {
+
+    }
 }

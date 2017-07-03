@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import com.android.miki.quickly.R;
-import com.android.miki.quickly.utilities.SimpleCallback;
+import com.android.miki.quickly.utilities.Callback;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.User;
 
@@ -37,7 +37,7 @@ public class ChatSelectionActivity extends AppCompatActivity {
         this.user = (User) getIntent().getSerializableExtra("user");
         chatRooms = new ArrayList<>();
         mChatFinder = new ChatFinder();
-        mChatFinder.findChatRoomCallback(new SimpleCallback<List<ChatRoom>>() {
+        mChatFinder.findChatRoomCallback(new Callback<List<ChatRoom>>() {
             @Override
             public void callback(List<ChatRoom> cbChatRooms) {
                 chatRooms = cbChatRooms;
@@ -54,15 +54,15 @@ public class ChatSelectionActivity extends AppCompatActivity {
                     @Override
                     public void onPageSelected(int position) {
                         ChatFragment fragment = (ChatFragment) mAdapter.instantiateItem(mViewPager, position);
-                        if (currentChatRoom == null) {
-                            currentChatRoom = chatRooms.get(position);
+                        if (currentChatRoom != null) { // Not the first chat room in session
+                            currentChatRoom.removeUser(user); // Remove user from chat room they just exited
+                            currentChatRoom.removeObserver(fragment);
                         }
-                        currentChatRoom.removeUser(user); // Remove user from chat room they just exited
                         currentChatRoom = chatRooms.get(position); // Set currentChatRoom to the chat room the user just entered
+                        currentChatRoom.addObserver(fragment);
                         currentChatRoom.addUser(user); // Add user to the chat room they just entered
                         actionBar.setTitle(getUserString(currentChatRoom));
                         fragment.scrollToBottom(); // Scroll to bottom (last message in chat)
-
                     }
 
                     @Override
@@ -96,4 +96,5 @@ public class ChatSelectionActivity extends AppCompatActivity {
 
         return userString;
     }
+
 }

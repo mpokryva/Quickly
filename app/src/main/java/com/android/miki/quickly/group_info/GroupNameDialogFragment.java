@@ -36,13 +36,13 @@ public class GroupNameDialogFragment extends DialogFragment {
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                // Overwritten in onResume()
+                // Overwritten in onStart()
             }
         });
         builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                // Overwritten in onResume()
+                // Just closes dialog
             }
         });
         return builder.create();

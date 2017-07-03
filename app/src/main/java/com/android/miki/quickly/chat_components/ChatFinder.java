@@ -3,7 +3,7 @@ package com.android.miki.quickly.chat_components;
 import android.support.annotation.NonNull;
 
 import com.android.miki.quickly.utilities.DataGenerator;
-import com.android.miki.quickly.utilities.SimpleCallback;
+import com.android.miki.quickly.utilities.Callback;
 import com.android.miki.quickly.models.ChatRoom;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -23,14 +23,15 @@ public class ChatFinder {
     private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     private DatabaseReference mAvailableChatsRef = mDatabase.getReference().child("availableChats");
     private DataGenerator dataGenerator = new DataGenerator();
+    private final int BATCH_SIZE = 10;
 
 
-
-    public void findChatRoomCallback(@NonNull final SimpleCallback<List<ChatRoom>> finishedCallback) {
+    public void findChatRoomCallback(@NonNull final Callback<List<ChatRoom>> finishedCallback) {
         //dataGenerator.deleteAllData();
         //dataGenerator.createTestChats(30);
-        mAvailableChatsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        mAvailableChatsRef.limitToFirst(BATCH_SIZE).addListenerForSingleValueEvent(new ValueEventListener() {
             List<ChatRoom> chatRooms = new ArrayList<ChatRoom>();
+
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot chat : dataSnapshot.getChildren()) {
@@ -45,12 +46,8 @@ public class ChatFinder {
 
             }
         });
+
     }
-
-
-
-
-
 
 
 }

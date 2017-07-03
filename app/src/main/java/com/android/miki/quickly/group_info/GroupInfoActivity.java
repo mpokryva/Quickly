@@ -1,5 +1,6 @@
 package com.android.miki.quickly.group_info;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -7,9 +8,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.android.miki.quickly.R;
+import com.android.miki.quickly.chat_components.ChatFragment;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.utilities.VerticalSpaceItemDecoration;
 
@@ -52,7 +53,8 @@ public class GroupInfoActivity extends AppCompatActivity {
         dialogListener = new GroupNameDialogListener() {
             @Override
             public void groupNameChanged(String newGroupName) {
-                chatRoom.setName(newGroupName);
+                chatRoom.changeName(newGroupName);
+
             }
 
             @Override
@@ -114,4 +116,11 @@ public class GroupInfoActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        Intent result = new Intent();
+        result.putExtra(getString(R.string.chat_room), chatRoom);
+        setResult(RESULT_OK, result);
+        super.onBackPressed();
+    }
 }

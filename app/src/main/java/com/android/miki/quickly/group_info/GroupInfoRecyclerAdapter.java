@@ -10,7 +10,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.android.miki.quickly.R;
+import com.android.miki.quickly.chat_components.ChatRoomObserver;
 import com.android.miki.quickly.models.ChatRoom;
+import com.android.miki.quickly.models.Message;
 import com.android.miki.quickly.models.User;
 
 import java.util.Iterator;
@@ -19,7 +21,7 @@ import java.util.Iterator;
  * Created by mpokr on 6/17/2017.
  */
 
-public class GroupInfoRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class GroupInfoRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements ChatRoomObserver {
 
     private static final String TAG = "GroupInfoRecyclerAdapter";
     private static final int GROUP_NAME_POSITION = 0;
@@ -31,6 +33,7 @@ public class GroupInfoRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.
 
     public GroupInfoRecyclerAdapter(ChatRoom chatRoom, GroupNameDialogListener dialogListener) {
         this.chatRoom = chatRoom;
+        chatRoom.addObserver(this);
         this.dialogListener = dialogListener;
     }
 
@@ -69,7 +72,7 @@ public class GroupInfoRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (position == GROUP_NAME_POSITION) {
             GroupNameHolder groupNameHolder = (GroupNameHolder) holder;
-            groupNameHolder.groupName.setText("Group name filler");
+            groupNameHolder.groupName.setText(chatRoom.getName());
         }
     }
 
@@ -106,6 +109,31 @@ public class GroupInfoRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.
         protected UserNamesHolder(final View itemView) {
             super(itemView);
         }
+
+    }
+
+    @Override
+    public void numUsersChanged(int numUsers) {
+
+    }
+
+    @Override
+    public void userAdded(User user) {
+        // Implement
+    }
+
+    @Override
+    public void userRemoved(User user) {
+        // Implement
+    }
+
+    @Override
+    public void nameChanged(String name) {
+        notifyItemChanged(GROUP_NAME_POSITION);
+    }
+
+    @Override
+    public void messageAdded(Message message) {
 
     }
 }
