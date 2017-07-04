@@ -158,6 +158,7 @@ public class ChatRoom implements Serializable {
      * Adds an observer to observe this chat room. If the observer
      * is a fragment/activity/similar Android class, it must remove itself from the observer list
      * in its onDestroy() method.
+     *
      * @param observer
      */
     public void addObserver(ChatRoomObserver observer) {
