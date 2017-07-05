@@ -31,7 +31,7 @@ public class ChatRoomFinder {
     }
 
     /**
-     * Retrieves the nextRoom batch of chat rooms.
+     * Retrieves the getRoom batch of chat rooms.
      *
      * @param voidCallback Callback the client should use to do something with the chat rooms returned.
      */
@@ -39,7 +39,7 @@ public class ChatRoomFinder {
         //dataGenerator.deleteAllData();
         //dataGenerator.createTestChats(30);
         Query query = (startingPoint == null) ? mAvailableChatsRef : mAvailableChatsRef.startAt(startingPoint.getId());
-        // 1 is added to BATCH_SIZE so we can save the last as the marker for nextRoom time.
+        // 1 is added to BATCH_SIZE so we can save the last as the marker for getRoom time.
         query.limitToFirst(BATCH_SIZE + 1).addListenerForSingleValueEvent(new ValueEventListener() {
             List<ChatRoom> chatRooms = new ArrayList<ChatRoom>();
 
@@ -50,7 +50,7 @@ public class ChatRoomFinder {
                     chatRooms.add(chatRoom);
                 }
                 if (chatRooms.size() > 0) {
-                    startingPoint = chatRooms.remove(chatRooms.size() - 1); // Remove last room and set as starting point for nextRoom batch.
+                    startingPoint = chatRooms.remove(chatRooms.size() - 1); // Remove last room and set as starting point for getRoom batch.
                 }
                 voidCallback.done(chatRooms);
             }

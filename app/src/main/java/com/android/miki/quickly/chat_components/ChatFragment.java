@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -29,12 +30,15 @@ import android.widget.Toast;
 
 import com.android.miki.quickly.R;
 import com.android.miki.quickly.group_info.GroupInfoActivity;
+import com.android.miki.quickly.utilities.Callback;
+import com.android.miki.quickly.utilities.ChatRoomManager;
 import com.android.miki.quickly.utilities.VerticalSpaceItemDecoration;
 import com.android.miki.quickly.gif_drawer.GifDrawer;
 import com.android.miki.quickly.gif_drawer.GifDrawerAction;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.Message;
 import com.android.miki.quickly.models.User;
+import com.android.miki.quickly.utilities.VoidCallback;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -51,7 +55,6 @@ import static android.app.Activity.RESULT_OK;
  */
 
 public class ChatFragment extends Fragment implements ChatRoomObserver {
-
 
     private Button mSendButton;
     private EditText mMessageEditText;
@@ -74,6 +77,18 @@ public class ChatFragment extends Fragment implements ChatRoomObserver {
 
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        ChatRoomManager chatRoomManager = ChatRoomManager.getInstance();
+        chatRoomManager.getRoom(new VoidCallback<ChatRoom>() {
+            @Override
+            public void done(ChatRoom room) {
+                chatRoom = room;
+            }
+        });
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
@@ -82,7 +97,7 @@ public class ChatFragment extends Fragment implements ChatRoomObserver {
         mMessageEditText = (EditText) view.findViewById(R.id.message_box);
         gifButton = (ImageButton) view.findViewById(R.id.gif_button);
         mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.gif_recycler_view);
-        chatRoom = (ChatRoom) getArguments().getSerializable(getString(R.string.chat_room));
+        //chatRoom = (ChatRoom) getArguments().getSerializable(getString(R.string.chat_room));
         user = (User) getArguments().getSerializable("user");
         messages = new ArrayList<>();
         mGifDrawer = new GifDrawer(view, chatRoom, user, new GifDrawerAction() {
@@ -238,6 +253,7 @@ public class ChatFragment extends Fragment implements ChatRoomObserver {
 
         return view;
     }
+
 
     /**
      * Scrolls to the most recent message.

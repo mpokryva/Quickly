@@ -12,39 +12,61 @@ public class ChatRoomManager {
 
     private ChatRoomStorage storage;
     private ChatRoomFinder finder;
+    private int itemsInCache;
     private int currentPosition;
+    private int retrievalPosition;
+    private static ChatRoomManager manager;
 
-    public ChatRoomManager() {
+
+
+    private ChatRoomManager() {
         storage = new ChatRoomStorage();
         finder = new ChatRoomFinder();
+        itemsInCache = finder.getBatchSize(); // For now, we are only caching objects retrieved in a single batch.
         currentPosition = 0;
+        retrievalPosition = 0;
     }
 
-    public void nextRoom(int position, final VoidCallback<ChatRoom> voidCallback) {
-        final int storagePosition = position % finder.getBatchSize();
+    public void getRoom(final VoidCallback<ChatRoom> callBack) {
+        final int storagePosition = retrievalPosition % finder.getBatchSize();
         ChatRoom chatRoom = storage.getRoom(storagePosition);
         if (chatRoom != null) {
-            voidCallback.done(chatRoom); // Chat room is in current batch.
+            callBack.done(chatRoom); // Chat room is in current batch.
         } else {
             // Need to pull chat room from Firebase. Either ID is cached, or
             // new batch needs to be retrieved altogether.
-            String id = storage.getRoomId(position); // Check if ID is cached.
+            String id = storage.getRoomId(retrievalPosition); // Check if ID is cached.
             if (id == null) { // ID not cached. Need to retrieve new batch.
                 finder.getChatRoomBatch(new VoidCallback<List<ChatRoom>>() {
                     @Override
                     public void done(List<ChatRoom> rooms) {
                         storage.cacheBatch(rooms);
-                        voidCallback.done(storage.getRoom(storagePosition));
+                        callBack.done(storage.getRoom(storagePosition));
                     }
                 });
             } else { // ID is cached.
                 finder.getChatRoom(id, new VoidCallback<ChatRoom>() {
                     @Override
                     public void done(ChatRoom room) {
-                        voidCallback.done(room);
+                        callBack.done(room);
                     }
                 });
             }
         }
+    }
+
+    public void setPosition(int position) {
+        retrievalPosition = position;
+    }
+
+    public int getItemsInCache() {
+        return itemsInCache;
+    }
+
+    public static ChatRoomManager getInstance() {
+        if (manager == null) {
+            manager = new ChatRoomManager();
+        }
+        return manager;
     }
 }
