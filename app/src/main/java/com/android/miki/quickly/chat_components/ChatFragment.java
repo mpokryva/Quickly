@@ -5,8 +5,8 @@ import android.content.Intent;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -30,15 +30,12 @@ import android.widget.Toast;
 
 import com.android.miki.quickly.R;
 import com.android.miki.quickly.group_info.GroupInfoActivity;
-import com.android.miki.quickly.utilities.Callback;
-import com.android.miki.quickly.utilities.ChatRoomManager;
 import com.android.miki.quickly.utilities.VerticalSpaceItemDecoration;
 import com.android.miki.quickly.gif_drawer.GifDrawer;
 import com.android.miki.quickly.gif_drawer.GifDrawerAction;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.Message;
 import com.android.miki.quickly.models.User;
-import com.android.miki.quickly.utilities.VoidCallback;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -74,40 +71,23 @@ public class ChatFragment extends Fragment implements ChatRoomObserver {
     private static final String TAG = "ChatFragment";
     private static final int GIF_KEYBOARD_SHIFT = 500; // 500 pixels
     public static int GROUP_INFO_REQUEST_CODE = 0;
-
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ChatRoomManager chatRoomManager = ChatRoomManager.getInstance();
-        chatRoomManager.getRoom(new VoidCallback<ChatRoom>() {
-            @Override
-            public void done(ChatRoom room) {
-                chatRoom = room;
-            }
-        });
-    }
+    private ContentLoadingProgressBar progressWheel;
+    private boolean messagesLoaded;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
         setHasOptionsMenu(true);
+        progressWheel = (ContentLoadingProgressBar) view.findViewById(R.id.progress_wheel);
         mSendButton = (Button) view.findViewById(R.id.send_button);
         mMessageEditText = (EditText) view.findViewById(R.id.message_box);
         gifButton = (ImageButton) view.findViewById(R.id.gif_button);
-        mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.gif_recycler_view);
-        //chatRoom = (ChatRoom) getArguments().getSerializable(getString(R.string.chat_room));
-        user = (User) getArguments().getSerializable("user");
+        mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.messages_recycler_view);
+//        chatRoom = (ChatRoom) getArguments().getSerializable(getString(R.string.chat_room));
+        // TODO: Handle null chatRoom?
+//        user = (User) getArguments().getSerializable("user");
         messages = new ArrayList<>();
-        mGifDrawer = new GifDrawer(view, chatRoom, user, new GifDrawerAction() {
-            @Override
-            public void gifSent(Message message) {
-                int lastIndex = mAdapter.insertMessage(message);
-                mAdapter.notifyItemInserted(lastIndex);
-                closeGifDrawer();
-            }
-        });
         gifButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -116,41 +96,6 @@ public class ChatFragment extends Fragment implements ChatRoomObserver {
                 } else {
                     openGifDrawer();
                 }
-            }
-        });
-
-
-        // Retrieve messages from Firebase.
-        mMessagesRef.child(chatRoom.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot messageList) {
-                for (DataSnapshot child : messageList.getChildren()) {
-                    Message message = child.getValue(Message.class);
-                    messages.add(message);
-                }
-
-                // Initialize message view (RecyclerView), after messages have been retrieved.
-                mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.messages_recycler_view);
-                mLayoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false);
-                mMessagesRecyclerView.setLayoutManager(mLayoutManager);
-                mAdapter = new ChatRecyclerAdapter(chatRoom, messages, user, (ChatSelectionActivity) getActivity());
-                mMessagesRecyclerView.setAdapter(mAdapter);
-                mMessagesRecyclerView.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View view) {
-                        return false;
-                    }
-                });
-                // Set spaces between messages
-                VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(20); // 20dp
-                mMessagesRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
-                scrollToBottom();
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
             }
         });
 
@@ -230,6 +175,57 @@ public class ChatFragment extends Fragment implements ChatRoomObserver {
             }
         });
 
+        return view;
+    }
+
+    private void initComponents() {
+        final View view =  ChatFragment.this.getView();
+
+        mGifDrawer = new GifDrawer(view, chatRoom, user, new GifDrawerAction() {
+            @Override
+            public void gifSent(Message message) {
+                int lastIndex = mAdapter.insertMessage(message);
+                mAdapter.notifyItemInserted(lastIndex);
+                closeGifDrawer();
+            }
+        });
+
+        // Retrieve messages from Firebase.
+        messages.clear();
+        mMessagesRef.child(chatRoom.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot messageList) {
+                for (DataSnapshot child : messageList.getChildren()) {
+                    Message message = child.getValue(Message.class);
+                    messages.add(message);
+                }
+                if (view == null) {
+                    Log.d(TAG, "View in ChatFragment is null");
+                    return;
+                }
+                // Initialize message view (RecyclerView), after messages have been retrieved.
+                mLayoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false);
+                mMessagesRecyclerView.setLayoutManager(mLayoutManager);
+                mAdapter = new ChatRecyclerAdapter(chatRoom, messages, user, (ChatSelectionActivity) getActivity());
+                mMessagesRecyclerView.setAdapter(mAdapter);
+                mMessagesRecyclerView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        return false;
+                    }
+                });
+                // Set spaces between messages
+                VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(20); // 20dp
+                mMessagesRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
+                scrollToBottom();
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -250,8 +246,6 @@ public class ChatFragment extends Fragment implements ChatRoomObserver {
                 }
             }
         });
-
-        return view;
     }
 
 
@@ -321,6 +315,26 @@ public class ChatFragment extends Fragment implements ChatRoomObserver {
         } else {
             mGifDrawer.translateTextToGif(query);
         }
+    }
+
+    public void setLoading() {
+        progressWheel.setVisibility(View.VISIBLE);
+        mMessagesRecyclerView.setVisibility(View.GONE);
+    }
+
+    public void setSuccess(ChatRoom chatRoom, User user) {
+        this.chatRoom = chatRoom;
+        this.user = user;
+        progressWheel.setVisibility(View.GONE);
+        mMessagesRecyclerView.setVisibility(View.VISIBLE);
+//        if (!messagesLoaded) {
+            initComponents();
+//        }
+        messagesLoaded = true;
+    }
+
+    public void setError() {
+
     }
 
     @Override

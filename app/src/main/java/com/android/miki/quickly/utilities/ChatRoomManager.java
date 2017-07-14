@@ -1,6 +1,8 @@
 package com.android.miki.quickly.utilities;
 
+import com.android.miki.quickly.core.StatusListener;
 import com.android.miki.quickly.models.ChatRoom;
+import com.google.firebase.database.DatabaseError;
 
 import java.util.List;
 
@@ -18,7 +20,6 @@ public class ChatRoomManager {
     private static ChatRoomManager manager;
 
 
-
     private ChatRoomManager() {
         storage = new ChatRoomStorage();
         finder = new ChatRoomFinder();
@@ -27,36 +28,61 @@ public class ChatRoomManager {
         retrievalPosition = 0;
     }
 
-    public void getRoom(final VoidCallback<ChatRoom> callBack) {
-        final int storagePosition = retrievalPosition % finder.getBatchSize();
-        ChatRoom chatRoom = storage.getRoom(storagePosition);
+    public void getRoom(int position, final FirebaseListener<ChatRoom> callBack) {
+        callBack.onLoading();
+        retrievalPosition = position % finder.getBatchSize();
+        ChatRoom chatRoom = storage.getRoom(retrievalPosition);
         if (chatRoom != null) {
-            callBack.done(chatRoom); // Chat room is in current batch.
+            callBack.onSuccess(chatRoom); // Chat room is in current batch.
         } else {
             // Need to pull chat room from Firebase. Either ID is cached, or
             // new batch needs to be retrieved altogether.
-            String id = storage.getRoomId(retrievalPosition); // Check if ID is cached.
+            String id = storage.getRoomId(position); // Check if ID is cached.
             if (id == null) { // ID not cached. Need to retrieve new batch.
-                finder.getChatRoomBatch(new VoidCallback<List<ChatRoom>>() {
-                    @Override
-                    public void done(List<ChatRoom> rooms) {
-                        storage.cacheBatch(rooms);
-                        callBack.done(storage.getRoom(storagePosition));
-                    }
-                });
+                finder.getChatRoomBatch(batchListener(callBack));
             } else { // ID is cached.
-                finder.getChatRoom(id, new VoidCallback<ChatRoom>() {
-                    @Override
-                    public void done(ChatRoom room) {
-                        callBack.done(room);
-                    }
-                });
+                finder.getChatRoom(id, singleRoomListener(callBack));
             }
         }
     }
 
-    public void setPosition(int position) {
-        retrievalPosition = position;
+    private FirebaseListener<List<ChatRoom>> batchListener(final FirebaseListener<ChatRoom> listener) {
+        return new FirebaseListener<List<ChatRoom>>() {
+            @Override
+            public void onLoading() {
+                listener.onLoading();
+            }
+
+            @Override
+            public void onSuccess(List<ChatRoom> rooms) {
+                storage.cacheBatch(rooms);
+                listener.onSuccess(storage.getRoom(retrievalPosition));
+            }
+
+            @Override
+            public void onError(DatabaseError error) {
+                listener.onError(error);
+            }
+        };
+    }
+
+    private FirebaseListener<ChatRoom> singleRoomListener(final FirebaseListener<ChatRoom> listener) {
+        return new FirebaseListener<ChatRoom>() {
+            @Override
+            public void onLoading() {
+                listener.onLoading();
+            }
+
+            @Override
+            public void onSuccess(ChatRoom room) {
+                listener.onSuccess(room);
+            }
+
+            @Override
+            public void onError(DatabaseError error) {
+                listener.onError(error);
+            }
+        };
     }
 
     public int getItemsInCache() {
@@ -69,4 +95,5 @@ public class ChatRoomManager {
         }
         return manager;
     }
+
 }

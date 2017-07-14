@@ -3,16 +3,16 @@ package com.android.miki.quickly.chat_components;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import com.android.miki.quickly.R;
-import com.android.miki.quickly.utilities.Callback;
+import com.android.miki.quickly.core.FirebaseActivity;
+import com.android.miki.quickly.core.Status;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.User;
-import com.android.miki.quickly.utilities.ChatRoomFinder;
 import com.android.miki.quickly.utilities.ChatRoomManager;
-import com.android.miki.quickly.utilities.VoidCallback;
+import com.android.miki.quickly.utilities.FirebaseListener;
+import com.google.firebase.database.DatabaseError;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,12 +22,12 @@ import java.util.List;
  * Created by mpokr on 5/22/2017.
  */
 
-public class ChatSelectionActivity extends AppCompatActivity {
+public class ChatSelectionActivity extends FirebaseActivity {
 
     private ViewPager mViewPager;
     private ChatSelectionPagerAdapter mAdapter;
     private List<ChatRoom> chatRooms;
-
+    private ChatRoomManager roomManager;
     private User user;
     private ChatRoom currentChatRoom;
 
@@ -40,9 +40,7 @@ public class ChatSelectionActivity extends AppCompatActivity {
         setSupportActionBar(actionBar);
         this.user = (User) getIntent().getSerializableExtra("user");
         chatRooms = new ArrayList<>();
-
-
-        ChatSelectionActivity.this.chatRooms = chatRooms;
+        roomManager = ChatRoomManager.getInstance();
 
         mViewPager = (ViewPager) findViewById(R.id.chat_selection_pager);
         mAdapter = new ChatSelectionPagerAdapter(getSupportFragmentManager(), user);
@@ -55,17 +53,9 @@ public class ChatSelectionActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onPageSelected(int position) {
-                ChatFragment fragment = mAdapter.instantiateItem(mViewPager, position);
-                if (currentChatRoom != null) { // Not the first chat room in session.
-                    currentChatRoom.removeUser(user); // Remove user from chat room they just exited.
-                    currentChatRoom.removeObserver(fragment);
-                }
-                currentChatRoom = ChatSelectionActivity.this.chatRooms.get(position); // Set currentChatRoom to the chat room the user just entered.
-                currentChatRoom.addObserver(fragment);
-                currentChatRoom.addUser(user); // Add user to the chat room they just entered.
-                actionBar.setTitle(getUserString(currentChatRoom));
-                fragment.scrollToBottom(); // Scroll to bottom (last message in chat).
+            public void onPageSelected(final int position) {
+                mAdapter.loadRoom(mViewPager, position);
+                mAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -95,5 +85,4 @@ public class ChatSelectionActivity extends AppCompatActivity {
 
         return userString;
     }
-
 }

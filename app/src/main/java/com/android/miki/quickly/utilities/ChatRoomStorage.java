@@ -53,6 +53,7 @@ public class ChatRoomStorage {
         }
     }
 
+
     public String getRoomId(int position) {
         if (position < positionToIdList.size()) {
             return positionToIdList.get(position);
