@@ -16,6 +16,7 @@
             android:id="@+id/message_text"
             style="@style/MessageText">
         </TextView>
+       
 
 
     </LinearLayout>

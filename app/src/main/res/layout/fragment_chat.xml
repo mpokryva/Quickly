@@ -2,88 +2,98 @@
 <RelativeLayout
     android:id="@+id/fragment_chat"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/ChatActivityBackground">
-    <android.support.v4.widget.ContentLoadingProgressBar
-        android:id="@+id/progress_wheel"
-        android:visibility="visible"
-        android:indeterminate="true"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_centerInParent="true"/>
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/messages_recycler_view"
+    <include layout="@layout/loading_view"
+        android:id="@+id/loading_view"/>
+    <include layout="@layout/error_view"
+        android:id="@+id/error_view"/>
+
+    <RelativeLayout
+        android:id="@+id/content"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="?attr/actionBarSize">
-        </android.support.v7.widget.RecyclerView>
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin">
 
-    </FrameLayout>
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/messages_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="?attr/actionBarSize">
+            </android.support.v7.widget.RecyclerView>
 
-<LinearLayout
-    android:id="@+id/message_actions"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:layout_alignParentBottom="true"
-    android:background="@android:color/white">
-    <View
-        style="@style/HorizontalDivider">
-    </View>
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/gif_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:visibility="gone">
-    </android.support.v7.widget.RecyclerView>
-    <RelativeLayout
-        android:id="@+id/message_box_layout"
-        android:layout_width="match_parent"
-        android:layout_height="44dp"
-        android:orientation="horizontal">
-        <ImageButton
-            android:id="@+id/gif_button"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:src="@mipmap/gif_icon"
-            android:background="@android:color/transparent"
-            android:layout_centerVertical="true"/>
-        <EditText
-            android:id="@+id/message_box"
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/message_actions"
             android:layout_width="match_parent"
-            android:padding="5dp"
-            android:background="@android:color/transparent"
-            android:layout_height="match_parent"
-            android:hint="@string/message_box_hint"
-            android:inputType="textMultiLine"
-            android:textSize="16sp"
-            android:layout_toEndOf="@id/gif_button"
-            android:layout_toStartOf="@+id/send_button"
+            android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentTop="true"/>
-        <Button
-            android:id="@+id/send_button"
-            android:gravity="center_vertical"
-            android:layout_margin="8dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:backgroundTint="@color/LightBlue"
-            android:background="@drawable/ic_send_black_24dp"/>
+            android:background="@android:color/white"
+            android:orientation="vertical">
+
+            <View
+                style="@style/HorizontalDivider">
+            </View>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/gif_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:visibility="gone">
+            </android.support.v7.widget.RecyclerView>
+
+            <RelativeLayout
+                android:id="@+id/message_box_layout"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/gif_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_centerVertical="true"
+                    android:background="@android:color/transparent"
+                    android:src="@mipmap/gif_icon"/>
+
+                <EditText
+                    android:id="@+id/message_box"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_toEndOf="@id/gif_button"
+                    android:layout_toStartOf="@+id/send_button"
+                    android:background="@android:color/transparent"
+                    android:hint="@string/message_box_hint"
+                    android:inputType="textMultiLine"
+                    android:padding="5dp"
+                    android:textSize="16sp"/>
+
+                <Button
+                    android:id="@+id/send_button"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/ic_send_black_24dp"
+                    android:backgroundTint="@color/LightBlue"
+                    android:gravity="center_vertical"/>
+            </RelativeLayout>
+        </LinearLayout>
+
     </RelativeLayout>
-</LinearLayout>
-
-
 
 
 </RelativeLayout>

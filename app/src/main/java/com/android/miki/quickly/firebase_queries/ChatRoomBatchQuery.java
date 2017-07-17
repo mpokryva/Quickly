@@ -26,9 +26,9 @@ public class ChatRoomBatchQuery extends FirebaseQuery implements Callable<List<C
     private ChatRoom startingPointRoom;
     private int batchSize;
 
-    public ChatRoomBatchQuery(ChatRoom startingPointRoom, int batchSize) {
+    public ChatRoomBatchQuery(int batchSize) {
         super((FirebaseDatabase.getInstance().getReference().child("availableChats")));
-        this.startingPointRoom = startingPointRoom;
+        this.startingPointRoom = null;
         this.batchSize = batchSize;
     }
 

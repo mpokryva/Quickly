@@ -17,7 +17,7 @@ import com.google.firebase.database.ValueEventListener;
  * Created by Miki on 7/14/2017.
  */
 
-public class ChatRoomQuery extends FirebaseQuery implements Callable {
+public class ChatRoomQuery extends FirebaseQuery implements Callable<ChatRoom> {
 
     private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
 
@@ -25,19 +25,17 @@ public class ChatRoomQuery extends FirebaseQuery implements Callable {
      * The ID of the chat room to retrieve.
      */
     private String chatId;
-    private FirebaseListener<ChatRoom> listener;
 
-    public ChatRoomQuery(String chatId, FirebaseListener<ChatRoom> listener) {
+    public ChatRoomQuery(String chatId) {
         super((FirebaseDatabase.getInstance().getReference().child("availableChats")));
         this.chatId = chatId;
-        this.listener = listener;
     }
 
     /**
      * Retrieves a single chat room by ID.
      */
     @Override
-    public void call() {
+    public void call(final FirebaseListener<ChatRoom> listener) {
         DatabaseReference chatRoomRef = getBaseRef().child(chatId);
         chatRoomRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

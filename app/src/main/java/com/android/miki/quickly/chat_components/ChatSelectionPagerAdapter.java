@@ -1,19 +1,18 @@
 package com.android.miki.quickly.chat_components;
 
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.ViewGroup;
 
-import com.android.miki.quickly.core.ErrorFragment;
-import com.android.miki.quickly.core.LoadingFragment;
 import com.android.miki.quickly.core.Status;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.User;
 import com.android.miki.quickly.utilities.ChatRoomManager;
+import com.android.miki.quickly.utilities.FirebaseError;
 import com.android.miki.quickly.utilities.FirebaseListener;
-import com.google.firebase.database.DatabaseError;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -49,7 +48,9 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public Fragment getItem(int position) {
         Fragment fragment = new ChatFragment();
-
+        Bundle args = new Bundle();
+        args.putSerializable("user", user);
+        fragment.setArguments(args);
         return fragment;
 
     }
@@ -61,14 +62,14 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter {
                 status = Status.LOADING;
                 int currentPosition = container.getCurrentItem();
                 ChatFragment fragment = (ChatFragment) instantiateItem(container, position);
-                fragment.setLoading();
+                fragment.onLoading();
             }
 
             @Override
-            public void onError(DatabaseError error) {
+            public void onError(FirebaseError error) {
                 status = Status.ERROR;
                 ChatFragment fragment = (ChatFragment) instantiateItem(container, position);
-                fragment.setError();
+                fragment.onError(error);
             }
 
             @Override
@@ -76,7 +77,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter {
                 status = Status.SUCCESS;
                 ChatSelectionPagerAdapter.this.chatRoom = chatRoom;
                 ChatFragment fragment = (ChatFragment) instantiateItem(container, position);
-                fragment.setSuccess(chatRoom, user);
+                fragment.onSuccess(chatRoom);
 
                 if (currentChatRoom != null) { // Not the first chat room in session.
                     currentChatRoom.removeUser(user); // Remove user from chat room they just exited.
@@ -108,16 +109,6 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public int getCount() {
         return chatRoomManager.getItemsInCache();
-    }
-
-    private void clearFragments(ViewGroup container) {
-        for (Integer position : positionToTypeMap.keySet()) {
-            Status type = positionToTypeMap.get(position);
-            Object fragment = instantiateItem(container, position);
-            if (fragment instanceof LoadingFragment || fragment instanceof ErrorFragment) {
-                destroyItem(container, position, fragment);
-            }
-        }
     }
 
     @Override

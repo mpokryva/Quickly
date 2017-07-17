@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+
+    <!--&lt;!&ndash;Loading view&ndash;&gt;-->
+    <!--<RelativeLayout-->
+        <!--android:id="@+id/loading_view"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:visibility="gone">-->
+        <!--&lt;!&ndash;Progress wheel&ndash;&gt;-->
+        <!--<android.support.v4.widget.ContentLoadingProgressBar-->
+            <!--android:id="@+id/progress_wheel"-->
+            <!--android:layout_width="50dp"-->
+            <!--android:layout_height="50dp"-->
+            <!--android:layout_centerInParent="true"-->
+            <!--android:indeterminate="true"-->
+            <!--android:visibility="visible"/>-->
+    <!--</RelativeLayout>-->
+
+    <!--&lt;!&ndash;Error view&ndash;&gt;-->
+    <!--<RelativeLayout-->
+        <!--android:id="@+id/error_view"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:visibility="visible">-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/error_message"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_centerHorizontal="true"-->
+            <!--android:layout_marginTop="100dp"-->
+            <!--android:text="HELLO"-->
+            <!--android:textSize="24sp"/>-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/error_details"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_below="@id/error_message"-->
+            <!--android:layout_centerHorizontal="true"-->
+            <!--android:layout_marginTop="50dp"-->
+            <!--android:textSize="18sp"/>-->
+    <!--</RelativeLayout>-->
+
+
+</RelativeLayout>

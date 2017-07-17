@@ -21,6 +21,14 @@ public class FirebaseError {
         this.details = details;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+
     public static FirebaseError noFirebaseConnectionError() {
         String message = "There was a problem connecting to the server.";
         String details = "Please verify that you have a working Internet connection.";

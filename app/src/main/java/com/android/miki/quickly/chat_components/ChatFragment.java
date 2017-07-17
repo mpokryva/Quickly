@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -26,10 +25,13 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.miki.quickly.R;
+import com.android.miki.quickly.core.FirebaseFragment;
 import com.android.miki.quickly.group_info.GroupInfoActivity;
+import com.android.miki.quickly.utilities.FirebaseError;
 import com.android.miki.quickly.utilities.VerticalSpaceItemDecoration;
 import com.android.miki.quickly.gif_drawer.GifDrawer;
 import com.android.miki.quickly.gif_drawer.GifDrawerAction;
@@ -42,6 +44,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +55,7 @@ import static android.app.Activity.RESULT_OK;
  * Created by mpokr on 5/25/2017.
  */
 
-public class ChatFragment extends Fragment implements ChatRoomObserver {
+public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoomObserver {
 
     private Button mSendButton;
     private EditText mMessageEditText;
@@ -72,21 +76,26 @@ public class ChatFragment extends Fragment implements ChatRoomObserver {
     private static final int GIF_KEYBOARD_SHIFT = 500; // 500 pixels
     public static int GROUP_INFO_REQUEST_CODE = 0;
     private ContentLoadingProgressBar progressWheel;
-    private boolean messagesLoaded;
+    private View content;
+    private View loadingView;
+    private View errorView;
+    private TextView errorMessage;
+    private TextView errorDetais;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
+        loadingView = view.findViewById(R.id.loading_view);
+        errorView = view.findViewById(R.id.error_view);
         setHasOptionsMenu(true);
-        progressWheel = (ContentLoadingProgressBar) view.findViewById(R.id.progress_wheel);
+        content = view.findViewById(R.id.content);
         mSendButton = (Button) view.findViewById(R.id.send_button);
         mMessageEditText = (EditText) view.findViewById(R.id.message_box);
         gifButton = (ImageButton) view.findViewById(R.id.gif_button);
         mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.messages_recycler_view);
-//        chatRoom = (ChatRoom) getArguments().getSerializable(getString(R.string.chat_room));
         // TODO: Handle null chatRoom?
-//        user = (User) getArguments().getSerializable("user");
+        user = (User) getArguments().getSerializable("user");
         messages = new ArrayList<>();
         gifButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -179,7 +188,7 @@ public class ChatFragment extends Fragment implements ChatRoomObserver {
     }
 
     private void initComponents() {
-        final View view =  ChatFragment.this.getView();
+        final View view = ChatFragment.this.getView();
 
         mGifDrawer = new GifDrawer(view, chatRoom, user, new GifDrawerAction() {
             @Override
@@ -217,6 +226,7 @@ public class ChatFragment extends Fragment implements ChatRoomObserver {
                 // Set spaces between messages
                 VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(20); // 20dp
                 mMessagesRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
+                content.setVisibility(View.VISIBLE);
                 scrollToBottom();
 
             }
@@ -317,24 +327,38 @@ public class ChatFragment extends Fragment implements ChatRoomObserver {
         }
     }
 
-    public void setLoading() {
-        progressWheel.setVisibility(View.VISIBLE);
-        mMessagesRecyclerView.setVisibility(View.GONE);
-    }
 
-    public void setSuccess(ChatRoom chatRoom, User user) {
+    @Override
+    public void onSuccess(ChatRoom chatRoom) {
+        super.onSuccess(chatRoom);
         this.chatRoom = chatRoom;
-        this.user = user;
-        progressWheel.setVisibility(View.GONE);
-        mMessagesRecyclerView.setVisibility(View.VISIBLE);
-//        if (!messagesLoaded) {
-            initComponents();
-//        }
-        messagesLoaded = true;
+        initComponents();
     }
 
-    public void setError() {
+    @Override
+    public void onLoading() {
+        content.setVisibility(View.GONE);
+        errorView.setVisibility(View.GONE);
+        loadingView.setVisibility(View.VISIBLE);
+    }
 
+    @Override
+    public void onError(FirebaseError error) {
+        content.setVisibility(View.GONE);
+        loadingView.setVisibility(View.GONE);
+        errorView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void showMainContent() {
+        loadingView.setVisibility(View.GONE);
+        errorView.setVisibility(View.GONE);
+        content.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void hideMainLayout() {
+        content.setVisibility(View.GONE);
     }
 
     @Override

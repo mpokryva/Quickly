@@ -60,7 +60,7 @@ public class ChatRoomManager {
             }
 
             @Override
-            public void onError(DatabaseError error) {
+            public void onError(FirebaseError error) {
                 listener.onError(error);
             }
         };
@@ -79,7 +79,7 @@ public class ChatRoomManager {
             }
 
             @Override
-            public void onError(DatabaseError error) {
+            public void onError(FirebaseError error) {
                 listener.onError(error);
             }
         };

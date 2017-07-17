@@ -8,6 +8,9 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -29,10 +32,12 @@ import java.util.List;
 import com.android.miki.quickly.R;
 import com.android.miki.quickly.chat_components.ChatSelectionActivity;
 import com.android.miki.quickly.models.ChatRoom;
+import com.android.miki.quickly.models.Gif;
 import com.android.miki.quickly.models.Message;
 import com.android.miki.quickly.models.User;
 import com.android.miki.quickly.utilities.ColorGenerator;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 /**
  * Created by mpokr on 5/22/2017.
@@ -150,6 +155,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 break;
             case INCOMING_GIF:
                 vh = new IncomingGifHolder(v, mActivity);
+                break;
             default:
                 vh = new OutgoingTextHolder(v, mActivity);
                 Log.e(TAG, "Unknown view holder type instantiated");
@@ -190,9 +196,12 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 outgoingGifHolder.deselect();
             }
             ImageView imageView = outgoingGifHolder.gif;
-            imageView.setMinimumWidth(message.getGif().getWidth());
-            imageView.setMinimumHeight(message.getGif().getHeight());
-            Glide.with(imageView.getContext()).load(message.getGif().getUrl()).into(imageView);
+//            imageView.setMinimumWidth(message.getGif().getWidth());
+//            imageView.setMinimumHeight(message.getGif().getHeight());
+//            RequestOptions requestOptions = new RequestOptions();
+//            requestOptions.placeholder(android.R.attr.indeterminateDrawable);
+//            Glide.with(imageView.getContext()).load(message.getGif().getUrl()).apply(requestOptions).into(imageView);
+            loadGifIntoImageView(imageView, message.getGif());
         } else { // IncomingGifHolder
             IncomingGifHolder incomingGifHolder = ((IncomingGifHolder) holder);
             if (selectedMessages.get(position)) {
@@ -201,11 +210,20 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 incomingGifHolder.deselect();
             }
             ImageView imageView = incomingGifHolder.gif;
-            imageView.setMinimumWidth(message.getGif().getWidth());
-            imageView.setMinimumHeight(message.getGif().getHeight());
-            Glide.with(imageView.getContext()).load(message.getGif().getUrl()).into(imageView);
+//            imageView.setMinimumWidth(message.getGif().getWidth());
+//            imageView.setMinimumHeight(message.getGif().getHeight());
+//            Glide.with(imageView.getContext()).load(message.getGif().getUrl()).into(imageView);
+            loadGifIntoImageView(imageView, message.getGif());
 
         }
+    }
+
+    private void loadGifIntoImageView(ImageView imageView, Gif gif) {
+//        imageView.setMinimumWidth(gif.getWidth());
+//        imageView.setMinimumHeight(gif.getHeight());
+        RequestOptions requestOptions = new RequestOptions();
+        requestOptions.placeholder(R.drawable.spinner); // Spinner drawable.
+        Glide.with(imageView.getContext()).load(gif.getUrl()).apply(requestOptions).into(imageView);
     }
 
     @Override

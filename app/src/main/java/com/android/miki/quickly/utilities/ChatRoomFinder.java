@@ -17,8 +17,6 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 /**
  * Created by mpokr on 5/22/2017.
@@ -30,10 +28,8 @@ public class ChatRoomFinder {
     private DatabaseReference mAvailableChatsRef = mDatabase.getReference().child("availableChats");
     private DataGenerator dataGenerator;
     private final int BATCH_SIZE = 10;
-    private ChatRoom startingPoint;
 
     public ChatRoomFinder() {
-        startingPoint = null;
         dataGenerator = new DataGenerator();
     }
 
@@ -45,10 +41,8 @@ public class ChatRoomFinder {
      */
     public void getChatRoomBatch(@NonNull final FirebaseListener<List<ChatRoom>> listener) {
         FirebaseClient client = FirebaseClient.getInstance();
-        client.queryFirebase(new ChatRoomBatchQuery(startingPoint, BATCH_SIZE), listener);
+        client.queryFirebase(new ChatRoomBatchQuery(BATCH_SIZE), listener);
     }
-
-
 
     /**
      * Retrieves a single chat room by ID.
@@ -58,7 +52,7 @@ public class ChatRoomFinder {
      */
     public void getChatRoom(String chatId, @NonNull final FirebaseListener<ChatRoom> listener) {
         FirebaseClient client = FirebaseClient.getInstance();
-        client.queryFirebase(new ChatRoomQuery(chatId, listener), listener);
+        client.queryFirebase(new ChatRoomQuery(chatId), listener);
     }
 
     public int getBatchSize() {
