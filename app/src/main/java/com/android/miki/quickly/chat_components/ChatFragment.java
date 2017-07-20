@@ -1,10 +1,11 @@
 package com.android.miki.quickly.chat_components;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -12,6 +13,9 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -21,9 +25,13 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.miki.quickly.R;
+import com.android.miki.quickly.core.FirebaseFragment;
+import com.android.miki.quickly.group_info.GroupInfoActivity;
+import com.android.miki.quickly.utilities.FirebaseError;
 import com.android.miki.quickly.utilities.VerticalSpaceItemDecoration;
 import com.android.miki.quickly.gif_drawer.GifDrawer;
 import com.android.miki.quickly.gif_drawer.GifDrawerAction;
@@ -41,12 +49,13 @@ import org.w3c.dom.Text;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.app.Activity.RESULT_OK;
+
 /**
  * Created by mpokr on 5/25/2017.
  */
 
-public class ChatFragment extends Fragment {
-
+public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoomObserver {
 
     private Button mSendButton;
     private EditText mMessageEditText;
@@ -65,28 +74,31 @@ public class ChatFragment extends Fragment {
     private boolean isGifDrawerOpen;
     private static final String TAG = "ChatFragment";
     private static final int GIF_KEYBOARD_SHIFT = 500; // 500 pixels
-
+    public static int GROUP_INFO_REQUEST_CODE = 0;
+    private ContentLoadingProgressBar progressWheel;
+    private View content;
+    private View loadingView;
+    private View errorView;
+    private TextView errorMessage;
+    private TextView errorDetais;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
+        loadingView = view.findViewById(R.id.loading_view);
+        errorView = view.findViewById(R.id.error_view);
+        errorMessage = (TextView) errorView.findViewById(R.id.error_message);
+        errorDetais = (TextView) errorView.findViewById(R.id.error_details);
         setHasOptionsMenu(true);
+        content = view.findViewById(R.id.content);
         mSendButton = (Button) view.findViewById(R.id.send_button);
         mMessageEditText = (EditText) view.findViewById(R.id.message_box);
         gifButton = (ImageButton) view.findViewById(R.id.gif_button);
-        mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.gif_recycler_view);
-        chatRoom = (ChatRoom) getArguments().getSerializable("chatRoom");
+        mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.messages_recycler_view);
+        // TODO: Handle null chatRoom?
         user = (User) getArguments().getSerializable("user");
         messages = new ArrayList<>();
-        mGifDrawer = new GifDrawer(view, chatRoom, user, new GifDrawerAction() {
-            @Override
-            public void gifSent(Message message) {
-                int lastIndex = mAdapter.insertMessage(message);
-                mAdapter.notifyItemInserted(lastIndex);
-                closeGifDrawer();
-            }
-        });
         gifButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -98,48 +110,12 @@ public class ChatFragment extends Fragment {
             }
         });
 
-
-        // Retrieve messages from Firebase.
-        mMessagesRef.child(chatRoom.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot messageList) {
-                for (DataSnapshot child : messageList.getChildren()) {
-                    Message message = child.getValue(Message.class);
-                    messages.add(message);
-                }
-
-                // Initialize message view (RecyclerView), after messages have been retrieved.
-                mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.messages_recycler_view);
-                mLayoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false);
-                ;
-                mMessagesRecyclerView.setLayoutManager(mLayoutManager);
-                mAdapter = new ChatRecyclerAdapter(chatRoom, messages, user, (ChatSelectionActivity) getActivity());
-                mMessagesRecyclerView.setAdapter(mAdapter);
-                mMessagesRecyclerView.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View view) {
-                        return false;
-                    }
-                });
-                // Set spaces between messages
-                VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(20); // 20dp
-                mMessagesRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
-                scrollToBottom();
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
         mMessageEditText.addTextChangedListener(new TextWatcher() {
             private int oldNumLines = 1;
             private long lastEdited;
             private Thread thread;
             private String query;
-            RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.testing);
+            RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.message_box_layout);
             LinearLayout.LayoutParams llp = (LinearLayout.LayoutParams) rl.getLayoutParams();
             private int originalMessageBoxHeight = llp.height;
             private int typingInterval = 600;   // 600 ms
@@ -175,34 +151,30 @@ public class ChatFragment extends Fragment {
                 textPaint.getTextBounds(text, 0, text.length(), bounds);
                 int textHeight = bounds.height() * mMessageEditText.getLineCount();
                 Log.d(TAG, "text height: " + textHeight);
-                RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.testing);
+                RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.message_box_layout);
                 LinearLayout.LayoutParams llp = (LinearLayout.LayoutParams) rl.getLayoutParams();
-
                 int paddingAndMargins = mMessageEditText.getPaddingBottom() + mMessageEditText.getPaddingTop() + llp.bottomMargin + llp.topMargin;
                 int editTextHeight = mMessageEditText.getHeight() - paddingAndMargins;
                 Log.d(TAG, "edittext height: " + editTextHeight);
                 Log.d(TAG, "padding&margins: " + paddingAndMargins);
 
-
                 int currentLineCount = mMessageEditText.getLineCount();
                 if (oldNumLines < currentLineCount) {
-                    llp.height += 1.5 * paddingAndMargins;
+                    llp.height += (currentLineCount - oldNumLines) * paddingAndMargins * 1.5;
                     rl.setLayoutParams(llp);
                     oldNumLines = currentLineCount;
                 } else if (oldNumLines > currentLineCount) {
-                    llp.height -= 1.5 * paddingAndMargins;
+                    llp.height -= (oldNumLines - currentLineCount) * paddingAndMargins * 1.5;
                     rl.setLayoutParams(llp);
                     oldNumLines = currentLineCount;
                 }
                 Log.d(TAG, "" + (editTextHeight - textHeight));
-
 
                 if (text.equals("")) {
                     llp.height = originalMessageBoxHeight;
                     rl.setLayoutParams(llp);
                     Log.d(TAG, "back to original");
                 }
-
 
                 if (isGifDrawerOpen) {
                     lastEdited = System.currentTimeMillis();
@@ -214,6 +186,58 @@ public class ChatFragment extends Fragment {
             }
         });
 
+        return view;
+    }
+
+    private void initComponents() {
+        final View view = ChatFragment.this.getView();
+
+        mGifDrawer = new GifDrawer(view, chatRoom, user, new GifDrawerAction() {
+            @Override
+            public void gifSent(Message message) {
+                int lastIndex = mAdapter.insertMessage(message);
+                mAdapter.notifyItemInserted(lastIndex);
+                closeGifDrawer();
+            }
+        });
+
+        // Retrieve messages from Firebase.
+        messages.clear();
+        mMessagesRef.child(chatRoom.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot messageList) {
+                for (DataSnapshot child : messageList.getChildren()) {
+                    Message message = child.getValue(Message.class);
+                    messages.add(message);
+                }
+                if (view == null) {
+                    Log.d(TAG, "View in ChatFragment is null");
+                    return;
+                }
+                // Initialize message view (RecyclerView), after messages have been retrieved.
+                mLayoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false);
+                mMessagesRecyclerView.setLayoutManager(mLayoutManager);
+                mAdapter = new ChatRecyclerAdapter(chatRoom, messages, user, (ChatSelectionActivity) getActivity());
+                mMessagesRecyclerView.setAdapter(mAdapter);
+                mMessagesRecyclerView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        return false;
+                    }
+                });
+                // Set spaces between messages
+                VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(20); // 20dp
+                mMessagesRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
+                content.setVisibility(View.VISIBLE);
+                scrollToBottom();
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -234,24 +258,6 @@ public class ChatFragment extends Fragment {
                 }
             }
         });
-
-        return view;
-    }
-
-
-    private void resizeMessageBox(String oldText, String newText, int resizeFactor) {
-        int width = mMessageEditText.getWidth();
-        Paint textPaint = mMessageEditText.getPaint();
-        Rect bounds = new Rect();
-        textPaint.getTextBounds(newText, 0, newText.length(), bounds);
-        float textWidth = bounds.width() / resizeFactor;
-        if (textWidth >= width) {
-            RelativeLayout rl = (RelativeLayout) this.getView().findViewById(R.id.testing);
-            LinearLayout.LayoutParams llp = (LinearLayout.LayoutParams) rl.getLayoutParams();
-            llp.height += bounds.height();
-            rl.setLayoutParams(llp);
-            resizeFactor++;
-        }
     }
 
 
@@ -262,6 +268,34 @@ public class ChatFragment extends Fragment {
         if (mMessagesRecyclerView != null) { // Only do this if the view for the fragment has already been created.
             int messagesSize = (messages.size() - 1 < 0) ? 0 : messages.size() - 1;
             mMessagesRecyclerView.scrollToPosition(messagesSize);
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.fragment_chat_overflow_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.group_info:
+                Intent intent = new Intent(getContext(), GroupInfoActivity.class);
+                intent.putExtra(getString(R.string.chat_room), chatRoom);
+                startActivityForResult(intent, GROUP_INFO_REQUEST_CODE);
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == GROUP_INFO_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                chatRoom = (ChatRoom) data.getSerializableExtra((getString(R.string.chat_room)));
+            }
         }
     }
 
@@ -296,4 +330,63 @@ public class ChatFragment extends Fragment {
     }
 
 
+    @Override
+    public void onSuccess(ChatRoom chatRoom) {
+        super.onSuccess(chatRoom);
+        this.chatRoom = chatRoom;
+        initComponents();
+    }
+
+    @Override
+    public void onLoading() {
+        content.setVisibility(View.GONE);
+        errorView.setVisibility(View.GONE);
+        loadingView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onError(FirebaseError error) {
+        content.setVisibility(View.GONE);
+        loadingView.setVisibility(View.GONE);
+        errorMessage.setText(error.getMessage());
+        errorDetais.setText(error.getDetails());
+        errorView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void showMainContent() {
+        loadingView.setVisibility(View.GONE);
+        errorView.setVisibility(View.GONE);
+        content.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void hideMainLayout() {
+        content.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void numUsersChanged(int numUsers) {
+
+    }
+
+    @Override
+    public void userAdded(User user) {
+
+    }
+
+    @Override
+    public void userRemoved(User user) {
+
+    }
+
+    @Override
+    public void nameChanged(String name) {
+
+    }
+
+    @Override
+    public void messageAdded(Message message) {
+
+    }
 }

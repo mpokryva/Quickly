@@ -54,6 +54,7 @@ public class DataGenerator {
             chatRoom.addMessage(message);
         }
         chatRoom.addMessage(lastMessage);
+        //chatRoom.changeName("Test name");
         newChatRef.setValue(chatRoom); // Push chat room info
 
     }

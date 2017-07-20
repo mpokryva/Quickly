@@ -8,6 +8,10 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -19,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -27,11 +32,18 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.android.miki.quickly.R;
+import com.android.miki.quickly.chat_components.ChatSelectionActivity;
 import com.android.miki.quickly.models.ChatRoom;
+import com.android.miki.quickly.models.Gif;
 import com.android.miki.quickly.models.Message;
 import com.android.miki.quickly.models.User;
 import com.android.miki.quickly.utilities.ColorGenerator;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
 
 /**
  * Created by mpokr on 5/22/2017.
@@ -45,15 +57,14 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private ActionMode.Callback messageSeletedCallback;
     private ActionMode mActionMode;
     private ChatSelectionActivity mActivity;
-    private ChatRoom chatRoom;
     private ArrayList<Boolean> selectedMessages;
     private HashMap<User, Integer> userToColorMap;
     private static final int OUTGOING_TEXT = 0;
     private static final int INCOMING_TEXT = 1;
     private static final int OUTGOING_GIF = 2;
     private static final int INCOMING_GIF = 3;
+
     public ChatRecyclerAdapter(final ChatRoom chatRoom, final List<Message> messages, User user, final ChatSelectionActivity activity) {
-        this.chatRoom = chatRoom;
         this.messages = messages;
         this.user = user;
         mActivity = activity;
@@ -65,7 +76,6 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         int j = 0;
         while (it.hasNext()) {
             User currentUser = it.next();
-            //int randomColor = colorGenerator.generateRandomColors(Color.rgb(207, 207, 207), 1)[0];
             userToColorMap.put(currentUser, randomColors[j]);
             j++;
         }
@@ -91,17 +101,16 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 switch (item.getItemId()) {
                     case (R.id.copy_message):
                         for (int i = 0; i < selectedMessages.size(); i++) {
-                            ClipboardManager clipboard = (ClipboardManager)activity.getSystemService(Context.CLIPBOARD_SERVICE);
+                            ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
                             if (selectedMessages.get(i)) {
                                 Message message = messages.get(i);
                                 String content = (message.getMessageText() == null) ? message.getGif().getUrl() : message.getMessageText();
-                                ClipData data = ClipData.newPlainText("test", content);
+                                ClipData data = ClipData.newPlainText("messageContent", content);
                                 clipboard.setPrimaryClip(data);
                                 break;
                             }
                         }
                         mActionMode.finish(); // exit out of context action bar to regular action bar
-                        Log.d(TAG, "test remove");
                         break;
                     default:
                         break;
@@ -151,6 +160,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 break;
             case INCOMING_GIF:
                 vh = new IncomingGifHolder(v, mActivity);
+                break;
             default:
                 vh = new OutgoingTextHolder(v, mActivity);
                 Log.e(TAG, "Unknown view holder type instantiated");
@@ -190,10 +200,8 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             } else {
                 outgoingGifHolder.deselect();
             }
-            ImageView imageView = outgoingGifHolder.gif;
-            imageView.setMinimumWidth(message.getGif().getWidth());
-            imageView.setMinimumHeight(message.getGif().getHeight());
-            Glide.with(imageView.getContext()).load(message.getGif().getUrl()).into(imageView);
+            loadGifIntoImageView(outgoingGifHolder.gif, message.getGif(), outgoingGifHolder.mProgressBar);
+
         } else { // IncomingGifHolder
             IncomingGifHolder incomingGifHolder = ((IncomingGifHolder) holder);
             if (selectedMessages.get(position)) {
@@ -201,12 +209,27 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             } else {
                 incomingGifHolder.deselect();
             }
-            ImageView imageView = incomingGifHolder.gif;
-            imageView.setMinimumWidth(message.getGif().getWidth());
-            imageView.setMinimumHeight(message.getGif().getHeight());
-            Glide.with(imageView.getContext()).load(message.getGif().getUrl()).into(imageView);
+            loadGifIntoImageView(incomingGifHolder.gif, message.getGif(), incomingGifHolder.mProgressBar);
 
         }
+    }
+
+
+    private void loadGifIntoImageView(ImageView imageView, Gif gif, final ProgressBar progressBar) {
+        imageView.setMinimumWidth(gif.getWidth());
+        imageView.setMinimumHeight(gif.getHeight());
+        Glide.with(imageView.getContext()).load(gif.getUrl()).listener(new RequestListener<Drawable>() {
+            @Override
+            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                return false;
+            }
+
+            @Override
+            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                progressBar.setVisibility(View.GONE);
+                return false;
+            }
+        }).into(imageView);
     }
 
     @Override
@@ -319,20 +342,24 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private class OutgoingGifHolder extends MessageViewHolder {
 
         private ImageView gif;
+        private ProgressBar mProgressBar;
 
         private OutgoingGifHolder(View itemView, ChatSelectionActivity activity) {
             super(itemView, activity);
             gif = (ImageView) itemView.findViewById(R.id.gif_image_view);
+            mProgressBar = (ProgressBar) itemView.findViewById(R.id.progress_wheel);
         }
     }
 
     private class IncomingGifHolder extends MessageViewHolder {
 
         private ImageView gif;
+        private ProgressBar mProgressBar;
 
         private IncomingGifHolder(View itemView, ChatSelectionActivity activity) {
             super(itemView, activity);
             gif = (ImageView) itemView.findViewById(R.id.gif_image_view);
+            mProgressBar = (ProgressBar) itemView.findViewById(R.id.progress_wheel);
         }
     }
 

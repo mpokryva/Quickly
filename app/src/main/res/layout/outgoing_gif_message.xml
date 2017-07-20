@@ -11,10 +11,11 @@
 
         <ImageView
             android:id="@+id/gif_image_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
-            android:padding="5dp"/>
+            style="@style/gif_image_view" />
+
+        <ProgressBar
+            android:id="@+id/progress_wheel"
+            style="@style/gif_progress_wheel" />
 
     </LinearLayout>
 </RelativeLayout>

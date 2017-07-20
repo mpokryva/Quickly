@@ -5,12 +5,18 @@
         <!-- Customize your theme here. -->
         <item name="windowActionModeOverlay">true</item>
         <item name="android:actionModeCloseDrawable">@drawable/ic_close_white_24dp</item>
-        <item name="android:actionModeBackground">@color/ChatActionBarBackground</item>
+        <item name="android:actionModeBackground">@color/LightBlue</item>
+        <!--<item name="android:actionOverflowButtonStyle">@style/OverflowButtonStyle</item>-->
     </style>
+
+    <!--<style name="OverflowButtonStyle" parent="Base.Widget.AppCompat.ActionButton.Overflow">-->
+        <!--<item name="android:src">@drawable/ic_more_vert_white_24dp</item>-->
+    <!--</style>-->
 
     <style name="ChatActionBar">
         <item name="android:textColorPrimary">@android:color/white</item>
-        <item name="android:background">@color/ChatActionBarBackground</item>
+        <item name="android:background">@color/LightBlue</item>
+        <item name="android:homeAsUpIndicator">@drawable/ic_arrow_back_white_24dp</item>
     </style>
 
     <style name="ChatActionBar.Layout">
@@ -19,12 +25,24 @@
         <item name="android:elevation">4dp</item>
     </style>
 
+    <style name="ChangeGroupNameEditText">
+        <item name="android:colorControlNormal">@color/LightBlue</item>
 
-    <style name="Divider">
+    </style>
+
+
+    <style name="HorizontalDivider">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">2dp</item>
         <item name="android:background">?android:attr/listDivider</item>
     </style>
+
+    <style name="VerticalDivider">
+        <item name="android:layout_width">2dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:background">?android:attr/listDivider</item>
+    </style>
+
 
     <style name="TimeSent">
         <item name="android:layout_width">wrap_content</item>
@@ -88,7 +106,20 @@
         <item name="android:textColor">@android:color/holo_blue_light</item>
     </style>
 
+    <style name="gif_progress_wheel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_centerInParent">true</item>
+        <item name="android:padding">5dp</item>
+        <item name="android:visibility">visible</item>
+    </style>
 
+    <style name="gif_image_view">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:adjustViewBounds">true</item>
+        <item name="android:padding">5dp</item>
+    </style>
 
 
 </resources>
