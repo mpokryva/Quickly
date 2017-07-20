@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/chat_bubble"
-    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
-    <LinearLayout
-        style="@style/incoming_bubble_outline">
+    <RelativeLayout style="@style/incoming_bubble_outline">
 
         <ImageView
             android:id="@+id/gif_image_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
-            android:padding="5dp"/>
+            style="@style/gif_image_view" />
 
-    </LinearLayout>
+        <ProgressBar
+            android:id="@+id/progress_wheel"
+            style="@style/gif_progress_wheel" />
+    </RelativeLayout>
 </RelativeLayout>
 
 

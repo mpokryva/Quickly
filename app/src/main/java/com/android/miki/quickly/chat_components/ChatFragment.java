@@ -88,6 +88,8 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
         loadingView = view.findViewById(R.id.loading_view);
         errorView = view.findViewById(R.id.error_view);
+        errorMessage = (TextView) errorView.findViewById(R.id.error_message);
+        errorDetais = (TextView) errorView.findViewById(R.id.error_details);
         setHasOptionsMenu(true);
         content = view.findViewById(R.id.content);
         mSendButton = (Button) view.findViewById(R.id.send_button);
@@ -346,6 +348,8 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
     public void onError(FirebaseError error) {
         content.setVisibility(View.GONE);
         loadingView.setVisibility(View.GONE);
+        errorMessage.setText(error.getMessage());
+        errorDetais.setText(error.getDetails());
         errorView.setVisibility(View.VISIBLE);
     }
 

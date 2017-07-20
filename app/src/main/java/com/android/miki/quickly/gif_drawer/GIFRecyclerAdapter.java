@@ -101,7 +101,6 @@ public class GIFRecyclerAdapter extends RecyclerView.Adapter<GIFRecyclerAdapter.
 
         private void setGif(String gifURL) {
             try {
-//                Glide.with(this.mImageViewGif.getContext()).load(gifURL).into(mImageViewGif);
                 loadGifIntoImageView(mImageViewGif, gifURL);
                 this.gifURL = gifURL;
             } catch (Exception e) {
@@ -111,7 +110,6 @@ public class GIFRecyclerAdapter extends RecyclerView.Adapter<GIFRecyclerAdapter.
         }
 
         private void loadGifIntoImageView(ImageView imageView, String gifURL) {
-            // Spinner drawable.
             Glide.with(imageView.getContext()).load(gifURL).listener(new RequestListener<Drawable>() {
                 @Override
                 public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
