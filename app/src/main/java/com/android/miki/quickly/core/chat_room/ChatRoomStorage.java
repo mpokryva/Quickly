@@ -1,4 +1,4 @@
-package com.android.miki.quickly.utilities;
+package com.android.miki.quickly.core.chat_room;
 
 import com.android.miki.quickly.models.ChatRoom;
 

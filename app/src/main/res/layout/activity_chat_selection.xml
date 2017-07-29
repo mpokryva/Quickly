@@ -16,12 +16,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v4.view.ViewPager
+        <com.android.miki.quickly.chat_components.CustomViewPager
             android:id="@+id/chat_selection_pager"
             android:layout_width="match_parent"
             android:layout_marginTop="?actionBarSize"
             android:layout_height="match_parent">
-        </android.support.v4.view.ViewPager>
+        </com.android.miki.quickly.chat_components.CustomViewPager>
     </FrameLayout>
 
 </RelativeLayout>

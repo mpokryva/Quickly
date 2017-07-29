@@ -1,5 +1,6 @@
-package com.android.miki.quickly.core;
+package com.android.miki.quickly.core.network;
 
+import com.android.miki.quickly.core.Callable;
 import com.android.miki.quickly.utilities.FirebaseError;
 import com.android.miki.quickly.utilities.FirebaseListener;
 import com.google.firebase.database.DataSnapshot;
@@ -45,7 +46,7 @@ public class FirebaseClient {
                 if (isConnectedToDatabase) { // Working Internet connection.
                     query.call(listener);
                 } else {
-                    listener.onError(FirebaseError.noFirebaseConnectionError());
+                    listener.onError(FirebaseError.noFirebaseConnection());
                 }
             }
         });

@@ -28,6 +28,9 @@ public class GifDrawer {
     private static final String GIPHY_SEARCH_PATH = "/v1/gifs/search?q=";
     private ChatRoom chatRoom;
     private User user;
+    private boolean isShown;
+    private boolean shouldShow;
+
 
     public GifDrawer(View view, ChatRoom chatRoom, User user, GifDrawerAction gifDrawerAction) {
         this.chatRoom = chatRoom;
@@ -37,6 +40,8 @@ public class GifDrawer {
         mAdapter = new GIFRecyclerAdapter(new ArrayList<String>(), chatRoom, user, gifDrawerAction); // No GIF data for now...
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
+        isShown = false;
+        shouldShow = false;
     }
 
     private void setGifs(List<String> gifUrls) {
@@ -44,23 +49,29 @@ public class GifDrawer {
         mAdapter.notifyDataSetChanged();
     }
 
-    public void setVisible() {
+    public void show() {
         mRecyclerView.setVisibility(View.VISIBLE);
+        isShown = true;
     }
 
-    public void setGone() {
+    public void hide() {
         mRecyclerView.setVisibility(View.GONE);
+        isShown = false;
     }
 
 
     public void getTrendingGifs() {
-        new GiphyAPIRequest(new GiphyAPIResponse() {
+
+        final GiphyAPIRequest request = new GiphyAPIRequest(new GiphyAPIResponse() {
             @Override
             public void gifURLsRetrieved(List<String> urls) {
-                setVisible();
-                setGifs(urls);
+                if (shouldShow) {
+                    show();
+                    setGifs(urls);
+                }
             }
-        }).execute(GIPHY_BASE_URL + GIPHY_TRENDING_PATH + API_KEY_EQUALS + GIPHY_API_KEY, "trending");
+        });
+        request.execute(GIPHY_BASE_URL + GIPHY_TRENDING_PATH + API_KEY_EQUALS + GIPHY_API_KEY, "trending");
     }
 
     public void translateTextToGif(String query) {
@@ -70,13 +81,25 @@ public class GifDrawer {
             ch = (ch == ' ') ? '+' : ch;
             formattedQuery += ch;
         }
-        new GiphyAPIRequest(new GiphyAPIResponse() {
+        GiphyAPIRequest request = new GiphyAPIRequest(new GiphyAPIResponse() {
             @Override
             public void gifURLsRetrieved(List<String> urls) {
-                setVisible();
-                setGifs(urls);
+                if (shouldShow) {
+                    show();
+                    setGifs(urls);
+                }
             }
-        }).execute(GIPHY_BASE_URL + GIPHY_SEARCH_PATH + formattedQuery + "&" + API_KEY_EQUALS + GIPHY_API_KEY, query);
+        });
+        request.execute(GIPHY_BASE_URL + GIPHY_SEARCH_PATH + formattedQuery + "&" + API_KEY_EQUALS + GIPHY_API_KEY, query);
     }
+
+    public void cancelGifRequests() {
+//        isShown = true;
+    }
+
+    public void setShouldShow(boolean shouldShow) {
+        this.shouldShow = shouldShow;
+    }
+
 
 }

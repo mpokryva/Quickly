@@ -56,10 +56,9 @@ public class ColorGenerator {
             float offset = r.nextFloat();
             float hue = offset + (goldenRatio * i) % 1 * baseRed;
             Log.d(TAG, hue + "");
-            colors[i] = Color.HSVToColor(new float[]{hue , 0.5f, 0.85f}); // (hue, saturation, value). Value controls how light/dark the color is.
+            colors[i] = Color.HSVToColor(new float[]{hue, 0.5f, 0.85f}); // (hue, saturation, value). Value controls how light/dark the color is.
         }
         return colors;
     }
-
 
 }
