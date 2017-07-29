@@ -1,18 +1,19 @@
 package com.android.miki.quickly.chat_components;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.StyleRes;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
 
 import com.android.miki.quickly.R;
 import com.android.miki.quickly.core.FirebaseActivity;
-import com.android.miki.quickly.core.Status;
+import com.android.miki.quickly.core.network.ConnectivityStatusNotifier;
+import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.User;
-import com.android.miki.quickly.utilities.ChatRoomManager;
-import com.android.miki.quickly.utilities.FirebaseListener;
-import com.google.firebase.database.DatabaseError;
+import com.android.miki.quickly.core.chat_room.ChatRoomManager;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,9 +23,9 @@ import java.util.List;
  * Created by mpokr on 5/22/2017.
  */
 
-public class ChatSelectionActivity extends FirebaseActivity {
+public class ChatSelectionActivity extends FirebaseActivity implements ConnectivityStatusObserver {
 
-    private ViewPager mViewPager;
+    private CustomViewPager mViewPager;
     private ChatSelectionPagerAdapter mAdapter;
     private List<ChatRoom> chatRooms;
     private ChatRoomManager roomManager;
@@ -42,9 +43,10 @@ public class ChatSelectionActivity extends FirebaseActivity {
         this.user = (User) getIntent().getSerializableExtra("user");
         chatRooms = new ArrayList<>();
         roomManager = ChatRoomManager.getInstance();
-
-        mViewPager = (ViewPager) findViewById(R.id.chat_selection_pager);
-        mAdapter = new ChatSelectionPagerAdapter(getSupportFragmentManager(), user);
+        ConnectivityStatusNotifier notifier = ConnectivityStatusNotifier.getInstance();
+        notifier.registerObserver(this);
+        mViewPager = (CustomViewPager) findViewById(R.id.chat_selection_pager);
+        mAdapter = new ChatSelectionPagerAdapter(getSupportFragmentManager(), user, this);
         mViewPager.setAdapter(mAdapter);
         mViewPager.setPageMargin(30);
         final ViewPager.OnPageChangeListener pageChangeListener = new ViewPager.OnPageChangeListener() {
@@ -89,5 +91,20 @@ public class ChatSelectionActivity extends FirebaseActivity {
 
     private void configureActionBar() {
 
+    }
+
+    @Override
+    public void onConnect() {
+        mViewPager.setPagingEnabled(true);
+    }
+
+    @Override
+    public void onDisconnect() {
+        mViewPager.setPagingEnabled(false);
+    }
+
+    @Override
+    public Context retrieveContext() {
+        return this;
     }
 }

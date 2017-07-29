@@ -1,8 +1,8 @@
-package com.android.miki.quickly.utilities;
+package com.android.miki.quickly.core.chat_room;
 
-import com.android.miki.quickly.core.StatusListener;
 import com.android.miki.quickly.models.ChatRoom;
-import com.google.firebase.database.DatabaseError;
+import com.android.miki.quickly.utilities.FirebaseError;
+import com.android.miki.quickly.utilities.FirebaseListener;
 
 import java.util.List;
 

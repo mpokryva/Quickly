@@ -29,9 +29,16 @@ public class FirebaseError {
         return details;
     }
 
-    public static FirebaseError noFirebaseConnectionError() {
+    public static FirebaseError noFirebaseConnection() {
         String message = "There was a problem connecting to the server.";
         String details = "Please verify that you have a working Internet connection.";
+        return new FirebaseError(message, details);
+    }
+
+    public static FirebaseError noInternetConnection() {
+        String message = "You are not not connected to the internet.";
+        String details = "The chat room will load automatically once you're reconnected " +
+                "to the internet.";
         return new FirebaseError(message, details);
     }
 }

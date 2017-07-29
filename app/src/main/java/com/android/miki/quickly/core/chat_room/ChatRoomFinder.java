@@ -1,21 +1,16 @@
-package com.android.miki.quickly.utilities;
+package com.android.miki.quickly.core.chat_room;
 
-import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
 
-import com.android.miki.quickly.core.FirebaseClient;
+import com.android.miki.quickly.core.network.FirebaseClient;
 import com.android.miki.quickly.firebase_queries.ChatRoomBatchQuery;
 import com.android.miki.quickly.firebase_queries.ChatRoomQuery;
 import com.android.miki.quickly.models.ChatRoom;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
+import com.android.miki.quickly.utilities.DataGenerator;
+import com.android.miki.quickly.utilities.FirebaseListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**

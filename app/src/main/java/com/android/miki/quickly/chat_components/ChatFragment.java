@@ -30,8 +30,12 @@ import android.widget.Toast;
 
 import com.android.miki.quickly.R;
 import com.android.miki.quickly.core.FirebaseFragment;
+import com.android.miki.quickly.core.chat_room.ChatRoomManager;
+import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
 import com.android.miki.quickly.group_info.GroupInfoActivity;
 import com.android.miki.quickly.utilities.FirebaseError;
+import com.android.miki.quickly.utilities.FirebaseListener;
+import com.android.miki.quickly.utilities.ImageLoader;
 import com.android.miki.quickly.utilities.VerticalSpaceItemDecoration;
 import com.android.miki.quickly.gif_drawer.GifDrawer;
 import com.android.miki.quickly.gif_drawer.GifDrawerAction;
@@ -44,8 +48,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,9 +57,9 @@ import static android.app.Activity.RESULT_OK;
  * Created by mpokr on 5/25/2017.
  */
 
-public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoomObserver {
+public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoomObserver, ConnectivityStatusObserver {
 
-    private Button mSendButton;
+    private ImageButton mSendButton;
     private EditText mMessageEditText;
     private ImageButton gifButton;
     private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
@@ -81,10 +83,14 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
     private View errorView;
     private TextView errorMessage;
     private TextView errorDetais;
+    private boolean isConnected;
+    private int position;
+    private boolean firstComponentInitialization = true;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
+        isConnected = true; // Initialized to true to avoid double loading of chat room initially.
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
         loadingView = view.findViewById(R.id.loading_view);
         errorView = view.findViewById(R.id.error_view);
@@ -92,12 +98,13 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
         errorDetais = (TextView) errorView.findViewById(R.id.error_details);
         setHasOptionsMenu(true);
         content = view.findViewById(R.id.content);
-        mSendButton = (Button) view.findViewById(R.id.send_button);
+        mSendButton = (ImageButton) view.findViewById(R.id.send_button);
         mMessageEditText = (EditText) view.findViewById(R.id.message_box);
         gifButton = (ImageButton) view.findViewById(R.id.gif_button);
         mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.messages_recycler_view);
         // TODO: Handle null chatRoom?
         user = (User) getArguments().getSerializable("user");
+        position = getArguments().getInt("position");
         messages = new ArrayList<>();
         gifButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -227,7 +234,10 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
                 });
                 // Set spaces between messages
                 VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(20); // 20dp
-                mMessagesRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
+                if (firstComponentInitialization) {
+                    mMessagesRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
+                }
+                firstComponentInitialization = false;
                 content.setVisibility(View.VISIBLE);
                 scrollToBottom();
 
@@ -249,15 +259,15 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
                     chatRoom.addMessage(outgoingMessage);
                     int lastIndex = mAdapter.insertMessage(outgoingMessage);
                     mAdapter.notifyItemInserted(lastIndex);
-                    mMessageEditText.setText("");
+                    clearMessageBox();
                     scrollToBottom();
-                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    hideKeyboard(view);
                 } else {
                     Toast.makeText(view.getContext(), "No text in message!", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+
     }
 
 
@@ -299,26 +309,53 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
         }
     }
 
+    public void revertToStartState() {
+        closeGifDrawer();
+        Log.d(TAG, "Reverting to start state");
+        View view = getView();
+        if (view != null) {
+            hideKeyboard(view);
+        }
+    }
+
+    private void clearMessageBox() {
+        if (mMessageEditText != null) {
+            mMessageEditText.setText("");
+        }
+    }
+
+
     private void closeGifDrawer() {
-        mMessageEditText.setHint(R.string.message_box_hint);
-        gifButton.setImageResource(R.mipmap.gif_icon);
-        isGifDrawerOpen = false;
-        mGifDrawer.setGone();
-        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
-        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin - GIF_KEYBOARD_SHIFT);
-        mMessagesRecyclerView.setLayoutParams(layoutParams);
-        scrollToBottom();
+        if (isGifDrawerOpen) {
+            mMessageEditText.setHint(R.string.message_box_hint);
+            gifButton.setImageResource(R.mipmap.gif_icon);
+            mSendButton.setVisibility(View.VISIBLE);
+            isGifDrawerOpen = false;
+            mGifDrawer.setShouldShow(false);
+            mGifDrawer.cancelGifRequests();
+            mGifDrawer.hide();
+            FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
+            layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin - GIF_KEYBOARD_SHIFT);
+            mMessagesRecyclerView.setLayoutParams(layoutParams);
+            clearMessageBox();
+            scrollToBottom();
+        }
     }
 
     private void openGifDrawer() {
-        mMessageEditText.setHint("Search GIPHY...");
-        gifButton.setImageResource(R.drawable.ic_close_black_24dp);
-        isGifDrawerOpen = true;
-        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
-        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin + GIF_KEYBOARD_SHIFT);
-        mMessagesRecyclerView.setLayoutParams(layoutParams);
-        scrollToBottom();
-        mGifDrawer.getTrendingGifs();
+        if (!isGifDrawerOpen) {
+            clearMessageBox();
+            mMessageEditText.setHint(R.string.search_giphy);
+            gifButton.setImageResource(R.drawable.ic_close_black_24dp);
+            mSendButton.setVisibility(View.INVISIBLE);
+            isGifDrawerOpen = true;
+            mGifDrawer.setShouldShow(true);
+            FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
+            layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin + GIF_KEYBOARD_SHIFT);
+            mMessagesRecyclerView.setLayoutParams(layoutParams);
+            scrollToBottom();
+            mGifDrawer.getTrendingGifs();
+        }
     }
 
     private void getGifs(String query) {
@@ -327,6 +364,11 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
         } else {
             mGifDrawer.translateTextToGif(query);
         }
+    }
+
+    private void hideKeyboard(View view) {
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
 
@@ -388,5 +430,44 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
     @Override
     public void messageAdded(Message message) {
 
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+
+    @Override
+    public void onConnect() {
+        if (!isConnected) {
+            isConnected = true;
+            ChatRoomManager.getInstance().getRoom(position, new FirebaseListener<ChatRoom>() {
+                @Override
+                public void onLoading() {
+                    ChatFragment.this.onLoading();
+                }
+
+                @Override
+                public void onError(FirebaseError error) {
+                    ChatFragment.this.onError(error);
+                }
+
+                @Override
+                public void onSuccess(ChatRoom chatRoom) {
+                    ChatFragment.this.onSuccess(chatRoom);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onDisconnect() {
+        isConnected = false;
+        onError(FirebaseError.noInternetConnection());
+    }
+
+    @Override
+    public Context retrieveContext() {
+        return getContext();
     }
 }
