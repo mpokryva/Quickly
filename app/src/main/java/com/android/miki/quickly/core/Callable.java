@@ -1,6 +1,6 @@
 package com.android.miki.quickly.core;
 
-import com.android.miki.quickly.utilities.FirebaseListener;
+import com.android.miki.quickly.utils.FirebaseListener;
 
 /**
  * Represents objects that encapsulate an action (method).

@@ -6,8 +6,8 @@ import com.android.miki.quickly.core.network.FirebaseClient;
 import com.android.miki.quickly.firebase_queries.ChatRoomBatchQuery;
 import com.android.miki.quickly.firebase_queries.ChatRoomQuery;
 import com.android.miki.quickly.models.ChatRoom;
-import com.android.miki.quickly.utilities.DataGenerator;
-import com.android.miki.quickly.utilities.FirebaseListener;
+import com.android.miki.quickly.utils.DataGenerator;
+import com.android.miki.quickly.utils.FirebaseListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 

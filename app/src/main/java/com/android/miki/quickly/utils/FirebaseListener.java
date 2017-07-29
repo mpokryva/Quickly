@@ -1,6 +1,4 @@
-package com.android.miki.quickly.utilities;
-
-import com.google.firebase.database.DatabaseError;
+package com.android.miki.quickly.utils;
 
 /**
  * Created by mpokr on 7/4/2017.

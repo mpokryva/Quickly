@@ -18,8 +18,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -33,10 +33,11 @@ import com.android.miki.quickly.core.FirebaseFragment;
 import com.android.miki.quickly.core.chat_room.ChatRoomManager;
 import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
 import com.android.miki.quickly.group_info.GroupInfoActivity;
-import com.android.miki.quickly.utilities.FirebaseError;
-import com.android.miki.quickly.utilities.FirebaseListener;
-import com.android.miki.quickly.utilities.ImageLoader;
-import com.android.miki.quickly.utilities.VerticalSpaceItemDecoration;
+import com.android.miki.quickly.ui.GrowingAnimation;
+import com.android.miki.quickly.ui.ShrinkingAnimation;
+import com.android.miki.quickly.utils.FirebaseError;
+import com.android.miki.quickly.utils.FirebaseListener;
+import com.android.miki.quickly.utils.VerticalSpaceItemDecoration;
 import com.android.miki.quickly.gif_drawer.GifDrawer;
 import com.android.miki.quickly.gif_drawer.GifDrawerAction;
 import com.android.miki.quickly.models.ChatRoom;
@@ -324,38 +325,111 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
         }
     }
 
+    private void toggleGifButton() {
+        final int iconRes;
+        if (isGifDrawerOpen) {
+            iconRes = R.mipmap.gif_icon;
+        } else {
+            iconRes = R.drawable.ic_close_black_24dp;
+        }
+        ShrinkingAnimation gifButtonAnimation = new ShrinkingAnimation(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                gifButton.setImageResource(iconRes);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        gifButton.startAnimation(gifButtonAnimation);
+    }
 
     private void closeGifDrawer() {
         if (isGifDrawerOpen) {
-            mMessageEditText.setHint(R.string.message_box_hint);
-            gifButton.setImageResource(R.mipmap.gif_icon);
-            mSendButton.setVisibility(View.VISIBLE);
-            isGifDrawerOpen = false;
-            mGifDrawer.setShouldShow(false);
-            mGifDrawer.cancelGifRequests();
-            mGifDrawer.hide();
-            FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
-            layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin - GIF_KEYBOARD_SHIFT);
-            mMessagesRecyclerView.setLayoutParams(layoutParams);
-            clearMessageBox();
-            scrollToBottom();
+            GrowingAnimation sendButtonAnimation = new GrowingAnimation(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    mSendButton.setVisibility(View.VISIBLE);
+                    hideGifDrawer();
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            toggleGifButton();
+            mSendButton.startAnimation(sendButtonAnimation);
         }
+    }
+
+
+    /**
+     * Hide the gif drawer itself, and return components to their appropriate states.
+     */
+    private void hideGifDrawer() {
+        mMessageEditText.setHint(R.string.message_box_hint);
+        gifButton.setImageResource(R.mipmap.gif_icon);
+        mSendButton.setVisibility(View.VISIBLE);
+        isGifDrawerOpen = false;
+        mGifDrawer.setShouldShow(false);
+        // TODO: Actually implement this method: mGifDrawer.cancelGifRequests();
+        mGifDrawer.hide();
+        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
+        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin - GIF_KEYBOARD_SHIFT);
+        mMessagesRecyclerView.setLayoutParams(layoutParams);
+        clearMessageBox();
+        scrollToBottom();
     }
 
     private void openGifDrawer() {
         if (!isGifDrawerOpen) {
-            clearMessageBox();
-            mMessageEditText.setHint(R.string.search_giphy);
-            gifButton.setImageResource(R.drawable.ic_close_black_24dp);
-            mSendButton.setVisibility(View.INVISIBLE);
-            isGifDrawerOpen = true;
-            mGifDrawer.setShouldShow(true);
-            FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
-            layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin + GIF_KEYBOARD_SHIFT);
-            mMessagesRecyclerView.setLayoutParams(layoutParams);
-            scrollToBottom();
-            mGifDrawer.getTrendingGifs();
+            ShrinkingAnimation sendButtonAnimation = new ShrinkingAnimation(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    mSendButton.setVisibility(View.GONE);
+                    showGifDrawer();
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            toggleGifButton();
+            mSendButton.startAnimation(sendButtonAnimation);
         }
+    }
+
+    private void showGifDrawer() {
+        clearMessageBox();
+        mMessageEditText.setHint(R.string.search_giphy);
+        gifButton.setImageResource(R.drawable.ic_close_black_24dp);
+        mSendButton.setVisibility(View.INVISIBLE);
+        isGifDrawerOpen = true;
+        mGifDrawer.setShouldShow(true);
+        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
+        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin + GIF_KEYBOARD_SHIFT);
+        mMessagesRecyclerView.setLayoutParams(layoutParams);
+        scrollToBottom();
+        mGifDrawer.getTrendingGifs();
     }
 
     private void getGifs(String query) {
