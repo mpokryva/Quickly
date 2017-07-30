@@ -1,8 +1,8 @@
 package com.android.miki.quickly.core.chat_room;
 
 import com.android.miki.quickly.models.ChatRoom;
-import com.android.miki.quickly.utilities.FirebaseError;
-import com.android.miki.quickly.utilities.FirebaseListener;
+import com.android.miki.quickly.utils.FirebaseError;
+import com.android.miki.quickly.utils.FirebaseListener;
 
 import java.util.List;
 

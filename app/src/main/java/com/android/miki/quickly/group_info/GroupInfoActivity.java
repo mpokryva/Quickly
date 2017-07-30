@@ -10,9 +10,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.android.miki.quickly.R;
-import com.android.miki.quickly.chat_components.ChatFragment;
 import com.android.miki.quickly.models.ChatRoom;
-import com.android.miki.quickly.utilities.VerticalSpaceItemDecoration;
+import com.android.miki.quickly.utils.VerticalSpaceItemDecoration;
 
 /**
  * Created by mpokr on 6/17/2017.

@@ -9,6 +9,7 @@ import android.net.NetworkInfo;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -17,11 +18,11 @@ import java.util.List;
 
 public class ConnectivityStatusNotifier {
 
-    private List<ConnectivityStatusObserver> observers;
     private BroadcastReceiver receiver;
     private static ConnectivityStatusNotifier notifier;
     private static int MAX_CONNECTION_TRIES = 5;
     public static final String TAG = ConnectivityStatusNotifier.class.getName();
+    private HashSet<ConnectivityStatusObserver> observerSet;
 
     public static ConnectivityStatusNotifier getInstance() {
         if (notifier == null) {
@@ -31,7 +32,7 @@ public class ConnectivityStatusNotifier {
     }
 
     private ConnectivityStatusNotifier() {
-        observers = new ArrayList<>();
+        observerSet = new HashSet<>();
         int i = 0;
         receiver = new BroadcastReceiver() {
             @Override
@@ -80,23 +81,29 @@ public class ConnectivityStatusNotifier {
     }
 
     public void registerObserver(ConnectivityStatusObserver observer) {
-        observers.add(observer);
+        observerSet.add(observer);
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         observer.retrieveContext().registerReceiver(this.receiver, filter);
     }
 
     public void unregisterObserver(ConnectivityStatusObserver observer) {
-        observer.retrieveContext().unregisterReceiver(receiver);
-        observers.remove(observer);
+        if (isObserverRegistered(observer)) {
+            observer.retrieveContext().unregisterReceiver(receiver);
+            observerSet.remove(observer);
+        }
     }
 
     private void notifyObservers(boolean isConnected) {
-        for (ConnectivityStatusObserver observer : observers) {
+        for (ConnectivityStatusObserver observer : observerSet) {
             if (isConnected) {
                 observer.onConnect();
             } else {
                 observer.onDisconnect();
             }
         }
+    }
+
+    private boolean isObserverRegistered(ConnectivityStatusObserver observer) {
+        return observerSet.contains(observer);
     }
 }

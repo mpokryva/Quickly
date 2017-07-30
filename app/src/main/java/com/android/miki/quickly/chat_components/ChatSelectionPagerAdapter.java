@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.ViewGroup;
 
 import com.android.miki.quickly.core.Status;
@@ -14,12 +14,11 @@ import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.User;
 import com.android.miki.quickly.core.chat_room.ChatRoomManager;
-import com.android.miki.quickly.utilities.FirebaseError;
-import com.android.miki.quickly.utilities.FirebaseListener;
+import com.android.miki.quickly.utils.FirebaseError;
+import com.android.miki.quickly.utils.FirebaseListener;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by mpokr on 5/22/2017.
@@ -81,6 +80,8 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
                 // Connected to internet (according to ConnectivityNotifer), but not able to complete request.
                 @Override
                 public void onError(FirebaseError error) {
+                    Log.d(TAG, "Error message: " + error.getMessage());
+                    Log.d(TAG, "Error details: " + error.getDetails());
                     disconnectedFromInternet(container, currentPosition);
                     // TODO: Log real error.
                 }
@@ -195,6 +196,8 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     public Context retrieveContext() {
         return mContext;
     }
+
+
 
 
 }

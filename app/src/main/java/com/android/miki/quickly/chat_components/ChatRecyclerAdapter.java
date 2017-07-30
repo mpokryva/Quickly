@@ -8,14 +8,11 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,17 +29,15 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.android.miki.quickly.R;
-import com.android.miki.quickly.chat_components.ChatSelectionActivity;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.Gif;
 import com.android.miki.quickly.models.Message;
 import com.android.miki.quickly.models.User;
-import com.android.miki.quickly.utilities.ColorGenerator;
+import com.android.miki.quickly.utils.ColorGenerator;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 
 /**
@@ -218,7 +213,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private void loadGifIntoImageView(ImageView imageView, Gif gif, final ProgressBar progressBar) {
         imageView.setMinimumWidth(gif.getWidth());
         imageView.setMinimumHeight(gif.getHeight());
-        Glide.with(imageView.getContext()).load(gif.getUrl()).listener(new RequestListener<Drawable>() {
+        Glide.with(imageView.getContext()). load(gif.getUrl()).listener(new RequestListener<Drawable>() {
             @Override
             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                 return false;

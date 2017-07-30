@@ -1,4 +1,4 @@
-package com.android.miki.quickly.utilities;
+package com.android.miki.quickly.utils;
 
 
 import android.graphics.Color;

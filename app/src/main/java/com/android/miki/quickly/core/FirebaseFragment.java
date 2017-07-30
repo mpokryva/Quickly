@@ -11,8 +11,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.android.miki.quickly.R;
-import com.android.miki.quickly.utilities.FirebaseError;
-import com.android.miki.quickly.utilities.FirebaseListener;
+import com.android.miki.quickly.utils.FirebaseListener;
 
 /**
  * Created by mpokr on 7/15/2017.

@@ -1,14 +1,11 @@
 package com.android.miki.quickly.firebase_queries;
 
-import android.support.annotation.NonNull;
-
 import com.android.miki.quickly.core.Callable;
 import com.android.miki.quickly.models.ChatRoom;
-import com.android.miki.quickly.utilities.FirebaseError;
-import com.android.miki.quickly.utilities.FirebaseListener;
+import com.android.miki.quickly.utils.FirebaseError;
+import com.android.miki.quickly.utils.FirebaseListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
