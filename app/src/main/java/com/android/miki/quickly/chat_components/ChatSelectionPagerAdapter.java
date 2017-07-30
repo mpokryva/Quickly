@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.util.Log;
 import android.view.ViewGroup;
 
 import com.android.miki.quickly.core.Status;
@@ -79,6 +80,8 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
                 // Connected to internet (according to ConnectivityNotifer), but not able to complete request.
                 @Override
                 public void onError(FirebaseError error) {
+                    Log.d(TAG, "Error message: " + error.getMessage());
+                    Log.d(TAG, "Error details: " + error.getDetails());
                     disconnectedFromInternet(container, currentPosition);
                     // TODO: Log real error.
                 }
@@ -193,6 +196,8 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     public Context retrieveContext() {
         return mContext;
     }
+
+
 
 
 }

@@ -213,7 +213,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private void loadGifIntoImageView(ImageView imageView, Gif gif, final ProgressBar progressBar) {
         imageView.setMinimumWidth(gif.getWidth());
         imageView.setMinimumHeight(gif.getHeight());
-        Glide.with(imageView.getContext()).load(gif.getUrl()).listener(new RequestListener<Drawable>() {
+        Glide.with(imageView.getContext()). load(gif.getUrl()).listener(new RequestListener<Drawable>() {
             @Override
             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                 return false;

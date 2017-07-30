@@ -107,4 +107,12 @@ public class ChatSelectionActivity extends FirebaseActivity implements Connectiv
     public Context retrieveContext() {
         return this;
     }
+
+
+    @Override
+    protected void onDestroy() {
+        ConnectivityStatusNotifier notifier = ConnectivityStatusNotifier.getInstance();
+        notifier.unregisterObserver(this);
+        super.onDestroy();
+    }
 }

@@ -33,6 +33,7 @@ import com.android.miki.quickly.core.FirebaseFragment;
 import com.android.miki.quickly.core.chat_room.ChatRoomManager;
 import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
 import com.android.miki.quickly.group_info.GroupInfoActivity;
+import com.android.miki.quickly.ui.AnimatorUtil;
 import com.android.miki.quickly.ui.GrowingAnimation;
 import com.android.miki.quickly.ui.ShrinkingAnimation;
 import com.android.miki.quickly.utils.FirebaseError;
@@ -332,7 +333,7 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
         } else {
             iconRes = R.drawable.ic_close_black_24dp;
         }
-        ShrinkingAnimation gifButtonAnimation = new ShrinkingAnimation(new Animation.AnimationListener() {
+        Animation.AnimationListener listener = new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
 
@@ -340,6 +341,7 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
 
             @Override
             public void onAnimationEnd(Animation animation) {
+                AnimatorUtil.on(gifButton).with(new GrowingAnimation()).duration(0).animate();
                 gifButton.setImageResource(iconRes);
             }
 
@@ -347,31 +349,25 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
             public void onAnimationRepeat(Animation animation) {
 
             }
-        });
-        gifButton.startAnimation(gifButtonAnimation);
+        };
+        AnimatorUtil.on(gifButton).with(new ShrinkingAnimation()).duration(200).listener(listener).animate();
+    }
+
+    private void toggleSendButton() {
+        Animation animation;
+        if (isGifDrawerOpen) {
+            animation = new GrowingAnimation();
+        } else {
+            animation = new ShrinkingAnimation();
+        }
+        AnimatorUtil.on(mSendButton).with(animation).duration(200).animate();
     }
 
     private void closeGifDrawer() {
         if (isGifDrawerOpen) {
-            GrowingAnimation sendButtonAnimation = new GrowingAnimation(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {
-
-                }
-
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    mSendButton.setVisibility(View.VISIBLE);
-                    hideGifDrawer();
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-
-                }
-            });
             toggleGifButton();
-            mSendButton.startAnimation(sendButtonAnimation);
+            toggleSendButton();
+            hideGifDrawer();
         }
     }
 
@@ -381,7 +377,6 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
      */
     private void hideGifDrawer() {
         mMessageEditText.setHint(R.string.message_box_hint);
-        gifButton.setImageResource(R.mipmap.gif_icon);
         mSendButton.setVisibility(View.VISIBLE);
         isGifDrawerOpen = false;
         mGifDrawer.setShouldShow(false);
@@ -396,32 +391,15 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
 
     private void openGifDrawer() {
         if (!isGifDrawerOpen) {
-            ShrinkingAnimation sendButtonAnimation = new ShrinkingAnimation(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {
-
-                }
-
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    mSendButton.setVisibility(View.GONE);
-                    showGifDrawer();
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-
-                }
-            });
             toggleGifButton();
-            mSendButton.startAnimation(sendButtonAnimation);
+            toggleSendButton();
+            showGifDrawer();
         }
     }
 
     private void showGifDrawer() {
         clearMessageBox();
         mMessageEditText.setHint(R.string.search_giphy);
-        gifButton.setImageResource(R.drawable.ic_close_black_24dp);
         mSendButton.setVisibility(View.INVISIBLE);
         isGifDrawerOpen = true;
         mGifDrawer.setShouldShow(true);
