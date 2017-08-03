@@ -1,6 +1,5 @@
 package com.android.miki.quickly.gif_drawer;
 
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
@@ -22,7 +21,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 
 import java.util.List;
@@ -49,7 +47,7 @@ public class GIFRecyclerAdapter extends RecyclerView.Adapter<GIFRecyclerAdapter.
 
     @Override
     public GifViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.single_gif, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.gif_drawer_item, parent, false);
         GifViewHolder vh = new GifViewHolder(v);
         return vh;
     }
@@ -84,6 +82,8 @@ public class GIFRecyclerAdapter extends RecyclerView.Adapter<GIFRecyclerAdapter.
         private GifViewHolder(View itemView) {
             super(itemView);
             mImageViewGif = (ImageView) itemView.findViewById(R.id.gif_image_view);
+            int color = ContextCompat.getColor(mImageViewGif.getContext(), R.color.LightBlue);
+            mImageViewGif.setBackgroundColor(color);
             mProgressBar = (ProgressBar) itemView.findViewById(R.id.progress_wheel);
             int lightBlue = ContextCompat.getColor(mImageViewGif.getContext(), R.color.LightBlue);
             mProgressBar.getIndeterminateDrawable().setColorFilter(lightBlue, PorterDuff.Mode.MULTIPLY);
@@ -109,10 +109,12 @@ public class GIFRecyclerAdapter extends RecyclerView.Adapter<GIFRecyclerAdapter.
             }
         }
 
-        private void loadGifIntoImageView(ImageView imageView, String gifURL) {
+        private void loadGifIntoImageView(final ImageView imageView, String gifURL) {
             Glide.with(imageView.getContext()).load(gifURL).listener(new RequestListener<Drawable>() {
                 @Override
                 public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                    mProgressBar.setVisibility(View.GONE);
+                    imageView.setVisibility(View.GONE);
                     return false;
                 }
 

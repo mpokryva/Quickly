@@ -1,16 +1,19 @@
 package com.android.miki.quickly.chat_components;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.StyleRes;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 
 import com.android.miki.quickly.R;
 import com.android.miki.quickly.core.FirebaseActivity;
 import com.android.miki.quickly.core.network.ConnectivityStatusNotifier;
 import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
+import com.android.miki.quickly.group_info.GroupInfoActivity;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.User;
 import com.android.miki.quickly.core.chat_room.ChatRoomManager;
@@ -57,8 +60,7 @@ public class ChatSelectionActivity extends FirebaseActivity implements Connectiv
 
             @Override
             public void onPageSelected(final int position) {
-                mAdapter.loadRoom(mViewPager, position);
-                mAdapter.notifyDataSetChanged();
+                loadRoom(position);
             }
 
             @Override
@@ -91,6 +93,20 @@ public class ChatSelectionActivity extends FirebaseActivity implements Connectiv
 
     private void configureActionBar() {
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.refresh:
+                loadRoom(mViewPager.getCurrentItem());
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void loadRoom(int position) {
+        mAdapter.loadRoom(mViewPager, position);
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override

@@ -47,19 +47,24 @@ public class ConnectivityStatusNotifier {
                             @Override
                             public void run() {
                                 try {
+                                    boolean connectedAfterRetrying = false;
                                     for (int j = 0; j < MAX_CONNECTION_TRIES; j++) {
                                         Log.d(TAG, "Try number: " + j);
+                                        Thread.sleep(200);
                                         if (isConnected(context)) {
                                             notifyObservers(true);
+                                            connectedAfterRetrying = true;
+                                            break;
                                         }
-                                        Thread.sleep(500);
                                     }
-                                    notifyObservers(false);
+                                    if (!connectedAfterRetrying) {
+                                        notifyObservers(false);
+                                    }
                                 } catch (InterruptedException e) {
                                     notifyObservers(false);
                                 }
                             }
-                        });
+                        }).run();
                     }
                 } else { // If not even in the process of connecting, then network was just lost.
                     notifyObservers(false);
@@ -71,10 +76,11 @@ public class ConnectivityStatusNotifier {
     private boolean isConnectedOrConnecting(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        Log.d(TAG, "Connected?: " + (activeNetwork != null && activeNetwork.isConnectedOrConnecting()));
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
-    private boolean isConnected(Context context) {
+    public boolean isConnected(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnected() && activeNetwork.isAvailable();

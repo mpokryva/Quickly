@@ -8,8 +8,10 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -195,7 +197,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             } else {
                 outgoingGifHolder.deselect();
             }
-            loadGifIntoImageView(outgoingGifHolder.gif, message.getGif(), outgoingGifHolder.mProgressBar);
+            loadGifIntoImageView(outgoingGifHolder.gif, message.getGif(), outgoingGifHolder.progressWheel);
 
         } else { // IncomingGifHolder
             IncomingGifHolder incomingGifHolder = ((IncomingGifHolder) holder);
@@ -204,7 +206,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             } else {
                 incomingGifHolder.deselect();
             }
-            loadGifIntoImageView(incomingGifHolder.gif, message.getGif(), incomingGifHolder.mProgressBar);
+            loadGifIntoImageView(incomingGifHolder.gif, message.getGif(), incomingGifHolder.progressWheel);
 
         }
     }
@@ -337,27 +339,29 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private class OutgoingGifHolder extends MessageViewHolder {
 
         private ImageView gif;
-        private ProgressBar mProgressBar;
+        private ProgressBar progressWheel;
 
         private OutgoingGifHolder(View itemView, ChatSelectionActivity activity) {
             super(itemView, activity);
             gif = (ImageView) itemView.findViewById(R.id.gif_image_view);
-            mProgressBar = (ProgressBar) itemView.findViewById(R.id.progress_wheel);
+            progressWheel = (ProgressBar) itemView.findViewById(R.id.progress_wheel);
+            int lightBlue = ContextCompat.getColor(gif.getContext(), android.R.color.white);
+            progressWheel.getIndeterminateDrawable().setColorFilter(lightBlue, PorterDuff.Mode.MULTIPLY);
         }
     }
 
     private class IncomingGifHolder extends MessageViewHolder {
 
         private ImageView gif;
-        private ProgressBar mProgressBar;
+        private ProgressBar progressWheel;
 
         private IncomingGifHolder(View itemView, ChatSelectionActivity activity) {
             super(itemView, activity);
             gif = (ImageView) itemView.findViewById(R.id.gif_image_view);
-            mProgressBar = (ProgressBar) itemView.findViewById(R.id.progress_wheel);
+            progressWheel = (ProgressBar) itemView.findViewById(R.id.progress_wheel);
+            int lightBlue = ContextCompat.getColor(gif.getContext(), R.color.LightBlue);
+            progressWheel.getIndeterminateDrawable().setColorFilter(lightBlue, PorterDuff.Mode.MULTIPLY);
         }
     }
 
-
 }
-

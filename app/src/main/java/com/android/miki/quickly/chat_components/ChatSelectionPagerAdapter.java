@@ -39,6 +39,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     private boolean isConnected;
     private ChatFragment currentFragment;
     private boolean shouldForceDisconnect;
+    private boolean shouldForceConnect;
 
 
     public ChatSelectionPagerAdapter(FragmentManager fm, User user, Context context) {
@@ -70,6 +71,9 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
         if (position == container.getCurrentItem()) {
             currentFragment = fragment;
         }
+        ConnectivityStatusNotifier notifier = ConnectivityStatusNotifier.getInstance();
+        boolean isConnected = notifier.isConnected(container.getContext());
+        Log.d(TAG, "isConnected from notifier: " + isConnected);
         if (isConnected) {
             chatRoomManager.getRoom(position, new FirebaseListener<ChatRoom>() {
                 @Override
@@ -83,7 +87,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
                     Log.d(TAG, "Error message: " + error.getMessage());
                     Log.d(TAG, "Error details: " + error.getDetails());
                     disconnectedFromInternet(container, currentPosition);
-                    // TODO: Log real error.
+                    // TODO: Log real error to server.
                 }
 
                 @Override
@@ -102,7 +106,6 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
             // Current position didn't update yet. Still previous position.
             disconnectedFromInternet(container, currentPosition);
         }
-
     }
 
     /**
@@ -112,10 +115,19 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
      * @param position
      */
     private void disconnectedFromInternet(CustomViewPager viewPager, int position) {
+        Log.d(TAG, "Force disconnect");
         shouldForceDisconnect = true;
         onDisconnect();
         shouldForceDisconnect = false;
         viewPager.setPagingEnabled(false);
+        viewPager.setCurrentItem(position); // Position represents the previous position here.
+    }
+
+    private void retryConnection(CustomViewPager viewPager, int position) {
+        shouldForceConnect = true;
+        onConnect();
+        shouldForceConnect = false;
+        viewPager.setPagingEnabled(true);
         viewPager.setCurrentItem(position); // Position represents the previous position here.
     }
 

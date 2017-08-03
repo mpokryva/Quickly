@@ -3,8 +3,11 @@ package com.android.miki.quickly.chat_components;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,10 +23,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -63,7 +68,7 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
 
     private ImageButton mSendButton;
     private EditText mMessageEditText;
-    private ImageButton gifButton;
+    private Button gifButton;
     private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     private DatabaseReference mRootRef = mDatabase.getReference();
     private DatabaseReference mAvailableChatsRef = mRootRef.child("availableChats");
@@ -79,7 +84,7 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
     private static final String TAG = "ChatFragment";
     private static final int GIF_KEYBOARD_SHIFT = 500; // 500 pixels
     public static int GROUP_INFO_REQUEST_CODE = 0;
-    private ContentLoadingProgressBar progressWheel;
+    private ProgressBar progressWheel;
     private View content;
     private View loadingView;
     private View errorView;
@@ -95,6 +100,9 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
         isConnected = true; // Initialized to true to avoid double loading of chat room initially.
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
         loadingView = view.findViewById(R.id.loading_view);
+        progressWheel = (ProgressBar) loadingView.findViewById(R.id.progress_wheel);
+        int lightBlue = ContextCompat.getColor(getContext(), R.color.LightBlue); // Color the progress whel light blue.
+        progressWheel.getIndeterminateDrawable().setColorFilter(lightBlue, PorterDuff.Mode.MULTIPLY);
         errorView = view.findViewById(R.id.error_view);
         errorMessage = (TextView) errorView.findViewById(R.id.error_message);
         errorDetais = (TextView) errorView.findViewById(R.id.error_details);
@@ -102,7 +110,7 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
         content = view.findViewById(R.id.content);
         mSendButton = (ImageButton) view.findViewById(R.id.send_button);
         mMessageEditText = (EditText) view.findViewById(R.id.message_box);
-        gifButton = (ImageButton) view.findViewById(R.id.gif_button);
+        gifButton = (Button) view.findViewById(R.id.gif_button);
         mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.messages_recycler_view);
         // TODO: Handle null chatRoom?
         user = (User) getArguments().getSerializable("user");
@@ -296,9 +304,9 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
                 Intent intent = new Intent(getContext(), GroupInfoActivity.class);
                 intent.putExtra(getString(R.string.chat_room), chatRoom);
                 startActivityForResult(intent, GROUP_INFO_REQUEST_CODE);
-            default:
-                return super.onOptionsItemSelected(item);
+                // Refresh button case handled in ChatSelectionActivity
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -329,7 +337,7 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
     private void toggleGifButton() {
         final int iconRes;
         if (isGifDrawerOpen) {
-            iconRes = R.mipmap.gif_icon;
+            iconRes = R.drawable.gif_icon_attempt;
         } else {
             iconRes = R.drawable.ic_close_black_24dp;
         }
@@ -342,7 +350,13 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
             @Override
             public void onAnimationEnd(Animation animation) {
                 AnimatorUtil.on(gifButton).with(new GrowingAnimation()).duration(0).animate();
-                gifButton.setImageResource(iconRes);
+                Drawable newIcon = ContextCompat.getDrawable(ChatFragment.this.getContext(), iconRes);
+                if (iconRes == R.drawable.ic_close_black_24dp) {
+                    gifButton.setText("");
+                } else {
+                    gifButton.setText("GIF");
+                }
+                gifButton.setBackground(newIcon);
             }
 
             @Override
@@ -370,7 +384,6 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
             hideGifDrawer();
         }
     }
-
 
     /**
      * Hide the gif drawer itself, and return components to their appropriate states.
@@ -493,23 +506,27 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
     public void onConnect() {
         if (!isConnected) {
             isConnected = true;
-            ChatRoomManager.getInstance().getRoom(position, new FirebaseListener<ChatRoom>() {
-                @Override
-                public void onLoading() {
-                    ChatFragment.this.onLoading();
-                }
-
-                @Override
-                public void onError(FirebaseError error) {
-                    ChatFragment.this.onError(error);
-                }
-
-                @Override
-                public void onSuccess(ChatRoom chatRoom) {
-                    ChatFragment.this.onSuccess(chatRoom);
-                }
-            });
+            loadRoom();
         }
+    }
+
+    private void loadRoom() {
+        ChatRoomManager.getInstance().getRoom(position, new FirebaseListener<ChatRoom>() {
+            @Override
+            public void onLoading() {
+                ChatFragment.this.onLoading();
+            }
+
+            @Override
+            public void onError(FirebaseError error) {
+                ChatFragment.this.onError(error);
+            }
+
+            @Override
+            public void onSuccess(ChatRoom chatRoom) {
+                ChatFragment.this.onSuccess(chatRoom);
+            }
+        });
     }
 
     @Override
