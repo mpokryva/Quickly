@@ -82,8 +82,6 @@ public class GIFRecyclerAdapter extends RecyclerView.Adapter<GIFRecyclerAdapter.
         private GifViewHolder(View itemView) {
             super(itemView);
             mImageViewGif = (ImageView) itemView.findViewById(R.id.gif_image_view);
-            int color = ContextCompat.getColor(mImageViewGif.getContext(), R.color.LightBlue);
-            mImageViewGif.setBackgroundColor(color);
             mProgressBar = (ProgressBar) itemView.findViewById(R.id.progress_wheel);
             int lightBlue = ContextCompat.getColor(mImageViewGif.getContext(), R.color.LightBlue);
             mProgressBar.getIndeterminateDrawable().setColorFilter(lightBlue, PorterDuff.Mode.MULTIPLY);

@@ -39,7 +39,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     private boolean isConnected;
     private ChatFragment currentFragment;
     private boolean shouldForceDisconnect;
-    private boolean shouldForceConnect;
+    private CustomViewPager viewPager;
 
 
     public ChatSelectionPagerAdapter(FragmentManager fm, User user, Context context) {
@@ -67,6 +67,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     }
 
     public void loadRoom(final CustomViewPager container, final int position) {
+        viewPager = container;
         final ChatFragment fragment = (ChatFragment) instantiateItem(container, position);
         if (position == container.getCurrentItem()) {
             currentFragment = fragment;
@@ -86,12 +87,15 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
                 public void onError(FirebaseError error) {
                     Log.d(TAG, "Error message: " + error.getMessage());
                     Log.d(TAG, "Error details: " + error.getDetails());
-                    disconnectedFromInternet(container, currentPosition);
+                    forceDisconnect(container, currentPosition);
                     // TODO: Log real error to server.
                 }
 
                 @Override
                 public void onSuccess(ChatRoom chatRoom) {
+                    if (!viewPager.isPagingEnabled()) {
+                        viewPager.setPagingEnabled(true);
+                    }
                     ChatSelectionPagerAdapter.this.chatRoom = chatRoom;
                     ChatFragment prevFragment = instantiateItem(container, currentPosition);
                     cleanChatRoom(currentChatRoom, prevFragment); // currentChatRoom is still old chat room.
@@ -104,7 +108,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
             // Not connected to internet.
         } else {
             // Current position didn't update yet. Still previous position.
-            disconnectedFromInternet(container, currentPosition);
+            forceDisconnect(container, currentPosition);
         }
     }
 
@@ -114,20 +118,12 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
      * @param viewPager
      * @param position
      */
-    private void disconnectedFromInternet(CustomViewPager viewPager, int position) {
+    private void forceDisconnect(CustomViewPager viewPager, int position) {
         Log.d(TAG, "Force disconnect");
         shouldForceDisconnect = true;
         onDisconnect();
         shouldForceDisconnect = false;
         viewPager.setPagingEnabled(false);
-        viewPager.setCurrentItem(position); // Position represents the previous position here.
-    }
-
-    private void retryConnection(CustomViewPager viewPager, int position) {
-        shouldForceConnect = true;
-        onConnect();
-        shouldForceConnect = false;
-        viewPager.setPagingEnabled(true);
         viewPager.setCurrentItem(position); // Position represents the previous position here.
     }
 
@@ -187,20 +183,25 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     @Override
     public void onConnect() {
         if (!isConnected) {
-            if (currentFragment != null) {
-                currentFragment.onConnect();
-            }
             isConnected = true;
+            if (viewPager != null) {
+                loadRoom(viewPager, viewPager.getCurrentItem());
+            } else {
+                if (currentFragment != null) {
+                    currentFragment.onConnect();
+                    Log.d(TAG, "Fragment is handling loading.");
+                }
+            }
         }
     }
 
     @Override
     public void onDisconnect() {
         if (isConnected || shouldForceDisconnect) {
+            isConnected = false;
             if (currentFragment != null) {
                 currentFragment.onDisconnect();
             }
-            isConnected = false;
         }
     }
 
@@ -208,8 +209,6 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     public Context retrieveContext() {
         return mContext;
     }
-
-
 
 
 }
