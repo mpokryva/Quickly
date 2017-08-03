@@ -3,6 +3,7 @@ package com.android.miki.quickly.core.network;
 import android.util.Log;
 
 import com.android.miki.quickly.core.Callable;
+import com.android.miki.quickly.utils.GenericCallback;
 import com.android.miki.quickly.utils.FirebaseError;
 import com.android.miki.quickly.utils.FirebaseListener;
 import com.google.firebase.database.DataSnapshot;
@@ -35,6 +36,7 @@ public class FirebaseClient {
         //dataGenerator.createTestChats(30);
 
         // Checking if there is connection to Firebase.
+        int firstTry = 1;
         isConnected(new FirebaseListener<Boolean>() {
             @Override
             public void onLoading() {
@@ -51,41 +53,60 @@ public class FirebaseClient {
                 if (isConnectedToDatabase) { // Working Internet connection.
                     query.call(listener);
                 } else {
-                    listener.onError(FirebaseError.noFirebaseConnection());
+                    listener.onError(FirebaseError.serverError());
                 }
             }
-        });
+        }, firstTry);
 
     }
 
-    private void isConnected(final FirebaseListener<Boolean> listener) {
-        listener.onLoading();
+    private void isConnected(final FirebaseListener<Boolean> listener, final int tryNum) {
+        if (tryNum > MAX_CONNECTION_TRIES) {
+            listener.onError(FirebaseError.serverError());
+        }
+        queryConnection(new GenericCallback<Boolean>() {
+            @Override
+            public void onFinished(Boolean isConnected) {
+                if (isConnected == null) {
+                    listener.onError(FirebaseError.serverError());
+                } else {
+                    if (isConnected) {
+                        listener.onSuccess(true);
+                    } else {
+                        Log.d(TAG, "Try number " + tryNum + " unsuccessful.");
+                        isConnected(listener, tryNum + 1);
+                    }
+                }
+            }
+        });
+    }
+
+    private void queryConnection(final GenericCallback<Boolean> callback) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(300);
+                    Thread.sleep(100);
                     DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
                     connectedRef.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             boolean isConnected = dataSnapshot.getValue(Boolean.class);
                             Log.d(TAG, "Client isConnected?: " + isConnected);
-                            listener.onSuccess(isConnected);
+                            callback.onFinished(isConnected);
                         }
 
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
-                            listener.onError(new FirebaseError((databaseError)));
+                            callback.onFinished(false);
 
                         }
                     });
                 } catch (InterruptedException e) {
-                    listener.onError(FirebaseError.noFirebaseConnection());
+                    callback.onFinished(false);
                 }
             }
         }).run();
-
     }
 
     public static FirebaseClient getInstance() {

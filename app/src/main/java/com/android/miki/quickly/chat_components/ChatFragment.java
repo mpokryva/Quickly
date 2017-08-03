@@ -530,9 +530,9 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
     }
 
     @Override
-    public void onDisconnect() {
+    public void onDisconnect(FirebaseError error) {
         isConnected = false;
-        onError(FirebaseError.noInternetConnection());
+        onError(error);
     }
 
     @Override

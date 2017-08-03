@@ -8,9 +8,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 
-import java.util.ArrayList;
+import com.android.miki.quickly.utils.FirebaseError;
+
 import java.util.HashSet;
-import java.util.List;
 
 /**
  * Created by Miki on 7/19/2017.
@@ -47,18 +47,13 @@ public class ConnectivityStatusNotifier {
                             @Override
                             public void run() {
                                 try {
-                                    boolean connectedAfterRetrying = false;
                                     for (int j = 0; j < MAX_CONNECTION_TRIES; j++) {
                                         Log.d(TAG, "Try number: " + j);
                                         Thread.sleep(200);
                                         if (isConnected(context)) {
                                             notifyObservers(true);
-                                            connectedAfterRetrying = true;
                                             break;
                                         }
-                                    }
-                                    if (!connectedAfterRetrying) {
-                                        notifyObservers(false);
                                     }
                                 } catch (InterruptedException e) {
                                     notifyObservers(false);
@@ -104,7 +99,7 @@ public class ConnectivityStatusNotifier {
             if (isConnected) {
                 observer.onConnect();
             } else {
-                observer.onDisconnect();
+                observer.onDisconnect(FirebaseError.serverError());
             }
         }
     }

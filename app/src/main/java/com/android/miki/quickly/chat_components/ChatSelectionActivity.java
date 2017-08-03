@@ -17,6 +17,7 @@ import com.android.miki.quickly.group_info.GroupInfoActivity;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.User;
 import com.android.miki.quickly.core.chat_room.ChatRoomManager;
+import com.android.miki.quickly.utils.FirebaseError;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -115,7 +116,7 @@ public class ChatSelectionActivity extends FirebaseActivity implements Connectiv
     }
 
     @Override
-    public void onDisconnect() {
+    public void onDisconnect(FirebaseError error) {
         mViewPager.setPagingEnabled(false);
     }
 

@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.util.Log;
 import android.view.ViewGroup;
 
-import com.android.miki.quickly.core.Status;
 import com.android.miki.quickly.core.network.ConnectivityStatusNotifier;
 import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
 import com.android.miki.quickly.models.ChatRoom;
@@ -29,9 +28,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     private ChatRoomManager chatRoomManager;
     private User user;
     private ChatRoom chatRoom;
-    private Status status;
     private ChatRoom currentChatRoom;
-    private Iterator<Map.Entry<Integer, Status>> mapIterator;
     private FragmentManager fm;
     private static final String TAG = ChatSelectionPagerAdapter.class.getName();
     private int currentPosition;
@@ -47,7 +44,6 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
         this.fm = fm;
         chatRoomManager = ChatRoomManager.getInstance();
         this.user = user;
-        status = Status.LOADING;
         mContext = context;
         ConnectivityStatusNotifier notifier = ConnectivityStatusNotifier.getInstance();
         notifier.registerObserver(this);
@@ -87,7 +83,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
                 public void onError(FirebaseError error) {
                     Log.d(TAG, "Error message: " + error.getMessage());
                     Log.d(TAG, "Error details: " + error.getDetails());
-                    forceDisconnect(container, currentPosition);
+                    forceDisconnect(container, currentPosition, FirebaseError.serverError());
                     // TODO: Log real error to server.
                 }
 
@@ -108,7 +104,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
             // Not connected to internet.
         } else {
             // Current position didn't update yet. Still previous position.
-            forceDisconnect(container, currentPosition);
+            forceDisconnect(container, currentPosition, FirebaseError.serverError());
         }
     }
 
@@ -118,10 +114,10 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
      * @param viewPager
      * @param position
      */
-    private void forceDisconnect(CustomViewPager viewPager, int position) {
+    private void forceDisconnect(CustomViewPager viewPager, int position, FirebaseError error) {
         Log.d(TAG, "Force disconnect");
         shouldForceDisconnect = true;
-        onDisconnect();
+        onDisconnect(error);
         shouldForceDisconnect = false;
         viewPager.setPagingEnabled(false);
         viewPager.setCurrentItem(position); // Position represents the previous position here.
@@ -196,11 +192,11 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     }
 
     @Override
-    public void onDisconnect() {
+    public void onDisconnect(FirebaseError error) {
         if (isConnected || shouldForceDisconnect) {
             isConnected = false;
             if (currentFragment != null) {
-                currentFragment.onDisconnect();
+                currentFragment.onDisconnect(error);
             }
         }
     }
