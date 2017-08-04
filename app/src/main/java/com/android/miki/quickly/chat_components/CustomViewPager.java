@@ -39,4 +39,8 @@ public class CustomViewPager extends ViewPager {
     public void setPagingEnabled(boolean enabled) {
         this.enabled = enabled;
     }
+
+    public boolean isPagingEnabled() {
+        return enabled;
+    }
 }

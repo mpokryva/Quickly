@@ -14,8 +14,6 @@ import com.android.miki.quickly.R;
 
 public abstract class FirebaseActivity extends AppCompatActivity {
 
-    private Status status;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

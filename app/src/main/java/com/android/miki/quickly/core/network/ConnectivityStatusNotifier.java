@@ -8,9 +8,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 
-import java.util.ArrayList;
+import com.android.miki.quickly.utils.FirebaseError;
+
 import java.util.HashSet;
-import java.util.List;
 
 /**
  * Created by Miki on 7/19/2017.
@@ -49,17 +49,17 @@ public class ConnectivityStatusNotifier {
                                 try {
                                     for (int j = 0; j < MAX_CONNECTION_TRIES; j++) {
                                         Log.d(TAG, "Try number: " + j);
+                                        Thread.sleep(200);
                                         if (isConnected(context)) {
                                             notifyObservers(true);
+                                            break;
                                         }
-                                        Thread.sleep(500);
                                     }
-                                    notifyObservers(false);
                                 } catch (InterruptedException e) {
                                     notifyObservers(false);
                                 }
                             }
-                        });
+                        }).run();
                     }
                 } else { // If not even in the process of connecting, then network was just lost.
                     notifyObservers(false);
@@ -71,10 +71,11 @@ public class ConnectivityStatusNotifier {
     private boolean isConnectedOrConnecting(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        Log.d(TAG, "Connected?: " + (activeNetwork != null && activeNetwork.isConnectedOrConnecting()));
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
-    private boolean isConnected(Context context) {
+    public boolean isConnected(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnected() && activeNetwork.isAvailable();
@@ -98,7 +99,7 @@ public class ConnectivityStatusNotifier {
             if (isConnected) {
                 observer.onConnect();
             } else {
-                observer.onDisconnect();
+                observer.onDisconnect(FirebaseError.serverError());
             }
         }
     }

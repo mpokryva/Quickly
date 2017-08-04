@@ -29,9 +29,10 @@ public class FirebaseError {
         return details;
     }
 
-    public static FirebaseError noFirebaseConnection() {
+    public static FirebaseError serverError() {
         String message = "There was a problem connecting to the server.";
-        String details = "Please verify that you have a working Internet connection.";
+        String details = "Please try reloading the chat room in a few minutes. If the issue persists," +
+                "contact the developer via the email provided in Quickly's info section on the Play Store.";
         return new FirebaseError(message, details);
     }
 

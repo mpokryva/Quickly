@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.util.Log;
 import android.view.ViewGroup;
 
-import com.android.miki.quickly.core.Status;
 import com.android.miki.quickly.core.network.ConnectivityStatusNotifier;
 import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
 import com.android.miki.quickly.models.ChatRoom;
@@ -29,9 +28,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     private ChatRoomManager chatRoomManager;
     private User user;
     private ChatRoom chatRoom;
-    private Status status;
     private ChatRoom currentChatRoom;
-    private Iterator<Map.Entry<Integer, Status>> mapIterator;
     private FragmentManager fm;
     private static final String TAG = ChatSelectionPagerAdapter.class.getName();
     private int currentPosition;
@@ -39,6 +36,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     private boolean isConnected;
     private ChatFragment currentFragment;
     private boolean shouldForceDisconnect;
+    private CustomViewPager viewPager;
 
 
     public ChatSelectionPagerAdapter(FragmentManager fm, User user, Context context) {
@@ -46,7 +44,6 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
         this.fm = fm;
         chatRoomManager = ChatRoomManager.getInstance();
         this.user = user;
-        status = Status.LOADING;
         mContext = context;
         ConnectivityStatusNotifier notifier = ConnectivityStatusNotifier.getInstance();
         notifier.registerObserver(this);
@@ -66,10 +63,14 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     }
 
     public void loadRoom(final CustomViewPager container, final int position) {
+        viewPager = container;
         final ChatFragment fragment = (ChatFragment) instantiateItem(container, position);
         if (position == container.getCurrentItem()) {
             currentFragment = fragment;
         }
+        ConnectivityStatusNotifier notifier = ConnectivityStatusNotifier.getInstance();
+        boolean isConnected = notifier.isConnected(container.getContext());
+        Log.d(TAG, "isConnected from notifier: " + isConnected);
         if (isConnected) {
             chatRoomManager.getRoom(position, new FirebaseListener<ChatRoom>() {
                 @Override
@@ -82,12 +83,15 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
                 public void onError(FirebaseError error) {
                     Log.d(TAG, "Error message: " + error.getMessage());
                     Log.d(TAG, "Error details: " + error.getDetails());
-                    disconnectedFromInternet(container, currentPosition);
-                    // TODO: Log real error.
+                    forceDisconnect(container, currentPosition, FirebaseError.serverError());
+                    // TODO: Log real error to server.
                 }
 
                 @Override
                 public void onSuccess(ChatRoom chatRoom) {
+                    if (!viewPager.isPagingEnabled()) {
+                        viewPager.setPagingEnabled(true);
+                    }
                     ChatSelectionPagerAdapter.this.chatRoom = chatRoom;
                     ChatFragment prevFragment = instantiateItem(container, currentPosition);
                     cleanChatRoom(currentChatRoom, prevFragment); // currentChatRoom is still old chat room.
@@ -100,9 +104,8 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
             // Not connected to internet.
         } else {
             // Current position didn't update yet. Still previous position.
-            disconnectedFromInternet(container, currentPosition);
+            forceDisconnect(container, currentPosition, FirebaseError.serverError());
         }
-
     }
 
     /**
@@ -111,9 +114,10 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
      * @param viewPager
      * @param position
      */
-    private void disconnectedFromInternet(CustomViewPager viewPager, int position) {
+    private void forceDisconnect(CustomViewPager viewPager, int position, FirebaseError error) {
+        Log.d(TAG, "Force disconnect");
         shouldForceDisconnect = true;
-        onDisconnect();
+        onDisconnect(error);
         shouldForceDisconnect = false;
         viewPager.setPagingEnabled(false);
         viewPager.setCurrentItem(position); // Position represents the previous position here.
@@ -175,20 +179,25 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     @Override
     public void onConnect() {
         if (!isConnected) {
-            if (currentFragment != null) {
-                currentFragment.onConnect();
-            }
             isConnected = true;
+            if (viewPager != null) {
+                loadRoom(viewPager, viewPager.getCurrentItem());
+            } else {
+                if (currentFragment != null) {
+                    currentFragment.onConnect();
+                    Log.d(TAG, "Fragment is handling loading.");
+                }
+            }
         }
     }
 
     @Override
-    public void onDisconnect() {
+    public void onDisconnect(FirebaseError error) {
         if (isConnected || shouldForceDisconnect) {
-            if (currentFragment != null) {
-                currentFragment.onDisconnect();
-            }
             isConnected = false;
+            if (currentFragment != null) {
+                currentFragment.onDisconnect(error);
+            }
         }
     }
 
@@ -196,8 +205,6 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     public Context retrieveContext() {
         return mContext;
     }
-
-
 
 
 }
