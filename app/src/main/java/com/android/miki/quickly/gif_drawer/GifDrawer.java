@@ -49,7 +49,7 @@ public class GifDrawer {
         mAdapter.notifyDataSetChanged();
     }
 
-    public void show() {
+    private void show() {
         mRecyclerView.setVisibility(View.VISIBLE);
         isShown = true;
     }
@@ -61,7 +61,6 @@ public class GifDrawer {
 
 
     public void getTrendingGifs() {
-
         final GiphyAPIRequest request = new GiphyAPIRequest(new GiphyAPIResponse() {
             @Override
             public void gifURLsRetrieved(List<String> urls) {

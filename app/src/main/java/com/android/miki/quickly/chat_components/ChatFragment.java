@@ -413,7 +413,7 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
     private void showGifDrawer() {
         clearMessageBox();
         mMessageEditText.setHint(R.string.search_giphy);
-        mSendButton.setVisibility(View.INVISIBLE);
+        mSendButton.setVisibility(View.GONE);
         isGifDrawerOpen = true;
         mGifDrawer.setShouldShow(true);
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
