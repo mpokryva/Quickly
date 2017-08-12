@@ -10,4 +10,11 @@
     <string name="dialog_text">dialogText</string>
     <string name="chat_room">chatRoom</string>
     <string name="search_giphy">Search GIPHY...</string>
+    <string name="sign_up">Sign up</string>
+    <string name="password">Password</string>
+    <string name="email">Email</string>
+    <string name="log_in">Log in</string>
+    <string name="name">Name</string>
+    <string name="facebook_app_id">276157149529167</string>
+    <string name="fb_login_protocol_scheme">fb276157149529167</string>
 </resources>
