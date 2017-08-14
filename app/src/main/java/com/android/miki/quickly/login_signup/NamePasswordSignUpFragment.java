@@ -2,11 +2,11 @@ package com.android.miki.quickly.login_signup;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -14,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.android.miki.quickly.R;
@@ -29,13 +28,12 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import java.util.ArrayList;
 
 /**
- * Created by Miki on 8/3/2017.
+ * Created by mpokr on 8/13/2017.
  */
 
-public class SignUpFragment extends Fragment implements FieldValidator {
+public class NamePasswordSignUpFragment extends Fragment implements FieldValidator {
 
     private CustomTextInputLayout nameInputLayout;
-    private CustomTextInputLayout emailInputLayout;
     private CustomTextInputLayout passwordInputLayout;
     private Button signUpButton;
     private FirebaseAuth auth;
@@ -45,21 +43,32 @@ public class SignUpFragment extends Fragment implements FieldValidator {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_sign_up, container, false);
+        View view = inflater.inflate(R.layout.fragment_name_password_signup, container, false);
         nameInputLayout = view.findViewById(R.id.name_text_input);
+        passwordInputLayout = view.findViewById(R.id.password_text_input);
+        passwordInputLayout.setPasswordVisibilityToggleEnabled(true);
         Drawable drawable = ContextCompat.getDrawable(getContext(), R.drawable.text_field_error);
         nameInputLayout.setErrorDrawable(drawable);
-        emailInputLayout = view.findViewById(R.id.email_text_input);
-        emailInputLayout.setErrorDrawable(drawable);
-        passwordInputLayout = view.findViewById(R.id.password_text_input);
         passwordInputLayout.setErrorDrawable(drawable);
+
+
+        Bundle args = getArguments();
+        final String email;
+        if (args != null) {
+            email = args.getString("email");
+            if (email == null) {
+                throw new IllegalArgumentException("Email not passed correctly from previous fragment");
+            }
+        } else {
+            throw new IllegalArgumentException("Email not passed correctly from previous fragment");
+        }
+
         signUpButton = view.findViewById(R.id.sign_up_button);
         auth = FirebaseAuth.getInstance();
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String name = nameInputLayout.getTrimmedText();
-                String email = emailInputLayout.getTrimmedText();
                 String password = passwordInputLayout.getTrimmedText();
                 if (validateFields()) {
                     createAccount(name, email, password);
@@ -92,9 +101,8 @@ public class SignUpFragment extends Fragment implements FieldValidator {
      * @return True if the fields are valid, false otherwise.
      */
     public boolean validateFields() {
-        String email = emailInputLayout.getEditText().getText().toString().trim();
-        String password = passwordInputLayout.getEditText().getText().toString().trim();
-        String name = nameInputLayout.getEditText().getText().toString().trim();
+        String password = passwordInputLayout.getTrimmedText();
+        String name = nameInputLayout.getTrimmedText();
         boolean areFieldsValid = true;
 
         TextValidator textValidator = new TextValidator();
@@ -102,11 +110,6 @@ public class SignUpFragment extends Fragment implements FieldValidator {
         if (nameValidationMessage != null) {
             areFieldsValid = false;
             nameInputLayout.setError(nameValidationMessage);
-        }
-        String emailValidationMessage = textValidator.isValidEmail(email);
-        if (emailValidationMessage != null) {
-            areFieldsValid = false;
-            emailInputLayout.setError(emailValidationMessage);
         }
         ArrayList<String> passwordValidationMessages = textValidator.isValidPassword(password);
         if (passwordValidationMessages != null) {
@@ -120,7 +123,6 @@ public class SignUpFragment extends Fragment implements FieldValidator {
 
         return areFieldsValid;
     }
-
 
     private void createAccount(final String name, String email, String password) {
         auth.createUserWithEmailAndPassword(email, password)
@@ -162,6 +164,5 @@ public class SignUpFragment extends Fragment implements FieldValidator {
                     }
                 });
     }
-
 
 }

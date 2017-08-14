@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.TextInputLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.android.miki.quickly.login_signup.CustomTextInputLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/TextInputFieldLayout"
@@ -10,4 +10,4 @@
         style="@style/TextInputField"
         android:hint="@string/name"
         android:inputType="textPersonName" />
-</android.support.design.widget.TextInputLayout>
+</com.android.miki.quickly.login_signup.CustomTextInputLayout>

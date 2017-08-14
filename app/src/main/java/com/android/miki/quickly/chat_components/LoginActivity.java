@@ -1,35 +1,38 @@
 package com.android.miki.quickly.chat_components;
 
 import android.content.Intent;
+import android.content.res.AssetManager;
+import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
 import android.util.Log;
-import android.util.Range;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.miki.quickly.R;
+import com.android.miki.quickly.login_signup.EmailSignUpFragment;
 import com.android.miki.quickly.login_signup.LogInFragment;
 import com.android.miki.quickly.login_signup.LogInListener;
-import com.android.miki.quickly.login_signup.SignUpFragment;
 import com.android.miki.quickly.login_signup.SignUpListener;
 import com.android.miki.quickly.models.User;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
-import com.facebook.FacebookSdk;
-import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -40,8 +43,8 @@ import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * Created by mpokr on 5/26/2017.
@@ -57,14 +60,21 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
     private Button fbLoginButton;
     CallbackManager callbackManager;
     private static final String TAG = LoginActivity.class.getName();
+    private final boolean IS_TESTING = true;
+    private RelativeLayout loadingView;
+    private RelativeLayout content;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_log_in_sign_up);
+        setContentView(R.layout.activity_login_signup);
         auth = FirebaseAuth.getInstance();
-        swapLogInSignUpButton = (Button) findViewById(R.id.swap_log_in_sign_up_button);
-        fbLoginButton = (Button) findViewById(R.id.fb_login_button);
+        fbLoginButton = findViewById(R.id.fb_login_button);
+        initCustomFontsAndColors();
+        if (IS_TESTING) {
+            auth.signOut();
+        }
+        swapLogInSignUpButton = findViewById(R.id.swap_log_in_sign_up_button);
         fbLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -77,12 +87,14 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
         LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
+                content.setVisibility(View.GONE);
+                loadingView.setVisibility(View.VISIBLE);
                 handleFacebookAccessToken(loginResult.getAccessToken());
             }
 
             @Override
             public void onCancel() {
-                int i =0;
+
             }
 
             @Override
@@ -90,9 +102,31 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
 
             }
         });
-        auth.signOut();
     }
 
+    private void initCustomFontsAndColors() {
+        // Format title TextView.
+        TextView tv = findViewById(R.id.activity_title);
+        AssetManager am = this.getApplicationContext().getAssets();
+        Typeface tf = Typeface.createFromAsset(am,
+                String.format(Locale.US, "fonts/%s", "FiraSans-Heavy.otf"));
+        tv.setTypeface(tf);
+        content = findViewById(R.id.content);
+        loadingView = findViewById(R.id.loading_view);
+        ProgressBar progressWheel = loadingView.findViewById(R.id.progress_wheel);
+        int lightBlue = ContextCompat.getColor(this, R.color.LightBlue); // Color the progress whel light blue.
+        progressWheel.getIndeterminateDrawable().setColorFilter(lightBlue, PorterDuff.Mode.MULTIPLY);
+        String fbButtonText = fbLoginButton.getText().toString();
+        SpannableStringBuilder builder = new SpannableStringBuilder(fbButtonText);
+        int boldStartIndex = 0;
+        int boldEndIndex = 8;
+        builder.setSpan(new StyleSpan(Typeface.BOLD), boldStartIndex, boldEndIndex, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        boldStartIndex = 14;
+        boldEndIndex = fbButtonText.length();
+        builder.setSpan(new StyleSpan(Typeface.BOLD), boldStartIndex, boldEndIndex, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        fbLoginButton.setText(builder);
+
+    }
 
     private void enterChatRooms(FirebaseUser user) {
         Intent chatSelectionIntent = new Intent();
@@ -116,6 +150,8 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
                             FirebaseUser user = auth.getCurrentUser();
                             enterChatRooms(user);
                         } else {
+                            content.setVisibility(View.VISIBLE);
+                            loadingView.setVisibility(View.GONE);
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
@@ -188,11 +224,13 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
                         buttonText = "Have an account? Log in.";
                         boldStartIndex = 17;
                         boldEndIndex = buttonText.length();
-                        fragmentToInsert = new SignUpFragment();
+                        fragmentToInsert = new EmailSignUpFragment();
                         break;
                 }
                 if (fragmentToInsert != null) {
-                    fm.beginTransaction().replace(R.id.fragment_container, fragmentToInsert).commit();
+                    FragmentTransaction transaction = fm.beginTransaction();
+                    transaction.replace(R.id.fragment_container, fragmentToInsert);
+                    transaction.commitAllowingStateLoss();
                 }
                 builder = new SpannableStringBuilder(buttonText);
                 builder.setSpan(new StyleSpan(Typeface.BOLD), boldStartIndex, boldEndIndex, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);

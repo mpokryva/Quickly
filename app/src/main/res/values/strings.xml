@@ -17,4 +17,6 @@
     <string name="name">Name</string>
     <string name="facebook_app_id">276157149529167</string>
     <string name="fb_login_protocol_scheme">fb276157149529167</string>
+    <string name="continue_with_facebook">Continue with Facebook</string>
+    <string name="next">Next</string>
 </resources>

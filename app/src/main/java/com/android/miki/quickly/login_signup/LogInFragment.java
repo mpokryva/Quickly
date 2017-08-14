@@ -36,27 +36,31 @@ import java.util.ArrayList;
  * Created by Miki on 8/5/2017.
  */
 
-public class LogInFragment extends Fragment {
+public class LogInFragment extends Fragment implements FieldValidator {
 
-    private TextInputLayout emailInputLayout;
-    private TextInputLayout passwordInputLayout;
+    private CustomTextInputLayout emailInputLayout;
+    private CustomTextInputLayout passwordInputLayout;
     private Button loginButton;
     private static final String TAG = LogInFragment.class.getName();
     private LogInListener callbackToActivity;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_log_in, container, false);
-        emailInputLayout = (TextInputLayout) view.findViewById(R.id.email_text_input);
-        passwordInputLayout = (TextInputLayout) view.findViewById(R.id.password_text_input);
-        loginButton = (Button) view.findViewById(R.id.login_button);
+        emailInputLayout = view.findViewById(R.id.email_text_input);
+        passwordInputLayout = view.findViewById(R.id.password_text_input);
+        Drawable drawable = ContextCompat.getDrawable(getContext(), R.drawable.text_field_error);
+        emailInputLayout.setErrorDrawable(drawable);
+        passwordInputLayout.setErrorDrawable(drawable);
+        loginButton = view.findViewById(R.id.login_button);
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (validateFields()) {
                     final FirebaseAuth auth = FirebaseAuth.getInstance();
-                    String email = EditTextUtil.getTrimmedText(emailInputLayout.getEditText());
-                    String password = EditTextUtil.getTrimmedText(passwordInputLayout.getEditText());
+                    String email = emailInputLayout.getTrimmedText();
+                    String password = passwordInputLayout.getTrimmedText();
                     if (email != null && password != null) {
                         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                             @Override
@@ -100,15 +104,16 @@ public class LogInFragment extends Fragment {
      *
      * @return True if the fields are valid, false otherwise.
      */
-    private boolean validateFields() {
-        String email = emailInputLayout.getEditText().getText().toString().trim();
-        String password = passwordInputLayout.getEditText().getText().toString().trim();
+    public boolean validateFields() {
+        ;
+        String email = emailInputLayout.getTrimmedText();
+        String password = passwordInputLayout.getTrimmedText();
         TextValidator textValidator = new TextValidator();
         String emailValidationMessage = textValidator.isValidEmail(email);
         boolean areFieldsValid = true;
         if (emailValidationMessage != null) {
             areFieldsValid = false;
-            setError(emailInputLayout, emailValidationMessage);
+            emailInputLayout.setError(emailValidationMessage);
         }
         ArrayList<String> passwordValidationMessages = textValidator.isValidPassword(password);
         if (passwordValidationMessages != null) {
@@ -118,17 +123,9 @@ public class LogInFragment extends Fragment {
                 passwordErrorMessage += message + "\n";
             }
             Drawable drawable = ContextCompat.getDrawable(getContext(), R.drawable.text_field_error);
-            setError(passwordInputLayout, passwordErrorMessage);
+            passwordInputLayout.setError(passwordErrorMessage);
         }
         return areFieldsValid;
     }
 
-    private void setError(TextInputLayout layout, String error) {
-        EditText editText = layout.getEditText();
-        if (editText != null) {
-            Drawable drawable = ContextCompat.getDrawable(getContext(), R.drawable.text_field_error);
-            editText.setBackground(drawable);
-        }
-        layout.setError(error);
-    }
 }

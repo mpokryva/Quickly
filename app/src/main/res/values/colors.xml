@@ -5,6 +5,7 @@
     <color name="colorAccent">#FF4081</color>
     <color name="ChatActivityBackground">#f8f5f2</color>
     <color name="LightBlue">#8ab7ff</color>
+    <color name="FacebookBlue">#4267B2</color>
     <color name="LightBlue1">#f5f9ff</color>
     <color name="LightBlue2">#f0f6ff</color>
     <color name="IncomingChatBubbleBackground">@android:color/white</color>
