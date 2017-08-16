@@ -42,7 +42,7 @@ import com.android.miki.quickly.ui.GrowingAnimation;
 import com.android.miki.quickly.ui.ShrinkingAnimation;
 import com.android.miki.quickly.utils.FirebaseError;
 import com.android.miki.quickly.utils.FirebaseListener;
-import com.android.miki.quickly.utils.VerticalSpaceItemDecoration;
+import com.android.miki.quickly.ui.VerticalSpaceItemDecoration;
 import com.android.miki.quickly.gif_drawer.GifDrawer;
 import com.android.miki.quickly.gif_drawer.GifDrawerAction;
 import com.android.miki.quickly.models.ChatRoom;

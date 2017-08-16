@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
 
 public class TextValidator {
 
+    public static final String INVALID_EMAIL = "Invalid email.";
+
 
     /**
      * Returns true if a string matches the following criteria:
@@ -26,7 +28,7 @@ public class TextValidator {
         boolean isValid = android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
         String errorMessage = null;
         if (!isValid) {
-            errorMessage = "Invalid email.";
+            errorMessage = INVALID_EMAIL;
         }
         return errorMessage;
     }
@@ -43,7 +45,7 @@ public class TextValidator {
         boolean isValid = !TextUtils.isEmpty(name);
         String errorMessage = null;
         if (!isValid) {
-            errorMessage = "Name cannot be empty.";
+            errorMessage = "Please enter a name.";
         }
         return errorMessage;
     }
@@ -66,14 +68,19 @@ public class TextValidator {
         if (!doesMatch(digitOccursAtLeastOnce, password)) {
             errorMessages.add("Password must have at least 1 digit.");
         }
-        Pattern lowerCaseAtLeastOnce = Pattern.compile(".*(?=.*[a-z]).*");
-        if (!doesMatch(lowerCaseAtLeastOnce, password)) {
-            errorMessages.add("Password must have at last 1 lowercase letter.");
+        Pattern letterAtLeastOnce = Pattern.compile(".*(?=.*([a-z][A-Z])).*");
+        if (!doesMatch(letterAtLeastOnce, password)) {
+            errorMessages.add("Password must have at last 1 letter.");
         }
-        Pattern upperCaseAtLeastOnce = Pattern.compile(".*(?=.*[A-Z]).*");
-        if (!doesMatch(upperCaseAtLeastOnce, password)) {
-            errorMessages.add("Password must have at least 1 uppercase letter.");
-        }
+//        Pattern lowerCaseAtLeastOnce = Pattern.compile(".*(?=.*[a-z]).*");
+//        if (!doesMatch(lowerCaseAtLeastOnce, password)) {
+//            errorMessages.add("Password must have at last 1 lowercase letter.");
+//        }
+
+//        Pattern upperCaseAtLeastOnce = Pattern.compile(".*(?=.*[A-Z]).*");
+//        if (!doesMatch(upperCaseAtLeastOnce, password)) {
+//            errorMessages.add("Password must have at least 1 uppercase letter.");
+//        }
         Pattern noWhiteSpace = Pattern.compile(".*(?=\\S+$).*");
         if (!doesMatch(noWhiteSpace, password)) {
             errorMessages.add("Password cannot have any whitespace.");

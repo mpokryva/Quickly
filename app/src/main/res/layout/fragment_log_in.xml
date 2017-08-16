@@ -24,4 +24,22 @@
         android:layout_below="@id/password_text_input"
         android:text="@string/log_in"/>
 
+    <com.android.miki.quickly.ui.FBLoginButton
+        android:id="@+id/fb_login_button"
+        style="@style/FBLoginButton"
+        android:layout_below="@id/login_button"/>
+
+
+    <TextView
+        android:id="@+id/forgot_password_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/fb_login_button"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:clickable="true"
+        android:text="@string/forgot_your_password"/>
+
+
 </RelativeLayout>

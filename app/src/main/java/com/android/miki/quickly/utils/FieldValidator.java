@@ -1,4 +1,4 @@
-package com.android.miki.quickly.login_signup;
+package com.android.miki.quickly.utils;
 
 /**
  * Created by mpokr on 8/13/2017.

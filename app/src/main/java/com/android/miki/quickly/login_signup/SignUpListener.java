@@ -8,5 +8,6 @@ import com.google.firebase.auth.FirebaseUser;
 
 public interface SignUpListener {
     void onSuccessfulSignUp(FirebaseUser user);
+    void requestFacebookLogin();
     void onFailedSignUp();
 }

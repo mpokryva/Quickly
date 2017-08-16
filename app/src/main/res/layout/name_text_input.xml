@@ -8,6 +8,6 @@
 
     <android.support.design.widget.TextInputEditText
         style="@style/TextInputField"
-        android:hint="@string/name"
+        android:hint="@string/first_name"
         android:inputType="textPersonName" />
 </com.android.miki.quickly.login_signup.CustomTextInputLayout>

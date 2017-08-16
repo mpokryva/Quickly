@@ -168,4 +168,10 @@
         <item name="android:textColor">@android:color/white</item>
     </style>
 
+    <style name="FBLoginButton" parent="LongRoundedBorderlessButton">
+        <item name="android:background">@drawable/fb_login_button_background</item>
+        <item name="android:text">@string/continue_with_facebook</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
 </resources>

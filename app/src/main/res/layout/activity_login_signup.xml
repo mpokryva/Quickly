@@ -42,13 +42,6 @@
             android:layout_below="@id/activity_title"
             android:layout_marginTop="30dp"/>
 
-        <Button
-            android:id="@+id/fb_login_button"
-            style="@style/LongRoundedBorderlessButton"
-            android:layout_below="@id/fragment_container"
-            android:layout_centerHorizontal="true"
-            android:background="@drawable/fb_login_button_background"
-            android:text="@string/continue_with_facebook"/>
     </RelativeLayout>
 
 

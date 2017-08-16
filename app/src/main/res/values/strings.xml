@@ -19,4 +19,12 @@
     <string name="fb_login_protocol_scheme">fb276157149529167</string>
     <string name="continue_with_facebook">Continue with Facebook</string>
     <string name="next">Next</string>
+    <string name="forgot_your_password">Forgot your password?</string>
+    <string name="reset_password">Reset password</string>
+    <string name="sign_up_with_email_amp_password"><![CDATA[Sign up with email & password]]></string>
+    <string name="first_name">First name</string>
+    <string name="link_accounts">Link accounts</string>
+    <string name="link_accounts_question">Link accounts?</string>
+    <string name="linking_dialog_message">It appears that you have already created an account using an email and password.
+        In order to continue with Facebook, you must link your existing account to your Facebook account.</string>
 </resources>

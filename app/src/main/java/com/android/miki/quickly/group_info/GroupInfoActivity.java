@@ -11,7 +11,7 @@ import android.view.MenuItem;
 
 import com.android.miki.quickly.R;
 import com.android.miki.quickly.models.ChatRoom;
-import com.android.miki.quickly.utils.VerticalSpaceItemDecoration;
+import com.android.miki.quickly.ui.VerticalSpaceItemDecoration;
 
 /**
  * Created by mpokr on 6/17/2017.
@@ -38,7 +38,7 @@ public class GroupInfoActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.group_info_recycler_view);
+        mRecyclerView = findViewById(R.id.group_info_recycler_view);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(layoutManager);
         initializeDialogListener();

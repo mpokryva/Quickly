@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@+id/activity_configure_user"
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+    android:layout_marginTop="60dp">
+
+    <Button
+        android:id="@+id/email_password_sign_up_button"
+        style="@style/LongRoundedBorderlessButton"
+        android:text="@string/sign_up_with_email_amp_password"/>
+
+    <com.android.miki.quickly.ui.FBLoginButton
+        android:id="@+id/fb_login_button"
+        style="@style/FBLoginButton"
+        android:layout_below="@id/email_password_sign_up_button"/>
+
+</RelativeLayout>

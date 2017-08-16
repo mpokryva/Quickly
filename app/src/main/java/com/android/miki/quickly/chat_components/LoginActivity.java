@@ -23,12 +23,16 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.android.miki.quickly.R;
-import com.android.miki.quickly.login_signup.EmailSignUpFragment;
-import com.android.miki.quickly.login_signup.LogInFragment;
-import com.android.miki.quickly.login_signup.LogInListener;
+import com.android.miki.quickly.login_signup.LinkAccountsFragment;
+import com.android.miki.quickly.login_signup.LoginFragment;
+import com.android.miki.quickly.login_signup.LoginListener;
 import com.android.miki.quickly.login_signup.SignUpListener;
+import com.android.miki.quickly.login_signup.SignUpMethodSelectionFragment;
 import com.android.miki.quickly.models.User;
+import com.android.miki.quickly.utils.FirebaseError;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -41,6 +45,9 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Arrays;
@@ -50,14 +57,15 @@ import java.util.Locale;
  * Created by mpokr on 5/26/2017.
  */
 
-public class LoginActivity extends AppCompatActivity implements SignUpListener, LogInListener {
+public class LoginActivity extends AppCompatActivity implements SignUpListener, LoginListener {
 
     private FirebaseAuth auth;
     private int currentState;
-    private static final int LOG_IN = 1;
-    private static final int SIGN_UP = 0;
+    private final int LOG_IN = 1;
+    private final int SIGN_UP = 0;
+    private final String LOG_IN_FRAGMENT_TAG = com.facebook.login.LoginFragment.class.getName();
+    private final String SIGN_UP_METHOD_FRAGMENT_TAG = SignUpMethodSelectionFragment.class.getName();
     private Button swapLogInSignUpButton;
-    private Button fbLoginButton;
     CallbackManager callbackManager;
     private static final String TAG = LoginActivity.class.getName();
     private final boolean IS_TESTING = true;
@@ -69,20 +77,12 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_signup);
         auth = FirebaseAuth.getInstance();
-        fbLoginButton = findViewById(R.id.fb_login_button);
+
         initCustomFontsAndColors();
         if (IS_TESTING) {
             auth.signOut();
         }
         swapLogInSignUpButton = findViewById(R.id.swap_log_in_sign_up_button);
-        fbLoginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                LoginManager.getInstance().logInWithReadPermissions(LoginActivity.this,
-                        Arrays.asList("email", "public_profile"));
-
-            }
-        });
         callbackManager = CallbackManager.Factory.create();
         LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
@@ -116,16 +116,6 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
         ProgressBar progressWheel = loadingView.findViewById(R.id.progress_wheel);
         int lightBlue = ContextCompat.getColor(this, R.color.LightBlue); // Color the progress whel light blue.
         progressWheel.getIndeterminateDrawable().setColorFilter(lightBlue, PorterDuff.Mode.MULTIPLY);
-        String fbButtonText = fbLoginButton.getText().toString();
-        SpannableStringBuilder builder = new SpannableStringBuilder(fbButtonText);
-        int boldStartIndex = 0;
-        int boldEndIndex = 8;
-        builder.setSpan(new StyleSpan(Typeface.BOLD), boldStartIndex, boldEndIndex, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-        boldStartIndex = 14;
-        boldEndIndex = fbButtonText.length();
-        builder.setSpan(new StyleSpan(Typeface.BOLD), boldStartIndex, boldEndIndex, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-        fbLoginButton.setText(builder);
-
     }
 
     private void enterChatRooms(FirebaseUser user) {
@@ -138,27 +128,54 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
 
     private void handleFacebookAccessToken(AccessToken token) {
         Log.d(TAG, "handleFacebookAccessToken:" + token);
-
-        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
-        auth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInWithCredential:success");
-                            FirebaseUser user = auth.getCurrentUser();
-                            enterChatRooms(user);
-                        } else {
-                            content.setVisibility(View.VISIBLE);
-                            loadingView.setVisibility(View.GONE);
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Toast.makeText(LoginActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
+        final AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
+        auth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    // Sign in success, update UI with the signed-in user's information
+                    Log.e(TAG, "signInWithCredential:success");
+                    FirebaseUser user = auth.getCurrentUser();
+                    enterChatRooms(user);
+                } else {
+                    try {
+                        throw task.getException();
+                    } catch (FirebaseAuthInvalidUserException e) {
+                        Toast.makeText(LoginActivity.this, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                    } catch (FirebaseAuthInvalidCredentialsException e) {
+                        Toast.makeText(LoginActivity.this, "Something went wrong... " +
+                                "Please try logging in with Facebook again.", Toast.LENGTH_SHORT).show();
+                    } catch (FirebaseAuthUserCollisionException e) {
+                        int lightBlue = ContextCompat.getColor(LoginActivity.this, R.color.LightBlue);
+                        new MaterialDialog.Builder(LoginActivity.this)
+                                .title(R.string.link_accounts_question)
+                                .content(R.string.linking_dialog_message)
+                                .positiveText(R.string.link_accounts)
+                                .positiveColor(lightBlue)
+                                .negativeText(R.string.cancel)
+                                .negativeColor(lightBlue)
+                                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                    @Override
+                                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                                        LinkAccountsFragment fragment = LinkAccountsFragment.newInstance(credential);
+                                        transaction.replace(R.id.fragment_container, fragment);
+                                        transaction.addToBackStack(null);
+                                        transaction.commitAllowingStateLoss();
+                                    }
+                                })
+                                .show();
+                    } catch (Exception e) {
+                        FirebaseError unknownError = FirebaseError.unknownError();
+                        Toast.makeText(LoginActivity.this, unknownError.getMessage(), Toast.LENGTH_SHORT).show();
                     }
-                });
+                    content.setVisibility(View.VISIBLE);
+                    loadingView.setVisibility(View.GONE);
+                    // If sign in fails, display a message to the user.
+                    Log.e(TAG, "signInWithCredential:failure", task.getException());
+                }
+            }
+        });
     }
 
     @Override
@@ -212,24 +229,27 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
                 String buttonText = "";
                 int boldStartIndex = 0;
                 int boldEndIndex = 0;
+                String tag = "";
                 Fragment fragmentToInsert = null;
                 switch (state) {
                     case LOG_IN:
                         buttonText = "Don't have an account? Sign up.";
                         boldStartIndex = 22;
                         boldEndIndex = buttonText.length();
-                        fragmentToInsert = new LogInFragment();
+                        fragmentToInsert = new LoginFragment();
+                        tag = LOG_IN_FRAGMENT_TAG;
                         break;
                     case SIGN_UP:
                         buttonText = "Have an account? Log in.";
                         boldStartIndex = 17;
                         boldEndIndex = buttonText.length();
-                        fragmentToInsert = new EmailSignUpFragment();
+                        fragmentToInsert = new SignUpMethodSelectionFragment();
+                        tag = SIGN_UP_METHOD_FRAGMENT_TAG;
                         break;
                 }
                 if (fragmentToInsert != null) {
                     FragmentTransaction transaction = fm.beginTransaction();
-                    transaction.replace(R.id.fragment_container, fragmentToInsert);
+                    transaction.replace(R.id.fragment_container, fragmentToInsert, tag);
                     transaction.commitAllowingStateLoss();
                 }
                 builder = new SpannableStringBuilder(buttonText);
@@ -247,12 +267,18 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
 
     @Override
     public void onFailedSignUp() {
-        Toast.makeText(this, "Couldn't sign up", Toast.LENGTH_SHORT).show();
+
     }
 
     @Override
     public void onSuccessfulLogIn(FirebaseUser user) {
         enterChatRooms(user);
+    }
+
+    @Override
+    public void requestFacebookLogin() {
+        LoginManager.getInstance().logInWithReadPermissions(LoginActivity.this,
+                Arrays.asList("email", "public_profile"));
     }
 
     @Override

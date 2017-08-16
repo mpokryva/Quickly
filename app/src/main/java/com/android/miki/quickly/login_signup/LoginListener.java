@@ -6,7 +6,8 @@ import com.google.firebase.auth.FirebaseUser;
  * Created by Miki on 8/5/2017.
  */
 
-public interface LogInListener {
+public interface LoginListener {
     void onSuccessfulLogIn(FirebaseUser user);
+    void requestFacebookLogin();
     void onFailedLogIn();
 }

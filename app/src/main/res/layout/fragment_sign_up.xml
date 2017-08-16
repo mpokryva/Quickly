@@ -28,4 +28,5 @@
         style="@style/LongRoundedBorderlessButton"
         android:layout_below="@id/password_text_input"
         android:text="@string/sign_up"/>
+
 </RelativeLayout>
