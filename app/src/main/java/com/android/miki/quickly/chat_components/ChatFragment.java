@@ -8,7 +8,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -43,7 +42,7 @@ import com.android.miki.quickly.ui.GrowingAnimation;
 import com.android.miki.quickly.ui.ShrinkingAnimation;
 import com.android.miki.quickly.utils.FirebaseError;
 import com.android.miki.quickly.utils.FirebaseListener;
-import com.android.miki.quickly.utils.VerticalSpaceItemDecoration;
+import com.android.miki.quickly.ui.VerticalSpaceItemDecoration;
 import com.android.miki.quickly.gif_drawer.GifDrawer;
 import com.android.miki.quickly.gif_drawer.GifDrawerAction;
 import com.android.miki.quickly.models.ChatRoom;
@@ -337,7 +336,7 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
     private void toggleGifButton() {
         final int iconRes;
         if (isGifDrawerOpen) {
-            iconRes = R.drawable.gif_icon_attempt;
+            iconRes = R.drawable.gif_icon;
         } else {
             iconRes = R.drawable.ic_close_black_24dp;
         }

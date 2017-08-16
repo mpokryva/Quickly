@@ -62,7 +62,7 @@
                     android:layout_height="28dp"
                     android:layout_centerVertical="true"
                     android:layout_margin="8dp"
-                    android:background="@drawable/gif_icon_attempt"
+                    android:background="@drawable/gif_icon"
                     android:text="GIF"
                     android:textColor="@android:color/white"
                     android:typeface="normal" />
