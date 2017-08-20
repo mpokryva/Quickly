@@ -11,8 +11,7 @@
         android:id="@+id/action_bar"
         style="@style/ChatActionBar.Layout"
         android:theme="@style/ChatActionBar"
-        app:title="@string/group_info"
-        app:titleTextColor="@android:color/white">
+        app:title="@string/group_info">
     </android.support.v7.widget.Toolbar>
 
     <FrameLayout

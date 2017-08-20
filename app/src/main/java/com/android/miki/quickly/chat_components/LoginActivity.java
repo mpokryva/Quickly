@@ -68,7 +68,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
     private Button swapLogInSignUpButton;
     CallbackManager callbackManager;
     private static final String TAG = LoginActivity.class.getName();
-    private final boolean IS_TESTING = true;
+    private final boolean IS_TESTING = false;
     private RelativeLayout loadingView;
     private RelativeLayout content;
 
@@ -118,10 +118,10 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
         progressWheel.getIndeterminateDrawable().setColorFilter(lightBlue, PorterDuff.Mode.MULTIPLY);
     }
 
-    private void enterChatRooms(FirebaseUser user) {
+    private void enterChatRooms() {
         Intent chatSelectionIntent = new Intent();
         chatSelectionIntent.setClass(LoginActivity.this, ChatSelectionActivity.class);
-        User newUser = new User(user.getDisplayName(), "Temp University");
+        User newUser = User.fromCurrentUser();
         chatSelectionIntent.putExtra("user", newUser);
         startActivity(chatSelectionIntent); // Start ChatSelectionActivity
     }
@@ -135,8 +135,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
                 if (task.isSuccessful()) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.e(TAG, "signInWithCredential:success");
-                    FirebaseUser user = auth.getCurrentUser();
-                    enterChatRooms(user);
+                    enterChatRooms();
                 } else {
                     try {
                         throw task.getException();
@@ -161,7 +160,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
                                         LinkAccountsFragment fragment = LinkAccountsFragment.newInstance(credential);
                                         transaction.replace(R.id.fragment_container, fragment);
                                         transaction.addToBackStack(null);
-                                        transaction.commitAllowingStateLoss();
+                                        transaction.commit();
                                     }
                                 })
                                 .show();
@@ -214,7 +213,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
         if (user == null) { // User is not logged in. Prompt log in.
             updateCurrentState(LOG_IN);
         } else { // User is logged in. Enter chat rooms.
-            enterChatRooms(user);
+            enterChatRooms();
         }
     }
 
@@ -225,7 +224,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
             if (state != currentState) {
                 currentState = state;
                 FragmentManager fm = getSupportFragmentManager();
-                SpannableStringBuilder builder = null;
+                SpannableStringBuilder builder;
                 String buttonText = "";
                 int boldStartIndex = 0;
                 int boldEndIndex = 0;
@@ -262,7 +261,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
 
     @Override
     public void onSuccessfulSignUp(FirebaseUser user) {
-        enterChatRooms(user);
+        enterChatRooms();
     }
 
     @Override
@@ -272,7 +271,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
 
     @Override
     public void onSuccessfulLogIn(FirebaseUser user) {
-        enterChatRooms(user);
+        enterChatRooms();
     }
 
     @Override

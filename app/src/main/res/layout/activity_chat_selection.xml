@@ -9,8 +9,7 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/action_bar"
         android:theme="@style/ChatActionBar"
-        style="@style/ChatActionBar.Layout"
-        app:contentInsetStart="0dp">
+        style="@style/ChatActionBar.Layout">
     </android.support.v7.widget.Toolbar>
     <FrameLayout
         android:layout_width="match_parent"

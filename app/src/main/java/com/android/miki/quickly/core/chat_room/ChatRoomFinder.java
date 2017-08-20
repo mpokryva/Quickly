@@ -22,10 +22,16 @@ public class ChatRoomFinder {
     private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     private DatabaseReference mAvailableChatsRef = mDatabase.getReference().child("availableChats");
     private DataGenerator dataGenerator;
+    private final boolean IS_TESTING = false;
     private final int BATCH_SIZE = 10;
 
     public ChatRoomFinder() {
         dataGenerator = new DataGenerator();
+        if (IS_TESTING) {
+            dataGenerator.deleteAllData();
+            dataGenerator.createTestChats(30);
+            int i =0;
+        }
     }
 
     /**

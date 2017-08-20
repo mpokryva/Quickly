@@ -30,6 +30,10 @@ public class FirebaseError {
         return details;
     }
 
+    public static FirebaseError from(DatabaseError databaseError) {
+        return new FirebaseError(databaseError.getMessage(), databaseError.getDetails());
+    }
+
     public static FirebaseError serverError() {
         String message = "There was a problem connecting to the server.";
         String details = "Please try reloading the chat room in a few minutes. If the issue persists," +

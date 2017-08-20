@@ -1,19 +1,16 @@
 package com.android.miki.quickly.chat_components;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.annotation.StyleRes;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.android.miki.quickly.R;
-import com.android.miki.quickly.core.FirebaseActivity;
 import com.android.miki.quickly.core.network.ConnectivityStatusNotifier;
 import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
-import com.android.miki.quickly.group_info.GroupInfoActivity;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.User;
 import com.android.miki.quickly.core.chat_room.ChatRoomManager;
@@ -27,7 +24,7 @@ import java.util.List;
  * Created by mpokr on 5/22/2017.
  */
 
-public class ChatSelectionActivity extends FirebaseActivity implements ConnectivityStatusObserver {
+public class ChatSelectionActivity extends AppCompatActivity implements ConnectivityStatusObserver, ActionBarListener {
 
     private CustomViewPager mViewPager;
     private ChatSelectionPagerAdapter mAdapter;
@@ -83,7 +80,7 @@ public class ChatSelectionActivity extends FirebaseActivity implements Connectiv
         Iterator<User> it = chatRoom.getUsers().values().iterator();
         while (it.hasNext()) {
             User user = it.next();
-            userString += user.getNickname();
+            userString += user.getDisplayName();
             if (it.hasNext()) {
                 userString += ", ";
             }
@@ -131,5 +128,10 @@ public class ChatSelectionActivity extends FirebaseActivity implements Connectiv
         ConnectivityStatusNotifier notifier = ConnectivityStatusNotifier.getInstance();
         notifier.unregisterObserver(this);
         super.onDestroy();
+    }
+
+    @Override
+    public void setTitle(String title) {
+        actionBar.setTitle(title);
     }
 }

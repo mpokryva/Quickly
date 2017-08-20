@@ -1,5 +1,6 @@
 package com.android.miki.quickly.chat_components;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Paint;
@@ -37,6 +38,7 @@ import com.android.miki.quickly.core.FirebaseFragment;
 import com.android.miki.quickly.core.chat_room.ChatRoomManager;
 import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
 import com.android.miki.quickly.group_info.GroupInfoActivity;
+import com.android.miki.quickly.login_signup.LoginListener;
 import com.android.miki.quickly.ui.AnimatorUtil;
 import com.android.miki.quickly.ui.GrowingAnimation;
 import com.android.miki.quickly.ui.ShrinkingAnimation;
@@ -92,6 +94,7 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
     private boolean isConnected;
     private int position;
     private boolean firstComponentInitialization = true;
+    private ActionBarListener callbackToActivity;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -205,9 +208,25 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
         return view;
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof Activity) {
+            try {
+                callbackToActivity = (ActionBarListener) context;
+            } catch (ClassCastException e) {
+                throw new ClassCastException(context.toString()
+                        + " must implement ActionBarListener");
+            }
+        } else {
+            Log.d(TAG, "Context in onAttach() is not an activity.");
+        }
+    }
+
     private void initComponents() {
         final View view = ChatFragment.this.getView();
-
+        String roomName = (chatRoom.getName() != null) ? chatRoom.getName() : chatRoom.getDefaultName();
+        callbackToActivity.setTitle(roomName);
         mGifDrawer = new GifDrawer(view, chatRoom, user, new GifDrawerAction() {
             @Override
             public void gifSent(Message message) {
@@ -494,11 +513,6 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
     @Override
     public void messageAdded(Message message) {
 
-    }
-
-    @Override
-    public String toString() {
-        return super.toString();
     }
 
     @Override
