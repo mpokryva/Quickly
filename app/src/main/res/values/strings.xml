@@ -27,4 +27,6 @@
     <string name="link_accounts_question">Link accounts?</string>
     <string name="linking_dialog_message">It appears that you have already created an account using an email and password.
         In order to continue with Facebook, you must link your existing account to your Facebook account.</string>
+    <string name="change_group_name">Change group name</string>
+    <string name="is_dialog_open">isDialogOpen</string>
 </resources>

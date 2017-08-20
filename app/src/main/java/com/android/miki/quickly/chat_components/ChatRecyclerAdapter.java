@@ -185,7 +185,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             } else {
                 incomingTextHolder.deselect();
             }
-            incomingTextHolder.sender.setText(message.getSender().getNickname());
+            incomingTextHolder.sender.setText(message.getSender().getDisplayName());
             Integer color = userToColorMap.get(message.getSender());
             incomingTextHolder.sender.setTextColor(color);
             incomingTextHolder.messageText.setText(message.getMessageText());

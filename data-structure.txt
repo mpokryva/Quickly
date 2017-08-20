@@ -8,7 +8,7 @@
 	"numUsers": 2
 	"users": {
 		"a2Zf3": {
-			"nickname": "John",
+			"displayName": "John",
 			"university": "Harvard University"
 		},
 	},

@@ -2,42 +2,53 @@ package com.android.miki.quickly.group_info;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.android.miki.quickly.R;
+import com.android.miki.quickly.core.Callable;
+import com.android.miki.quickly.core.FirebaseActivity;
+import com.android.miki.quickly.core.network.FirebaseClient;
+import com.android.miki.quickly.firebase_queries.ChangeGroupNameQuery;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.ui.VerticalSpaceItemDecoration;
+import com.android.miki.quickly.utils.FirebaseError;
+import com.android.miki.quickly.utils.FirebaseListener;
 
 /**
  * Created by mpokr on 6/17/2017.
  */
 
-public class GroupInfoActivity extends AppCompatActivity {
+public class GroupInfoActivity extends FirebaseActivity {
 
     private RecyclerView mRecyclerView;
     private GroupInfoRecyclerAdapter mAdapter;
     private ChatRoom chatRoom;
     private boolean isDialogOpen;
-    private GroupNameDialogFragment dialogFragment;
     private GroupNameDialogListener dialogListener;
     private String dialogText;
+    private MaterialDialog dialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         chatRoom = (ChatRoom) getIntent().getSerializableExtra(getString(R.string.chat_room));
-        setContentView(R.layout.activity_group_info);
-        final Toolbar actionBar = (Toolbar) findViewById(R.id.action_bar);
+        setContent(R.layout.activity_group_info);
+        final Toolbar actionBar = findViewById(R.id.action_bar);
         setSupportActionBar(actionBar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-
-
         mRecyclerView = findViewById(R.id.group_info_recycler_view);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(layoutManager);
@@ -48,37 +59,77 @@ public class GroupInfoActivity extends AppCompatActivity {
         mRecyclerView.setAdapter(mAdapter);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        setState(SUCCESS);
+    }
+
     private void initializeDialogListener() {
         dialogListener = new GroupNameDialogListener() {
-            @Override
-            public void groupNameChanged(String newGroupName) {
-                chatRoom.changeName(newGroupName);
-
-            }
 
             @Override
             public void editGroupNameRequested() {
-                makeDialog();
-            }
-
-            @Override
-            public void dialogClosed() {
-                isDialogOpen = false;
-                dialogText = null;
+                makeDialog(chatRoom.getName());
             }
         };
     }
 
-    private void makeDialog() {
-        dialogFragment = new GroupNameDialogFragment();
-        dialogFragment.setRetainInstance(true);
-        Bundle args = new Bundle();
-        args.putSerializable(GroupNameDialogListener.TAG, dialogListener);
-        if (dialogText != null) {
-            args.putString(getString(R.string.dialog_text), dialogText);
+    private void makeDialog(String dialogText) {
+        String dialogHint = getResources().getString(R.string.change_group_name);
+        int lightBlue = ContextCompat.getColor(this, R.color.LightBlue);
+        dialog = new MaterialDialog.Builder(this)
+                .positiveText(android.R.string.ok)
+                .negativeText(android.R.string.cancel)
+                .positiveColor(lightBlue)
+                .negativeColor(lightBlue)
+                .input(dialogHint, dialogText, false, new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(@NonNull MaterialDialog dialog, final CharSequence input) {
+                        final String newName = input.toString();
+                        ChangeGroupNameQuery changeGroupNameQuery = new ChangeGroupNameQuery(chatRoom.getId(), newName);
+                        FirebaseClient client = FirebaseClient.getInstance();
+                        client.queryFirebase(changeGroupNameQuery, new FirebaseListener<Void>() {
+                            @Override
+                            public void onLoading() {
+                                setState(LOADING);
+                            }
+
+                            @Override
+                            public void onError(FirebaseError error) {
+                                Toast.makeText(GroupInfoActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onSuccess(Void nothing) {
+                                chatRoom.changeName(newName);
+                            }
+                        });
+                    }
+                })
+                .inputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_CAP_SENTENCES)
+                .widgetColor(lightBlue)
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        isDialogOpen = false;
+                        GroupInfoActivity.this.dialogText = null;
+                        GroupInfoActivity.this.dialog = null;
+                    }
+                })
+                .build();
+        if (!this.isFinishing()) {
+            showDialog();
+
         }
-        dialogFragment.setArguments(args);
-        dialogFragment.show(getSupportFragmentManager(), GroupNameDialogFragment.TAG);
+    }
+
+    private void showDialog() {
+        final EditText inputEditText = dialog.getInputEditText();
+        if (inputEditText != null) {
+            this.dialogText = inputEditText.getText().toString();
+        }
+        dialog.show();
         isDialogOpen = true;
     }
 
@@ -96,11 +147,14 @@ public class GroupInfoActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         if (isDialogOpen) {
-            if (dialogFragment != null) {
-                dialogText = dialogFragment.getText();
+            if (dialog != null) {
+                EditText inputEditText = dialog.getInputEditText();
+                if (inputEditText != null) {
+                    dialogText = inputEditText.getText().toString();
+                }
                 getIntent().putExtra(getString(R.string.dialog_text), dialogText);
-                getIntent().putExtra("isDialogOpen", isDialogOpen);
-                dialogFragment.dismiss();
+                getIntent().putExtra(getString(R.string.is_dialog_open), isDialogOpen);
+                dialog.dismiss();
             }
         }
     }
@@ -108,10 +162,10 @@ public class GroupInfoActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        isDialogOpen = getIntent().getBooleanExtra("isDialogOpen", false);
+        isDialogOpen = getIntent().getBooleanExtra(getString(R.string.is_dialog_open), false);
         if (isDialogOpen) {
             dialogText = getIntent().getStringExtra(getString(R.string.dialog_text));
-            makeDialog();
+            makeDialog(dialogText);
         }
     }
 

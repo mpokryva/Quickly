@@ -3,9 +3,12 @@ package com.android.miki.quickly.models;
 import android.util.Log;
 
 import com.android.miki.quickly.chat_components.ChatRoomObserver;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Exclude;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
@@ -16,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Observable;
 
 /**
  * Created by mpokr on 5/22/2017.
@@ -78,14 +80,35 @@ public class ChatRoom implements Serializable {
         return name;
     }
 
+    /**
+     * Returns the default name of the room (comma separated list of all users in the chat room).
+     *
+     * @return The default name of the room.
+     */
+    @Exclude
+    public String getDefaultName() {
+        Iterator<User> it = userIterator();
+        String defaultName = "";
+        while (it.hasNext()) {
+            User user = it.next();
+            defaultName += user.getDisplayName() + ", ";
+        }
+        int lastIndex = defaultName.lastIndexOf(", ");
+        if (lastIndex > 0) {
+            defaultName = defaultName.substring(0, lastIndex);
+        }
+        return defaultName;
+    }
+
+    /*
+    Below are methods that call the Firebase API.
+     */
+
     public void changeName(String name) {
         this.name = name;
-        mAvailableChatsRef.child(id).child("name").setValue(name);
         for (ChatRoomObserver observer : observers) {
             observer.nameChanged(name);
         }
-
-
     }
 
     /**

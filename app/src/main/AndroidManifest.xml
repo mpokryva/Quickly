@@ -11,7 +11,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".chat_components.ChatSelectionActivity"/>
-        <activity android:name=".group_info.GroupInfoActivity"/>
+        <activity android:name=".group_info.GroupInfoActivity"
+            android:windowSoftInputMode="adjustPan"/>
 
         <activity android:name=".chat_components.LoginActivity">
             <intent-filter>

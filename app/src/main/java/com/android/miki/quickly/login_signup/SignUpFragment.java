@@ -141,6 +141,7 @@ public class SignUpFragment extends Fragment implements FieldValidator {
                                             callbackToActivity.onSuccessfulSignUp(user);
                                         } else {
                                             // TODO: Delete user.
+                                            // TODO: Throw and catch exceptions.
                                             callbackToActivity.onFailedSignUp();
                                         }
                                     }

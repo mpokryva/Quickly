@@ -10,9 +10,5 @@ public interface GroupNameDialogListener extends Serializable {
 
     String TAG = GroupNameDialogListener.class.getName();
 
-    void groupNameChanged(String newGroupName);
-
     void editGroupNameRequested();
-
-    void dialogClosed();
 }

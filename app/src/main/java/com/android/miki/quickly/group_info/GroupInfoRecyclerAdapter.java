@@ -45,23 +45,22 @@ public class GroupInfoRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.
                 v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_group_name, parent, false);
                 return new GroupNameHolder(v);
             case USER_NAMES_POSITION:
-                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.group_user_list, parent, false);
+                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_group_user_list, parent, false);
                 Iterator<User> it = chatRoom.userIterator();
                 User currentUser;
-                LinearLayout userInfoContainer = (LinearLayout) v.findViewById(R.id.user_info_container);
+                LinearLayout userInfoContainer = v.findViewById(R.id.user_info_container);
                 while (it.hasNext()) {
                     currentUser = it.next();
                     RelativeLayout rl = (RelativeLayout) LayoutInflater.from(parent.getContext()).inflate(R.layout.user_details,
                             parent, false);
-                    TextView name = (TextView) rl.findViewById(R.id.user_name);
+                    TextView name = rl.findViewById(R.id.user_name);
                     TextView university = (TextView) rl.findViewById(R.id.university);
-                    name.setText(currentUser.getNickname());
-                    university.setText(currentUser.getUniversity());
+                    name.setText(currentUser.getDisplayName());
                     userInfoContainer.addView(rl);
                 }
                 return new UserNamesHolder(v);
             default: // Should never be called
-                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.group_user_list, parent, false);
+                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_group_user_list, parent, false);
                 return new UserNamesHolder(v);
         }
 
@@ -72,7 +71,8 @@ public class GroupInfoRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (position == GROUP_NAME_POSITION) {
             GroupNameHolder groupNameHolder = (GroupNameHolder) holder;
-            groupNameHolder.groupName.setText(chatRoom.getName());
+            String groupName = (chatRoom.getName() != null) ? chatRoom.getName() : chatRoom.getDefaultName();
+            groupNameHolder.groupName.setText(groupName);
         }
     }
 
@@ -93,8 +93,8 @@ public class GroupInfoRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.
 
         protected GroupNameHolder(final View itemView) {
             super(itemView);
-            groupName = (TextView) itemView.findViewById(R.id.text_group_name);
-            editGroupNameButton = (ImageButton) itemView.findViewById(R.id.edit_group_name_button);
+            groupName = itemView.findViewById(R.id.text_group_name);
+            editGroupNameButton = itemView.findViewById(R.id.edit_group_name_button);
             editGroupNameButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
