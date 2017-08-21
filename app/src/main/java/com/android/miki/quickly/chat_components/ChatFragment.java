@@ -8,6 +8,7 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -65,7 +66,7 @@ import static android.app.Activity.RESULT_OK;
  * Created by mpokr on 5/25/2017.
  */
 
-public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoomObserver, ConnectivityStatusObserver {
+public class ChatFragment extends FirebaseFragment implements ChatRoomObserver, ConnectivityStatusObserver {
 
     private ImageButton mSendButton;
     private EditText mMessageEditText;
@@ -102,18 +103,18 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
         isConnected = true; // Initialized to true to avoid double loading of chat room initially.
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
         loadingView = view.findViewById(R.id.loading_view);
-        progressWheel = (ProgressBar) loadingView.findViewById(R.id.progress_wheel);
+        progressWheel = loadingView.findViewById(R.id.progress_wheel);
         int lightBlue = ContextCompat.getColor(getContext(), R.color.LightBlue); // Color the progress whel light blue.
         progressWheel.getIndeterminateDrawable().setColorFilter(lightBlue, PorterDuff.Mode.MULTIPLY);
         errorView = view.findViewById(R.id.error_view);
-        errorMessage = (TextView) errorView.findViewById(R.id.error_message);
-        errorDetais = (TextView) errorView.findViewById(R.id.error_details);
+        errorMessage = errorView.findViewById(R.id.error_message);
+        errorDetais = errorView.findViewById(R.id.error_details);
         setHasOptionsMenu(true);
         content = view.findViewById(R.id.content);
-        mSendButton = (ImageButton) view.findViewById(R.id.send_button);
-        mMessageEditText = (EditText) view.findViewById(R.id.message_box);
-        gifButton = (Button) view.findViewById(R.id.gif_button);
-        mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.messages_recycler_view);
+        mSendButton = view.findViewById(R.id.send_button);
+        mMessageEditText = view.findViewById(R.id.message_box);
+        gifButton = view.findViewById(R.id.gif_button);
+        mMessagesRecyclerView = view.findViewById(R.id.messages_recycler_view);
         // TODO: Handle null chatRoom?
         user = (User) getArguments().getSerializable("user");
         position = getArguments().getInt("position");
@@ -206,6 +207,12 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
         });
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        setContent(R.layout.fragment_chat);
     }
 
     @Override
@@ -456,41 +463,6 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
 
 
     @Override
-    public void onSuccess(ChatRoom chatRoom) {
-        super.onSuccess(chatRoom);
-        this.chatRoom = chatRoom;
-        initComponents();
-    }
-
-    @Override
-    public void onLoading() {
-        content.setVisibility(View.GONE);
-        errorView.setVisibility(View.GONE);
-        loadingView.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void onError(FirebaseError error) {
-        content.setVisibility(View.GONE);
-        loadingView.setVisibility(View.GONE);
-        errorMessage.setText(error.getMessage());
-        errorDetais.setText(error.getDetails());
-        errorView.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void showMainContent() {
-        loadingView.setVisibility(View.GONE);
-        errorView.setVisibility(View.GONE);
-        content.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void hideMainLayout() {
-        content.setVisibility(View.GONE);
-    }
-
-    @Override
     public void numUsersChanged(int numUsers) {
 
     }
@@ -519,37 +491,20 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
     public void onConnect() {
         if (!isConnected) {
             isConnected = true;
-            loadRoom();
+            updateUI(true);
         }
     }
 
-    private void loadRoom() {
-        ChatRoomManager.getInstance().getRoom(position, new FirebaseListener<ChatRoom>() {
-            @Override
-            public void onLoading() {
-                ChatFragment.this.onLoading();
-            }
+    private void updateUI(boolean isConnected) {
 
-            @Override
-            public void onError(FirebaseError error) {
-                ChatFragment.this.onError(error);
-            }
-
-            @Override
-            public void onSuccess(ChatRoom chatRoom) {
-                ChatFragment.this.onSuccess(chatRoom);
-            }
-        });
     }
 
     @Override
     public void onDisconnect(FirebaseError error) {
-        isConnected = false;
-        onError(error);
+        if (isConnected) {
+            isConnected = false;
+            updateUI(false);
+        }
     }
 
-    @Override
-    public Context retrieveContext() {
-        return getContext();
-    }
 }

@@ -12,7 +12,6 @@ import java.util.List;
 
 public class ChatRoomManager {
 
-    private ChatRoomStorage storage;
     private ChatRoomFinder finder;
     private int itemsInCache;
     private int currentPosition;
@@ -21,7 +20,6 @@ public class ChatRoomManager {
 
 
     private ChatRoomManager() {
-        storage = new ChatRoomStorage();
         finder = new ChatRoomFinder();
         itemsInCache = finder.getBatchSize(); // For now, we are only caching objects retrieved in a single batch.
         currentPosition = 0;
@@ -29,21 +27,7 @@ public class ChatRoomManager {
     }
 
     public void getRoom(int position, final FirebaseListener<ChatRoom> callBack) {
-        callBack.onLoading();
-        retrievalPosition = position % finder.getBatchSize();
-        ChatRoom chatRoom = storage.getRoom(retrievalPosition);
-        if (chatRoom != null) {
-            callBack.onSuccess(chatRoom); // Chat room is in current batch.
-        } else {
-            // Need to pull chat room from Firebase. Either ID is cached, or
-            // new batch needs to be retrieved altogether.
-            String id = storage.getRoomId(position); // Check if ID is cached.
-            if (id == null) { // ID not cached. Need to retrieve new batch.
-                finder.getChatRoomBatch(batchListener(callBack));
-            } else { // ID is cached.
-                finder.getChatRoom(id, singleRoomListener(callBack));
-            }
-        }
+        finder.get
     }
 
     private FirebaseListener<List<ChatRoom>> batchListener(final FirebaseListener<ChatRoom> listener) {

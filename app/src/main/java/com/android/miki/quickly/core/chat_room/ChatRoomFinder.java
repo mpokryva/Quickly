@@ -7,10 +7,15 @@ import com.android.miki.quickly.firebase_queries.ChatRoomBatchQuery;
 import com.android.miki.quickly.firebase_queries.ChatRoomQuery;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.utils.DataGenerator;
+import com.android.miki.quickly.utils.FirebaseError;
 import com.android.miki.quickly.utils.FirebaseListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -22,10 +27,12 @@ public class ChatRoomFinder {
     private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     private DatabaseReference mAvailableChatsRef = mDatabase.getReference().child("availableChats");
     private DataGenerator dataGenerator;
-    private final boolean IS_TESTING = false;
+    private final boolean IS_TESTING = true;
     private final int BATCH_SIZE = 10;
+    private HashMap<Integer, String> positionToIdMap;
 
     public ChatRoomFinder() {
+        positionToIdMap = new HashMap<>();
         dataGenerator = new DataGenerator();
         if (IS_TESTING) {
             dataGenerator.deleteAllData();
@@ -54,6 +61,23 @@ public class ChatRoomFinder {
     public void getChatRoom(String chatId, @NonNull final FirebaseListener<ChatRoom> listener) {
         FirebaseClient client = FirebaseClient.getInstance();
         client.queryFirebase(new ChatRoomQuery(chatId), listener);
+    }
+
+    public void getRoom(int position) {
+        DatabaseReference chatRoomRef = getBaseRef().child(chatId);
+        chatRoomRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                ChatRoom chatRoom = dataSnapshot.getValue(ChatRoom.class);
+                listener.onSuccess(chatRoom);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                listener.onError(new FirebaseError(databaseError));
+            }
+        });
+
     }
 
     public int getBatchSize() {

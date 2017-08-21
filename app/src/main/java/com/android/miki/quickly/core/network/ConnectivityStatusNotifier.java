@@ -9,6 +9,13 @@ import android.net.NetworkInfo;
 import android.util.Log;
 
 import com.android.miki.quickly.utils.FirebaseError;
+import com.android.miki.quickly.utils.FirebaseListener;
+import com.android.miki.quickly.utils.GenericCallback;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashSet;
 
@@ -18,7 +25,6 @@ import java.util.HashSet;
 
 public class ConnectivityStatusNotifier {
 
-    private BroadcastReceiver receiver;
     private static ConnectivityStatusNotifier notifier;
     private static int MAX_CONNECTION_TRIES = 5;
     public static final String TAG = ConnectivityStatusNotifier.class.getName();
@@ -33,65 +39,16 @@ public class ConnectivityStatusNotifier {
 
     private ConnectivityStatusNotifier() {
         observerSet = new HashSet<>();
-        int i = 0;
-        receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(final Context context, Intent intent) {
-                boolean isConnected = isConnected(context);
-                boolean isConnectedOrConnecting = isConnectedOrConnecting(context);
-                if (isConnectedOrConnecting) {
-                    if (isConnected) {
-                        notifyObservers(true); // Fully connected.
-                    } else { // Network is connecting, but not yet connected.
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    for (int j = 0; j < MAX_CONNECTION_TRIES; j++) {
-                                        Log.d(TAG, "Try number: " + j);
-                                        Thread.sleep(200);
-                                        if (isConnected(context)) {
-                                            notifyObservers(true);
-                                            break;
-                                        }
-                                    }
-                                } catch (InterruptedException e) {
-                                    notifyObservers(false);
-                                }
-                            }
-                        }).run();
-                    }
-                } else { // If not even in the process of connecting, then network was just lost.
-                    notifyObservers(false);
-                }
-            }
-        };
+        listenForConnectionChanges();
     }
 
-    private boolean isConnectedOrConnecting(Context context) {
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        Log.d(TAG, "Connected?: " + (activeNetwork != null && activeNetwork.isConnectedOrConnecting()));
-        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
-    }
-
-    public boolean isConnected(Context context) {
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnected() && activeNetwork.isAvailable();
-    }
 
     public void registerObserver(ConnectivityStatusObserver observer) {
         observerSet.add(observer);
-        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        observer.retrieveContext().registerReceiver(this.receiver, filter);
     }
 
     public void unregisterObserver(ConnectivityStatusObserver observer) {
-        if (isObserverRegistered(observer)) {
-            observer.retrieveContext().unregisterReceiver(receiver);
-            observerSet.remove(observer);
-        }
+        observerSet.remove(observer);
     }
 
     private void notifyObservers(boolean isConnected) {
@@ -104,7 +61,68 @@ public class ConnectivityStatusNotifier {
         }
     }
 
-    private boolean isObserverRegistered(ConnectivityStatusObserver observer) {
-        return observerSet.contains(observer);
+    private void isConnected(final FirebaseListener<Boolean> listener, final int tryNum) {
+        if (tryNum > MAX_CONNECTION_TRIES) {
+            listener.onError(FirebaseError.serverError());
+        }
+        queryConnection(new GenericCallback<Boolean>() {
+            @Override
+            public void onFinished(Boolean isConnected) {
+                if (isConnected == null) {
+                    listener.onError(FirebaseError.serverError());
+                } else {
+                    if (isConnected) {
+                        listener.onSuccess(true);
+                    } else {
+                        Log.d(TAG, "Try number " + tryNum + " unsuccessful.");
+                        isConnected(listener, tryNum + 1);
+                    }
+                }
+            }
+        });
+    }
+
+    private void listenForConnectionChanges() {
+        DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
+        connectedRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                boolean isConnected = dataSnapshot.getValue(Boolean.class);
+                notifyObservers(isConnected);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void queryConnection(final GenericCallback<Boolean> callback) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(100);
+                    DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
+                    connectedRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            boolean isConnected = dataSnapshot.getValue(Boolean.class);
+                            Log.d(TAG, "Client isConnected?: " + isConnected);
+                            callback.onFinished(isConnected);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            callback.onFinished(false);
+
+                        }
+                    });
+                } catch (InterruptedException e) {
+                    callback.onFinished(false);
+                }
+            }
+        }).run();
     }
 }

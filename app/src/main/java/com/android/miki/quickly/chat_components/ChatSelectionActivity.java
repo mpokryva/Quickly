@@ -24,7 +24,7 @@ import java.util.List;
  * Created by mpokr on 5/22/2017.
  */
 
-public class ChatSelectionActivity extends AppCompatActivity implements ConnectivityStatusObserver, ActionBarListener {
+public class ChatSelectionActivity extends AppCompatActivity implements ActionBarListener {
 
     private CustomViewPager mViewPager;
     private ChatSelectionPagerAdapter mAdapter;
@@ -44,8 +44,6 @@ public class ChatSelectionActivity extends AppCompatActivity implements Connecti
         this.user = (User) getIntent().getSerializableExtra("user");
         chatRooms = new ArrayList<>();
         roomManager = ChatRoomManager.getInstance();
-        ConnectivityStatusNotifier notifier = ConnectivityStatusNotifier.getInstance();
-        notifier.registerObserver(this);
         mViewPager = (CustomViewPager) findViewById(R.id.chat_selection_pager);
         mAdapter = new ChatSelectionPagerAdapter(getSupportFragmentManager(), user, this);
         mViewPager.setAdapter(mAdapter);
@@ -107,26 +105,9 @@ public class ChatSelectionActivity extends AppCompatActivity implements Connecti
         mAdapter.notifyDataSetChanged();
     }
 
-    @Override
-    public void onConnect() {
-        mViewPager.setPagingEnabled(true);
-    }
-
-    @Override
-    public void onDisconnect(FirebaseError error) {
-        mViewPager.setPagingEnabled(false);
-    }
-
-    @Override
-    public Context retrieveContext() {
-        return this;
-    }
-
 
     @Override
     protected void onDestroy() {
-        ConnectivityStatusNotifier notifier = ConnectivityStatusNotifier.getInstance();
-        notifier.unregisterObserver(this);
         super.onDestroy();
     }
 

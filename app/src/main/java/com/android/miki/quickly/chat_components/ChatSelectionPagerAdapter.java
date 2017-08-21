@@ -7,6 +7,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.util.Log;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.android.miki.quickly.core.network.ConnectivityStatusNotifier;
 import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
@@ -27,7 +28,6 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
 
     private ChatRoomManager chatRoomManager;
     private User user;
-    private ChatRoom chatRoom;
     private ChatRoom currentChatRoom;
     private FragmentManager fm;
     private static final String TAG = ChatSelectionPagerAdapter.class.getName();
@@ -43,10 +43,10 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
         super(fm);
         this.fm = fm;
         chatRoomManager = ChatRoomManager.getInstance();
-        this.user = user;
-        mContext = context;
         ConnectivityStatusNotifier notifier = ConnectivityStatusNotifier.getInstance();
         notifier.registerObserver(this);
+        this.user = user;
+        mContext = context;
     }
 
 
@@ -68,60 +68,51 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
         if (position == container.getCurrentItem()) {
             currentFragment = fragment;
         }
-        ConnectivityStatusNotifier notifier = ConnectivityStatusNotifier.getInstance();
-        boolean isConnected = notifier.isConnected(container.getContext());
         Log.d(TAG, "isConnected from notifier: " + isConnected);
-        if (isConnected) {
-            chatRoomManager.getRoom(position, new FirebaseListener<ChatRoom>() {
-                @Override
-                public void onLoading() {
-                    fragment.onLoading();
-                }
 
-                // Connected to internet (according to ConnectivityNotifer), but not able to complete request.
-                @Override
-                public void onError(FirebaseError error) {
-                    Log.d(TAG, "Error message: " + error.getMessage());
-                    Log.d(TAG, "Error details: " + error.getDetails());
-                    forceDisconnect(container, currentPosition, FirebaseError.serverError());
-                    // TODO: Log real error to server.
-                }
+        chatRoomManager.getRoom(position, new FirebaseListener<ChatRoom>() {
+            @Override
+            public void onLoading() {
+                fragment.onLoading();
+            }
 
-                @Override
-                public void onSuccess(ChatRoom chatRoom) {
-                    if (!viewPager.isPagingEnabled()) {
-                        viewPager.setPagingEnabled(true);
-                    }
-                    ChatSelectionPagerAdapter.this.chatRoom = chatRoom;
-                    ChatFragment prevFragment = instantiateItem(container, currentPosition);
-                    cleanChatRoom(currentChatRoom, prevFragment); // currentChatRoom is still old chat room.
-                    currentPosition = position;
-                    fragment.onSuccess(chatRoom);
-                    configureCurrentChatRoom(chatRoom, fragment);
+            // Connected to internet (according to ConnectivityNotifer), but not able to complete request.
+            @Override
+            public void onError(FirebaseError error) {
+                Log.d(TAG, "Error message: " + error.getMessage());
+                Log.d(TAG, "Error details: " + error.getDetails());
+                // TODO: Log real error to server.
+            }
 
+            @Override
+            public void onSuccess(ChatRoom chatRoom) {
+                if (!viewPager.isPagingEnabled()) {
+                    viewPager.setPagingEnabled(true);
                 }
-            });
-            // Not connected to internet.
-        } else {
-            // Current position didn't update yet. Still previous position.
-            forceDisconnect(container, currentPosition, FirebaseError.serverError());
-        }
+                ChatFragment prevFragment = instantiateItem(container, currentPosition);
+                cleanChatRoom(currentChatRoom, prevFragment); // currentChatRoom is still old chat room.
+                currentPosition = position;
+                fragment.onSuccess(chatRoom);
+                configureCurrentChatRoom(chatRoom, fragment);
+
+            }
+        });
+        // Not connected to internet.
     }
 
-    /**
-     * Triggers the onDisconnect() method, along with disabling swiping.
-     *
-     * @param viewPager
-     * @param position
-     */
-    private void forceDisconnect(CustomViewPager viewPager, int position, FirebaseError error) {
-        Log.d(TAG, "Force disconnect");
-        shouldForceDisconnect = true;
-        onDisconnect(error);
-        shouldForceDisconnect = false;
-        viewPager.setPagingEnabled(false);
-        viewPager.setCurrentItem(position); // Position represents the previous position here.
-    }
+//    /**
+//     * Triggers the onDisconnect() method, along with disabling swiping.
+//     *
+//     * @param viewPager
+//     * @param position
+//     */
+//    private void forceDisconnect(CustomViewPager viewPager, int position, FirebaseError error) {
+//        Log.d(TAG, "Force disconnect");
+//        shouldForceDisconnect = true;
+//        shouldForceDisconnect = false;
+//        viewPager.setPagingEnabled(false);
+//        viewPager.setCurrentItem(position); // Position represents the previous position here.
+//    }
 
     @Override
     public int getItemPosition(Object object) {
@@ -157,7 +148,6 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
         currentChatRoom = chatRoom;// Set currentChatRoom to the chat room the user just entered.
         currentChatRoom.addObserver(fragment);
         currentChatRoom.addUser(user); // Add user to the chat room they just entered.
-        //                actionBar.setTitle(getUserString(currentChatRoom));
     }
 
 
@@ -178,33 +168,27 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
 
     @Override
     public void onConnect() {
-        if (!isConnected) {
-            isConnected = true;
-            if (viewPager != null) {
-                loadRoom(viewPager, viewPager.getCurrentItem());
-            } else {
-                if (currentFragment != null) {
-                    currentFragment.onConnect();
-                    Log.d(TAG, "Fragment is handling loading.");
-                }
-            }
-        }
+//        if (!isConnected) {
+//            isConnected = true;
+//            if (viewPager != null) {
+//                loadRoom(viewPager, viewPager.getCurrentItem());
+//            } else {
+//                if (currentFragment != null) {
+//                    currentFragment.onConnect();
+//                    Log.d(TAG, "Fragment is handling loading.");
+//                }
+//            }
+//        }
     }
 
     @Override
     public void onDisconnect(FirebaseError error) {
-        if (isConnected || shouldForceDisconnect) {
-            isConnected = false;
-            if (currentFragment != null) {
-                currentFragment.onDisconnect(error);
-            }
-        }
+//        if (isConnected || shouldForceDisconnect) {
+//            isConnected = false;
+//            if (currentFragment != null) {
+//                currentFragment.onDisconnect(error);
+//            }
+//        }
     }
-
-    @Override
-    public Context retrieveContext() {
-        return mContext;
-    }
-
 
 }

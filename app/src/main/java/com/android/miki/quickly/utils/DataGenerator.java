@@ -1,14 +1,11 @@
 package com.android.miki.quickly.utils;
 
-import android.net.Uri;
-
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.Message;
 import com.android.miki.quickly.models.User;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,7 +36,7 @@ public class DataGenerator {
             String university = "Stony Brook University";
             String url = "https://www.google.com";
             User user = new User(userName, url);
-            users.put(user.getUserId(), user); // Add user to user list
+            users.put(user.getId(), user); // Add user to user list
             randomUser = user;
         }
         String lastMessageText = randomSentences[r.nextInt(randomSentences.length)]; // Get random message

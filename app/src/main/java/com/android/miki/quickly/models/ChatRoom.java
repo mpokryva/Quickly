@@ -3,8 +3,6 @@ package com.android.miki.quickly.models;
 import android.util.Log;
 
 import com.android.miki.quickly.chat_components.ChatRoomObserver;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -118,9 +116,9 @@ public class ChatRoom implements Serializable {
      */
     public void addUser(User user) {
         if (user != null) {
-            users.put(user.getUserId(), user);
+            users.put(user.getId(), user);
             numUsers = users.size();
-            mAvailableChatsRef.child(id).child("users").child(user.getUserId()).setValue(user);
+            mAvailableChatsRef.child(id).child("users").child(user.getId()).setValue(user);
             mAvailableChatsRef.child(id).child("numUsers").setValue(numUsers);
         }
     }
@@ -132,12 +130,12 @@ public class ChatRoom implements Serializable {
      */
     public void removeUser(User user) {
         if (user != null) {
-            User removedUser = users.remove(user.getUserId());
+            User removedUser = users.remove(user.getId());
             if (removedUser == null) {
                 Log.e("removeUser", "User to remove was not found in user map.");
             } else {
                 numUsers = users.size();
-                mAvailableChatsRef.child(id).child("users").child(user.getUserId()).removeValue();
+                mAvailableChatsRef.child(id).child("users").child(user.getId()).removeValue();
                 mAvailableChatsRef.child(id).child("numUsers").setValue(numUsers);
             }
         }

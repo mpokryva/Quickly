@@ -4,10 +4,8 @@ import android.net.Uri;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.util.UUID;
 
 /**
@@ -16,7 +14,7 @@ import java.util.UUID;
 
 public class User implements Serializable {
 
-    private String userId;
+    private String id;
     private String displayName;
     private String photoUrl;
 
@@ -29,7 +27,7 @@ public class User implements Serializable {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         User user = new User();
         if (currentUser != null) {
-            user.userId = currentUser.getUid();
+            user.id = currentUser.getUid();
             Uri photoUrl = currentUser.getPhotoUrl();
             if (photoUrl != null) {
                 user.photoUrl = photoUrl.toString();
@@ -46,12 +44,12 @@ public class User implements Serializable {
      */
     public User(String displayName, String photoUrl) {
         this.displayName = displayName;
-        this.userId = UUID.randomUUID().toString();
+        this.id = UUID.randomUUID().toString();
         this.photoUrl = photoUrl;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getId() {
+        return id;
     }
 
     public String getDisplayName() {
@@ -69,7 +67,7 @@ public class User implements Serializable {
         }
         if (other instanceof User) {
             User otherUser = (User) other;
-            return this.userId.equals(otherUser.getUserId());
+            return this.id.equals(otherUser.getId());
         } else {
             return false;
         }
@@ -77,7 +75,7 @@ public class User implements Serializable {
 
     @Override
     public int hashCode() {
-        return userId.hashCode();
+        return id.hashCode();
     }
 
 }

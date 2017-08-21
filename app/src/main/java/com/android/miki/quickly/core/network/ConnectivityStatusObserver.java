@@ -12,6 +12,5 @@ public interface ConnectivityStatusObserver {
 
     void onConnect();
     void onDisconnect(FirebaseError error);
-    Context retrieveContext();
 
 }
