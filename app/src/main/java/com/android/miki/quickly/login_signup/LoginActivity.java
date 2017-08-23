@@ -1,4 +1,4 @@
-package com.android.miki.quickly.chat_components;
+package com.android.miki.quickly.login_signup;
 
 import android.content.Intent;
 import android.content.res.AssetManager;
@@ -26,11 +26,7 @@ import android.widget.Toast;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.android.miki.quickly.R;
-import com.android.miki.quickly.login_signup.LinkAccountsFragment;
-import com.android.miki.quickly.login_signup.LoginFragment;
-import com.android.miki.quickly.login_signup.LoginListener;
-import com.android.miki.quickly.login_signup.SignUpListener;
-import com.android.miki.quickly.login_signup.SignUpMethodSelectionFragment;
+import com.android.miki.quickly.chat_components.ChatSelectionActivity;
 import com.android.miki.quickly.models.User;
 import com.android.miki.quickly.utils.FirebaseError;
 import com.facebook.AccessToken;
@@ -49,6 +45,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -76,6 +73,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_signup);
+        FirebaseDatabase.getInstance().setPersistenceEnabled(false);
         auth = FirebaseAuth.getInstance();
 
         initCustomFontsAndColors();
@@ -120,9 +118,8 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
 
     private void enterChatRooms() {
         Intent chatSelectionIntent = new Intent();
+        User user = User.currentUser(); // Crashes the app if not successful.
         chatSelectionIntent.setClass(LoginActivity.this, ChatSelectionActivity.class);
-        User newUser = User.fromCurrentUser();
-        chatSelectionIntent.putExtra("user", newUser);
         startActivity(chatSelectionIntent); // Start ChatSelectionActivity
     }
 

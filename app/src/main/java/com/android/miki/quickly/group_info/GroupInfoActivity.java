@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -17,10 +16,9 @@ import android.widget.Toast;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.android.miki.quickly.R;
-import com.android.miki.quickly.core.Callable;
 import com.android.miki.quickly.core.FirebaseActivity;
 import com.android.miki.quickly.core.network.FirebaseClient;
-import com.android.miki.quickly.firebase_queries.ChangeGroupNameQuery;
+import com.android.miki.quickly.firebase_requests.chatroom_model_requests.ChangeGroupNameRequest;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.ui.VerticalSpaceItemDecoration;
 import com.android.miki.quickly.utils.FirebaseError;
@@ -87,9 +85,9 @@ public class GroupInfoActivity extends FirebaseActivity {
                     @Override
                     public void onInput(@NonNull MaterialDialog dialog, final CharSequence input) {
                         final String newName = input.toString();
-                        ChangeGroupNameQuery changeGroupNameQuery = new ChangeGroupNameQuery(chatRoom.getId(), newName);
+                        ChangeGroupNameRequest changeGroupNameQuery = new ChangeGroupNameRequest(chatRoom.getId(), newName);
                         FirebaseClient client = FirebaseClient.getInstance();
-                        client.queryFirebase(changeGroupNameQuery, new FirebaseListener<Void>() {
+                        client.execute(changeGroupNameQuery, new FirebaseListener<Void>() {
                             @Override
                             public void onLoading() {
                                 setState(LOADING);

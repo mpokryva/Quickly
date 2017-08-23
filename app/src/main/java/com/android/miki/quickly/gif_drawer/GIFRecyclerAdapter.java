@@ -22,6 +22,7 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.google.firebase.database.ServerValue;
 
 import java.util.List;
 
@@ -38,10 +39,9 @@ public class GIFRecyclerAdapter extends RecyclerView.Adapter<GIFRecyclerAdapter.
     private User user;
     private GifDrawerAction gifDrawerAction;
 
-    public GIFRecyclerAdapter(List<String> gifURLs, ChatRoom chatRoom, User user, GifDrawerAction gifDrawerAction) {
+    public GIFRecyclerAdapter(List<String> gifURLs, ChatRoom chatRoom, GifDrawerAction gifDrawerAction) {
         this.gifURLs = gifURLs;
         this.chatRoom = chatRoom;
-        this.user = user;
         this.gifDrawerAction = gifDrawerAction;
     }
 
@@ -90,7 +90,7 @@ public class GIFRecyclerAdapter extends RecyclerView.Adapter<GIFRecyclerAdapter.
                 public void onClick(View view) {
                     int width = mImageViewGif.getWidth();
                     int height = mImageViewGif.getHeight();
-                    Message message = new Message(System.currentTimeMillis(), user, new Gif(gifURL, width, height));
+                    Message message = new Message(User.currentUser(), new Gif(gifURL, width, height));
                     chatRoom.addMessage(message);
                     gifDrawerAction.gifSent(message);
                 }

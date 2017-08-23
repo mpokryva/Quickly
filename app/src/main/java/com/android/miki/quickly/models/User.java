@@ -17,26 +17,29 @@ public class User implements Serializable {
     private String id;
     private String displayName;
     private String photoUrl;
+    private static User currentUser;
 
 
     public User() {
 
     }
 
-    public static User fromCurrentUser() {
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        User user = new User();
-        if (currentUser != null) {
-            user.id = currentUser.getUid();
-            Uri photoUrl = currentUser.getPhotoUrl();
-            if (photoUrl != null) {
-                user.photoUrl = photoUrl.toString();
+    public static User currentUser() {
+        FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            currentUser = new User();
+            if (currentFirebaseUser != null) {
+                currentUser.id = currentFirebaseUser.getUid();
+                Uri photoUrl = currentFirebaseUser.getPhotoUrl();
+                if (photoUrl != null) {
+                    currentUser.photoUrl = photoUrl.toString();
+                }
+                currentUser.displayName = currentFirebaseUser.getDisplayName();
+            } else {
+                throw new IllegalStateException("Cannot make user from a null current user.");
             }
-            user.displayName = currentUser.getDisplayName();
-            return user;
-        } else {
-            throw new IllegalStateException("Cannot make user from a null current user.");
         }
+        return currentUser;
     }
 
     /*

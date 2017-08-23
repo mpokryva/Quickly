@@ -21,26 +21,24 @@ public class FirebaseClient {
 
     public static FirebaseClient client;
     private static final String TAG = FirebaseClient.class.getName();
-    private static int MAX_CONNECTION_TRIES = 3;
+    private static int MAX_CONNECTION_TRIES = 4;
 
 
     /**
-     * Issue a Firebase query. Do not call the listener's onLoading() method in the query.
+     * Issue a Firebase request. Do not call the listener's onLoading() method in the request.
      * This may cause problems.
      *
-     * @param query    The Firebase query.
-     * @param listener The callback listener that should receive and handle any results from the query.
+     * @param request  The Firebase request.
+     * @param listener The callback listener that should receive and handle any results from the request.
      */
-    public void queryFirebase(final Callable query, final FirebaseListener listener) {
-        //dataGenerator.deleteAllData();
-        //dataGenerator.createTestChats(30);
-
+    public void execute(final Callable request, final FirebaseListener listener) {
         // Checking if there is connection to Firebase.
+        listener.onLoading();
         int firstTry = 1;
-        isConnected(new FirebaseListener<Boolean>() {
+        isConnected(new FirebaseListener<Void>() {
             @Override
             public void onLoading() {
-                listener.onLoading();
+
             }
 
             @Override
@@ -49,18 +47,20 @@ public class FirebaseClient {
             }
 
             @Override
-            public void onSuccess(Boolean isConnectedToDatabase) {
-                if (isConnectedToDatabase) { // Working Internet connection.
-                    query.call(listener);
-                } else {
-                    listener.onError(FirebaseError.serverError());
-                }
+            public void onSuccess(Void nothing) {
+                // Working Internet connection.
+                request.call(listener);
             }
         }, firstTry);
 
     }
 
-    private void isConnected(final FirebaseListener<Boolean> listener, final int tryNum) {
+    /**
+     * Checks if has internet connection.
+     * @param listener onError if no connection, onSuccess if there is.
+     * @param tryNum How many times this method has already tried querying. Stops as MAX_CONNECTION_TRIES.
+     */
+    private void isConnected(final FirebaseListener<Void> listener, final int tryNum) {
         if (tryNum > MAX_CONNECTION_TRIES) {
             listener.onError(FirebaseError.serverError());
         }
@@ -71,7 +71,7 @@ public class FirebaseClient {
                     listener.onError(FirebaseError.serverError());
                 } else {
                     if (isConnected) {
-                        listener.onSuccess(true);
+                        listener.onSuccess(null);
                     } else {
                         Log.d(TAG, "Try number " + tryNum + " unsuccessful.");
                         isConnected(listener, tryNum + 1);

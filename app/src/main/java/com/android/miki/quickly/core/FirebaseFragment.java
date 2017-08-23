@@ -21,9 +21,9 @@ import com.android.miki.quickly.utils.FirebaseListener;
 public abstract class FirebaseFragment<T> extends Fragment {
 
 
-    public final int SUCCESS = 1;
-    public final int ERROR = -1;
-    public final int LOADING = 2;
+    public static final int SUCCESS = 1;
+    public static final int ERROR = -1;
+    public static final int LOADING = 2;
     private int state;
     private View content;
 
@@ -32,17 +32,25 @@ public abstract class FirebaseFragment<T> extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.firebase_view, container, false);
+        ViewStub content = view.findViewById(R.id.content);
+        content.setLayoutResource(getContentResourceId());
         state = LOADING;
         return view;
     }
 
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        setState(LOADING);
+    }
+
     /**
      * Use this method to change state.
-     * DO NOT CHANGE STATUS DIRECTLY!
+     * DO NOT CHANGE STATE DIRECTLY!
      *
      * @param state The new state to set.
      */
-    protected void setState(int state) {
+    public void setState(int state) {
         View view = getView();
         if (view != null) {
             if (this.state != state) {
@@ -52,7 +60,11 @@ public abstract class FirebaseFragment<T> extends Fragment {
                         viewToHide = view.findViewById(R.id.loading_view);
                         break;
                     case SUCCESS:
-                        viewToHide = content;
+                        viewToHide = this.content;
+                        if (viewToHide == null) {
+                            ViewStub contentStub = view.findViewById(R.id.content);
+                            this.content = contentStub.inflate();
+                        }
                         break;
                     case ERROR:
                         viewToHide = view.findViewById(R.id.error_view);
@@ -68,7 +80,11 @@ public abstract class FirebaseFragment<T> extends Fragment {
                         viewToShow = view.findViewById(R.id.loading_view);
                         break;
                     case SUCCESS:
-                        viewToShow = content;
+                        viewToShow = this.content;
+                        if (viewToShow == null) {
+                            ViewStub contentStub = view.findViewById(R.id.content);
+                            this.content = contentStub.inflate();
+                        }
                         break;
                     case ERROR:
                         viewToShow = view.findViewById(R.id.error_view);
@@ -85,16 +101,20 @@ public abstract class FirebaseFragment<T> extends Fragment {
     }
 
 
-    public void setContent(int layoutId) {
+    public void inflateStub() {
         View view = getView();
         if (view != null) {
             ViewStub content = view.findViewById(R.id.content);
-            content.setLayoutResource(layoutId);
+            if (content == null) {
+                throw new IllegalStateException("Content should not be null");
+            }
+            content.setLayoutResource(getContentResourceId());
             this.content = content.inflate();
         } else {
             throw new IllegalStateException("View in FirebaseFragment should not be null");
         }
-
     }
+
+    protected abstract int getContentResourceId();
 
 }

@@ -15,6 +15,7 @@ android {
         main {
             java {
                 exclude '**/ChatActivity.java'
+                exclude '**/ChatRoomManager.java'
             }
         }
     }
@@ -42,6 +43,7 @@ dependencies {
     compile 'com.facebook.android:facebook-android-sdk:[4,5)'
     compile 'uk.co.chrisjenx:calligraphy:2.3.0'
     compile 'com.afollestad.material-dialogs:core:0.9.4.6'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.0'
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.0.0-RC0'
 }

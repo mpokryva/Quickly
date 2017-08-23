@@ -1,10 +1,12 @@
 package com.android.miki.quickly.utils;
 
+import com.android.miki.quickly.firebase_requests.DatabaseReferences;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.Message;
 import com.android.miki.quickly.models.User;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +22,7 @@ public class DataGenerator {
 
 
     private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
-    private DatabaseReference mAvailableChatsRef = mDatabase.getReference().child("availableChats");
+    private DatabaseReference mAvailableChatsRef = DatabaseReferences.AVAILABLE_CHATS;
     private DatabaseReference mMessagesRef = mDatabase.getReference().child("messages");
     private DatabaseReference mUsersRef = mDatabase.getReference().child("users");
     // ** Field "randomSentences" is at the bottom **
@@ -44,14 +46,14 @@ public class DataGenerator {
         if (randomUser == null) {
             lastMessage = null;
         } else {
-            lastMessage = new Message(System.currentTimeMillis(), randomUser, lastMessageText);;
+            lastMessage = new Message(randomUser, lastMessageText);;
         }
-        ChatRoom chatRoom = new ChatRoom(chatId, System.currentTimeMillis(), users , lastMessage);
+        ChatRoom chatRoom = new ChatRoom(chatId, users , lastMessage);
         Iterator<User> it = users.values().iterator();
         while (it.hasNext()) {
             User user = it.next();
             String text = randomSentences[r.nextInt(randomSentences.length)];
-            Message message = new Message(System.currentTimeMillis(), user, text);
+            Message message = new Message(user, text);
             chatRoom.addMessage(message);
         }
         chatRoom.addMessage(lastMessage);
