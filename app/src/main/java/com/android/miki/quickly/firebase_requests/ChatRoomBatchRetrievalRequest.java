@@ -1,4 +1,4 @@
-package com.android.miki.quickly.firebase_queries;
+package com.android.miki.quickly.firebase_requests;
 
 import com.android.miki.quickly.core.Callable;
 import com.android.miki.quickly.models.ChatRoom;
@@ -6,7 +6,7 @@ import com.android.miki.quickly.utils.FirebaseError;
 import com.android.miki.quickly.utils.FirebaseListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
@@ -17,21 +17,19 @@ import java.util.List;
  * Created by Miki on 7/14/2017.
  */
 
-public class ChatRoomBatchQuery extends FirebaseQuery implements Callable<List<ChatRoom>> {
+public class ChatRoomBatchRetrievalRequest implements FirebaseRequest, Callable<List<ChatRoom>> {
 
-    private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     private ChatRoom startingPointRoom;
     private int batchSize;
 
-    public ChatRoomBatchQuery(int batchSize) {
-        super((FirebaseDatabase.getInstance().getReference().child("availableChats")));
+    public ChatRoomBatchRetrievalRequest(int batchSize) {
         this.startingPointRoom = null;
         this.batchSize = batchSize;
     }
 
     @Override
     public void call(final FirebaseListener<List<ChatRoom>> listener) {
-        Query query = (startingPointRoom == null) ? getBaseRef() : getBaseRef().startAt(startingPointRoom.getId());
+        Query query = (startingPointRoom == null) ? ref() : ref().startAt(startingPointRoom.getId());
         // 1 is added to BATCH_SIZE so we can save the last as the marker for getRoom time.
         query.limitToFirst(batchSize + 1).addListenerForSingleValueEvent(new ValueEventListener() {
             List<ChatRoom> chatRooms = new ArrayList<ChatRoom>();
@@ -55,4 +53,10 @@ public class ChatRoomBatchQuery extends FirebaseQuery implements Callable<List<C
             }
         });
     }
+
+    @Override
+    public DatabaseReference ref() {
+        return DatabaseReferences.AVAILABLE_CHATS;
+    }
+
 }

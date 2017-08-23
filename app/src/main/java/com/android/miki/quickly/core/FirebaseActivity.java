@@ -23,7 +23,7 @@ public abstract class FirebaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_firebase);
+        setContentView(R.layout.firebase_view);
         state = LOADING;
     }
 

@@ -49,7 +49,6 @@ import com.bumptech.glide.request.target.Target;
 public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private List<Message> messages;
-    private User user;
     private static final String TAG = "ChatRecyclerAdapter";
     private ActionMode.Callback messageSeletedCallback;
     private ActionMode mActionMode;
@@ -60,10 +59,11 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private static final int INCOMING_TEXT = 1;
     private static final int OUTGOING_GIF = 2;
     private static final int INCOMING_GIF = 3;
+    private ChatRoom chatRoom;
 
-    public ChatRecyclerAdapter(final ChatRoom chatRoom, final List<Message> messages, User user, final ChatSelectionActivity activity) {
+    public ChatRecyclerAdapter(final ChatRoom chatRoom, final List<Message> messages, final ChatSelectionActivity activity) {
+        this.chatRoom = chatRoom;
         this.messages = messages;
-        this.user = user;
         mActivity = activity;
         selectedMessages = new ArrayList<>();
         userToColorMap = new HashMap<>();
@@ -229,21 +229,29 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         }).into(imageView);
     }
 
+
+
     @Override
     public int getItemViewType(int position) {
         Message message = messages.get(position);
-        if (message.getSender().equals(user)) { // Outgoing messages
-            if (message.getMessageText() != null) { // text
-                return OUTGOING_TEXT;
-            } else { // GifMessage
-                return OUTGOING_GIF;
+        try {
+            if (message.getSender().equals(User.currentUser())) { // Outgoing messages
+                if (message.getMessageText() != null) { // text
+                    return OUTGOING_TEXT;
+                } else { // GifMessage
+                    return OUTGOING_GIF;
+                }
+            } else { // Incoming message
+                if (message.getMessageText() != null) { // text
+                    return INCOMING_TEXT;
+                } else { // GifMessage
+                    return INCOMING_GIF;
+                }
             }
-        } else { // Incoming message
-            if (message.getMessageText() != null) { // text
-                return INCOMING_TEXT;
-            } else { // GifMessage
-                return INCOMING_GIF;
-            }
+        } catch (NullPointerException e) {
+            Log.e(TAG, "Chatroom id: " + this.chatRoom.getId());
+            Log.e(TAG, "Message id: " + message.getId());
+            throw  new NullPointerException();
         }
     }
 

@@ -8,6 +8,9 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,6 +24,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -35,15 +39,12 @@ import android.widget.Toast;
 
 import com.android.miki.quickly.R;
 import com.android.miki.quickly.core.FirebaseFragment;
-import com.android.miki.quickly.core.chat_room.ChatRoomManager;
 import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
 import com.android.miki.quickly.group_info.GroupInfoActivity;
-import com.android.miki.quickly.login_signup.LoginListener;
 import com.android.miki.quickly.ui.AnimatorUtil;
 import com.android.miki.quickly.ui.GrowingAnimation;
 import com.android.miki.quickly.ui.ShrinkingAnimation;
 import com.android.miki.quickly.utils.FirebaseError;
-import com.android.miki.quickly.utils.FirebaseListener;
 import com.android.miki.quickly.ui.VerticalSpaceItemDecoration;
 import com.android.miki.quickly.gif_drawer.GifDrawer;
 import com.android.miki.quickly.gif_drawer.GifDrawerAction;
@@ -65,147 +66,64 @@ import static android.app.Activity.RESULT_OK;
  * Created by mpokr on 5/25/2017.
  */
 
-public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoomObserver, ConnectivityStatusObserver {
+public class ChatFragment extends Fragment implements ChatRoomObserver, ConnectivityStatusObserver {
 
-    private ImageButton mSendButton;
-    private EditText mMessageEditText;
-    private Button gifButton;
     private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     private DatabaseReference mRootRef = mDatabase.getReference();
-    private DatabaseReference mAvailableChatsRef = mRootRef.child("availableChats");
     private DatabaseReference mMessagesRef = mRootRef.child("messages");
     private RecyclerView mMessagesRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private ChatRecyclerAdapter mAdapter;
-    private GifDrawer mGifDrawer;
     private ChatRoom chatRoom;
     private User user;
     private List<Message> messages;
     private boolean isGifDrawerOpen;
-    private static final String TAG = "ChatFragment";
+    private static final String TAG = ChatFragment.class.getName();
     private static final int GIF_KEYBOARD_SHIFT = 500; // 500 pixels
     public static int GROUP_INFO_REQUEST_CODE = 0;
+    private boolean isConnected;
+    private int position;
     private ProgressBar progressWheel;
     private View content;
     private View loadingView;
     private View errorView;
     private TextView errorMessage;
     private TextView errorDetais;
-    private boolean isConnected;
-    private int position;
+    public static final int SUCCESS = 1;
+    public static final int ERROR = -1;
+    public static final int LOADING = 2;
+    private int state;
+
     private boolean firstComponentInitialization = true;
     private ActionBarListener callbackToActivity;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
         isConnected = true; // Initialized to true to avoid double loading of chat room initially.
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
+        state = LOADING;
         loadingView = view.findViewById(R.id.loading_view);
-        progressWheel = (ProgressBar) loadingView.findViewById(R.id.progress_wheel);
+        progressWheel = loadingView.findViewById(R.id.progress_wheel);
         int lightBlue = ContextCompat.getColor(getContext(), R.color.LightBlue); // Color the progress whel light blue.
         progressWheel.getIndeterminateDrawable().setColorFilter(lightBlue, PorterDuff.Mode.MULTIPLY);
         errorView = view.findViewById(R.id.error_view);
-        errorMessage = (TextView) errorView.findViewById(R.id.error_message);
-        errorDetais = (TextView) errorView.findViewById(R.id.error_details);
-        setHasOptionsMenu(true);
+        errorMessage = errorView.findViewById(R.id.error_message);
+        errorDetais = errorView.findViewById(R.id.error_details);
         content = view.findViewById(R.id.content);
-        mSendButton = (ImageButton) view.findViewById(R.id.send_button);
-        mMessageEditText = (EditText) view.findViewById(R.id.message_box);
-        gifButton = (Button) view.findViewById(R.id.gif_button);
-        mMessagesRecyclerView = (RecyclerView) view.findViewById(R.id.messages_recycler_view);
-        // TODO: Handle null chatRoom?
+
+        setHasOptionsMenu(true);
+        mMessagesRecyclerView = view.findViewById(R.id.messages_recycler_view);
+        // TODO: Handle null user/position?
         user = (User) getArguments().getSerializable("user");
         position = getArguments().getInt("position");
         messages = new ArrayList<>();
-        gifButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (isGifDrawerOpen) {
-                    closeGifDrawer();
-                } else {
-                    openGifDrawer();
-                }
-            }
-        });
-
-        mMessageEditText.addTextChangedListener(new TextWatcher() {
-            private int oldNumLines = 1;
-            private long lastEdited;
-            private Thread thread;
-            private String query;
-            RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.message_box_layout);
-            LinearLayout.LayoutParams llp = (LinearLayout.LayoutParams) rl.getLayoutParams();
-            private int originalMessageBoxHeight = llp.height;
-            private int typingInterval = 600;   // 600 ms
-            private Runnable runnableTextWatcher = new Runnable() {
-                @Override
-                public void run() {
-                    //
-                    while (true) {
-                        if ((System.currentTimeMillis() - lastEdited) > typingInterval) {
-                            getGifs(query);
-                            thread = null;
-                            break;
-                        }
-                    }
-                }
-            };
-
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                query = charSequence.toString().trim();
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                Paint textPaint = mMessageEditText.getPaint();
-                Rect bounds = new Rect();
-                String text = editable.toString();
-                textPaint.getTextBounds(text, 0, text.length(), bounds);
-                int textHeight = bounds.height() * mMessageEditText.getLineCount();
-                Log.d(TAG, "text height: " + textHeight);
-                RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.message_box_layout);
-                LinearLayout.LayoutParams llp = (LinearLayout.LayoutParams) rl.getLayoutParams();
-                int paddingAndMargins = mMessageEditText.getPaddingBottom() + mMessageEditText.getPaddingTop() + llp.bottomMargin + llp.topMargin;
-                int editTextHeight = mMessageEditText.getHeight() - paddingAndMargins;
-                Log.d(TAG, "edittext height: " + editTextHeight);
-                Log.d(TAG, "padding&margins: " + paddingAndMargins);
-
-                int currentLineCount = mMessageEditText.getLineCount();
-                if (oldNumLines < currentLineCount) {
-                    llp.height += (currentLineCount - oldNumLines) * paddingAndMargins * 1.5;
-                    rl.setLayoutParams(llp);
-                    oldNumLines = currentLineCount;
-                } else if (oldNumLines > currentLineCount) {
-                    llp.height -= (oldNumLines - currentLineCount) * paddingAndMargins * 1.5;
-                    rl.setLayoutParams(llp);
-                    oldNumLines = currentLineCount;
-                }
-                Log.d(TAG, "" + (editTextHeight - textHeight));
-
-                if (text.equals("")) {
-                    llp.height = originalMessageBoxHeight;
-                    rl.setLayoutParams(llp);
-                    Log.d(TAG, "back to original");
-                }
-
-                if (isGifDrawerOpen) {
-                    lastEdited = System.currentTimeMillis();
-                    if (thread == null) {
-                        thread = new Thread(runnableTextWatcher);
-                        thread.start();
-                    }
-                }
-            }
-        });
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
     }
 
     @Override
@@ -227,14 +145,6 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
         final View view = ChatFragment.this.getView();
         String roomName = (chatRoom.getName() != null) ? chatRoom.getName() : chatRoom.getDefaultName();
         callbackToActivity.setTitle(roomName);
-        mGifDrawer = new GifDrawer(view, chatRoom, user, new GifDrawerAction() {
-            @Override
-            public void gifSent(Message message) {
-                int lastIndex = mAdapter.insertMessage(message);
-                mAdapter.notifyItemInserted(lastIndex);
-                closeGifDrawer();
-            }
-        });
 
         // Retrieve messages from Firebase.
         messages.clear();
@@ -250,10 +160,10 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
                     return;
                 }
                 // Initialize message view (RecyclerView), after messages have been retrieved.
+                mAdapter = new ChatRecyclerAdapter(chatRoom, messages, (ChatSelectionActivity) getActivity());
+                mMessagesRecyclerView.setAdapter(mAdapter);
                 mLayoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false);
                 mMessagesRecyclerView.setLayoutManager(mLayoutManager);
-                mAdapter = new ChatRecyclerAdapter(chatRoom, messages, user, (ChatSelectionActivity) getActivity());
-                mMessagesRecyclerView.setAdapter(mAdapter);
                 mMessagesRecyclerView.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View view) {
@@ -266,8 +176,8 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
                     mMessagesRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
                 }
                 firstComponentInitialization = false;
-                content.setVisibility(View.VISIBLE);
                 scrollToBottom();
+                setState(SUCCESS);
 
             }
 
@@ -277,27 +187,63 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
             }
         });
 
-        mSendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                boolean isMessageEmpty = TextUtils.isEmpty(mMessageEditText.getEditableText().toString());
-                if (!isMessageEmpty) {
-                    String messageText = mMessageEditText.getText().toString();
-                    Message outgoingMessage = new Message(System.currentTimeMillis(), user, messageText);
-                    chatRoom.addMessage(outgoingMessage);
-                    int lastIndex = mAdapter.insertMessage(outgoingMessage);
-                    mAdapter.notifyItemInserted(lastIndex);
-                    clearMessageBox();
-                    scrollToBottom();
-                    hideKeyboard(view);
-                } else {
-                    Toast.makeText(view.getContext(), "No text in message!", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
     }
 
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser && getView() != null && state != SUCCESS) {
+            setState(LOADING);
+        }
+    }
+
+    /**
+     * Use this method to change state.
+     * DO NOT CHANGE STATE DIRECTLY!
+     *
+     * @param state The new state to set.
+     */
+    public void setState(int state) {
+        View view = getView();
+        if (view != null) {
+            if (this.state != state) {
+                View viewToHide;
+                switch (this.state) {
+                    case LOADING:
+                        viewToHide = loadingView;
+                        break;
+                    case SUCCESS:
+                        viewToHide = this.content;
+                        break;
+                    case ERROR:
+                        viewToHide = errorView;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("OLD Status must be either LOADING, SUCCESS, or ERROR.");
+                }
+                viewToHide.setVisibility(View.GONE);
+                View viewToShow;
+                this.state = state; // Update state.
+                switch (this.state) {
+                    case LOADING:
+                        viewToShow = view.findViewById(R.id.loading_view);
+                        break;
+                    case SUCCESS:
+                        viewToShow = this.content;
+                        break;
+                    case ERROR:
+                        viewToShow = view.findViewById(R.id.error_view);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("NEW Status must be either LOADING, SUCCESS, or ERROR.");
+                }
+                viewToShow.setVisibility(View.VISIBLE);
+            }
+        } else {
+            throw new IllegalStateException("View in FirebaseFragment should not be null");
+        }
+
+    }
 
     /**
      * Scrolls to the most recent message.
@@ -337,158 +283,11 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
         }
     }
 
-    public void revertToStartState() {
-        closeGifDrawer();
-        Log.d(TAG, "Reverting to start state");
-        View view = getView();
-        if (view != null) {
-            hideKeyboard(view);
-        }
-    }
-
-    private void clearMessageBox() {
-        if (mMessageEditText != null) {
-            mMessageEditText.setText("");
-        }
-    }
-
-    private void toggleGifButton() {
-        final int iconRes;
-        if (isGifDrawerOpen) {
-            iconRes = R.drawable.gif_icon;
-        } else {
-            iconRes = R.drawable.ic_close_black_24dp;
-        }
-        Animation.AnimationListener listener = new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                AnimatorUtil.on(gifButton).with(new GrowingAnimation()).duration(0).animate();
-                Drawable newIcon = ContextCompat.getDrawable(ChatFragment.this.getContext(), iconRes);
-                if (iconRes == R.drawable.ic_close_black_24dp) {
-                    gifButton.setText("");
-                } else {
-                    gifButton.setText("GIF");
-                }
-                gifButton.setBackground(newIcon);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        };
-        AnimatorUtil.on(gifButton).with(new ShrinkingAnimation()).duration(200).listener(listener).animate();
-    }
-
-    private void toggleSendButton() {
-        Animation animation;
-        if (isGifDrawerOpen) {
-            animation = new GrowingAnimation();
-        } else {
-            animation = new ShrinkingAnimation();
-        }
-        AnimatorUtil.on(mSendButton).with(animation).duration(200).animate();
-    }
-
-    private void closeGifDrawer() {
-        if (isGifDrawerOpen) {
-            toggleGifButton();
-            toggleSendButton();
-            hideGifDrawer();
-        }
-    }
-
-    /**
-     * Hide the gif drawer itself, and return components to their appropriate states.
-     */
-    private void hideGifDrawer() {
-        mMessageEditText.setHint(R.string.message_box_hint);
-        mSendButton.setVisibility(View.VISIBLE);
-        isGifDrawerOpen = false;
-        mGifDrawer.setShouldShow(false);
-        // TODO: Actually implement this method: mGifDrawer.cancelGifRequests();
-        mGifDrawer.hide();
-        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
-        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin - GIF_KEYBOARD_SHIFT);
-        mMessagesRecyclerView.setLayoutParams(layoutParams);
-        clearMessageBox();
-        scrollToBottom();
-    }
-
-    private void openGifDrawer() {
-        if (!isGifDrawerOpen) {
-            toggleGifButton();
-            toggleSendButton();
-            showGifDrawer();
-        }
-    }
-
-    private void showGifDrawer() {
-        clearMessageBox();
-        mMessageEditText.setHint(R.string.search_giphy);
-        mSendButton.setVisibility(View.GONE);
-        isGifDrawerOpen = true;
-        mGifDrawer.setShouldShow(true);
-        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
-        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin + GIF_KEYBOARD_SHIFT);
-        mMessagesRecyclerView.setLayoutParams(layoutParams);
-        scrollToBottom();
-        mGifDrawer.getTrendingGifs();
-    }
-
-    private void getGifs(String query) {
-        if (query.equals("")) {
-            mGifDrawer.getTrendingGifs();
-        } else {
-            mGifDrawer.translateTextToGif(query);
-        }
-    }
-
     private void hideKeyboard(View view) {
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
-
-    @Override
-    public void onSuccess(ChatRoom chatRoom) {
-        super.onSuccess(chatRoom);
-        this.chatRoom = chatRoom;
-        initComponents();
-    }
-
-    @Override
-    public void onLoading() {
-        content.setVisibility(View.GONE);
-        errorView.setVisibility(View.GONE);
-        loadingView.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void onError(FirebaseError error) {
-        content.setVisibility(View.GONE);
-        loadingView.setVisibility(View.GONE);
-        errorMessage.setText(error.getMessage());
-        errorDetais.setText(error.getDetails());
-        errorView.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void showMainContent() {
-        loadingView.setVisibility(View.GONE);
-        errorView.setVisibility(View.GONE);
-        content.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void hideMainLayout() {
-        content.setVisibility(View.GONE);
-    }
 
     @Override
     public void numUsersChanged(int numUsers) {
@@ -497,6 +296,16 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
 
     @Override
     public void userAdded(User user) {
+        View view = getView();
+        if (view != null) {
+            View snackbarLayout = view.findViewById(R.id.fragment_chat_coordinator_wrapper);
+            if (snackbarLayout != null) {
+                Snackbar snackbar = Snackbar.make(snackbarLayout, user.getDisplayName() + " has joined!", Snackbar.LENGTH_SHORT);
+                int color = ContextCompat.getColor(getContext(), R.color.LightBlue);
+                snackbar.getView().setBackgroundColor(color);
+                snackbar.show();
+            }
+        }
 
     }
 
@@ -512,44 +321,47 @@ public class ChatFragment extends FirebaseFragment<ChatRoom> implements ChatRoom
 
     @Override
     public void messageAdded(Message message) {
-
+        int lastIndex = mAdapter.insertMessage(message);
+        mAdapter.notifyItemInserted(lastIndex);
+        scrollToBottom();
     }
 
     @Override
     public void onConnect() {
         if (!isConnected) {
             isConnected = true;
-            loadRoom();
+            updateUI(true);
         }
     }
 
-    private void loadRoom() {
-        ChatRoomManager.getInstance().getRoom(position, new FirebaseListener<ChatRoom>() {
-            @Override
-            public void onLoading() {
-                ChatFragment.this.onLoading();
-            }
+    private void updateUI(boolean isConnected) {
 
-            @Override
-            public void onError(FirebaseError error) {
-                ChatFragment.this.onError(error);
-            }
+    }
 
-            @Override
-            public void onSuccess(ChatRoom chatRoom) {
-                ChatFragment.this.onSuccess(chatRoom);
-            }
-        });
+    public void setChatRoom(ChatRoom chatRoom) {
+        this.chatRoom = chatRoom;
+        initComponents();
     }
 
     @Override
     public void onDisconnect(FirebaseError error) {
-        isConnected = false;
-        onError(error);
+        if (isConnected) {
+            isConnected = false;
+            updateUI(false);
+        }
     }
 
-    @Override
-    public Context retrieveContext() {
-        return getContext();
+    public void onGifDrawerOpened() {
+//        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
+//        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin + GIF_KEYBOARD_SHIFT);
+//        mMessagesRecyclerView.setLayoutParams(layoutParams);
+//        scrollToBottom();
     }
+    public void onGifDrawerClosed() {
+//        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
+//        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin - GIF_KEYBOARD_SHIFT);
+//        mMessagesRecyclerView.setLayoutParams(layoutParams);
+//        scrollToBottom();
+    }
+
 }

@@ -3,22 +3,29 @@ package com.android.miki.quickly.models;
 import android.util.Log;
 
 import com.android.miki.quickly.chat_components.ChatRoomObserver;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.android.miki.quickly.core.network.FirebaseClient;
+import com.android.miki.quickly.firebase_requests.DatabaseReferences;
+import com.android.miki.quickly.firebase_requests.FirebaseRefKeys;
+import com.android.miki.quickly.firebase_requests.chatroom_model_requests.AddUserRequest;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mpokr on 5/22/2017.
@@ -26,12 +33,13 @@ import java.util.List;
 
 public class ChatRoom implements Serializable {
 
-    private transient FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
-    private transient DatabaseReference mAvailableChatsRef = mDatabase.getReference().child("availableChats");
-    private transient DatabaseReference mMessagesRef = mDatabase.getReference().child("messages");
+    private transient FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private transient DatabaseReference availableChatsRef = DatabaseReferences.AVAILABLE_CHATS;
+    private transient DatabaseReference chatRef;
+    private transient DatabaseReference messagesRef = database.getReference().child("messages");
     private transient static final String TAG = "ChatRoom";
     private String id;
-    private long creationTimestamp;
+    private Long creationTimestamp;
     private int numUsers;
     private HashMap<String, User> users = new HashMap<>();
     private Message lastMessage;
@@ -43,17 +51,17 @@ public class ChatRoom implements Serializable {
 
     }
 
-    public ChatRoom(String id, long creationTimeStamp, HashMap<String, User> users, Message lastMessage) {
-        this.creationTimestamp = creationTimeStamp;
+    public ChatRoom(String id, HashMap<String, User> users, Message lastMessage) {
         this.users = users;
         this.numUsers = (users == null) ? 0 : users.size();
         this.lastMessage = lastMessage;
         this.id = id;
         observers = new ArrayList<>();
+        chatRef = availableChatsRef.child(id);
     }
 
-    public long getCreationTimestamp() {
-        return creationTimestamp;
+    public Map<String, String> getCreationTimestamp() {
+        return ServerValue.TIMESTAMP;
     }
 
     public int getNumUsers() {
@@ -104,11 +112,18 @@ public class ChatRoom implements Serializable {
     Below are methods that call the Firebase API.
      */
 
-    public void changeName(String name) {
-        this.name = name;
-        for (ChatRoomObserver observer : observers) {
-            observer.nameChanged(name);
-        }
+    public void changeName(final String name) {
+        ChatRoom.this.name = name;
+        chatRef.child("name").setValue(name, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    for (ChatRoomObserver observer : observers) {
+                        observer.nameChanged(name);
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -116,12 +131,29 @@ public class ChatRoom implements Serializable {
      *
      * @param user The user to add
      */
-    public void addUser(User user) {
+    public void addUser(final User user) {
         if (user != null) {
-            users.put(user.getUserId(), user);
-            numUsers = users.size();
-            mAvailableChatsRef.child(id).child("users").child(user.getUserId()).setValue(user);
-            mAvailableChatsRef.child(id).child("numUsers").setValue(numUsers);
+            DatabaseReference usersRef = DatabaseReferences.AVAILABLE_CHATS.child(id)
+                    .child(FirebaseRefKeys.USERS).child(user.getId());
+            DatabaseReference numUsersRef = DatabaseReferences.AVAILABLE_CHATS.child(id).
+                    child(FirebaseRefKeys.NUM_USERS);
+            users.put(user.getId(), user);
+            usersRef.setValue(user, new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                    if (databaseError == null) {
+                        for (ChatRoomObserver observer : observers) {
+                            observer.userAdded(user);
+                        } // TODO: Maybe move to second call?
+                    }
+                }
+            });
+            numUsersRef.setValue(users.size(), new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                    numUsers = users.size();
+                }
+            });
         }
     }
 
@@ -130,26 +162,45 @@ public class ChatRoom implements Serializable {
      *
      * @param user The user to remove
      */
-    public void removeUser(User user) {
+    public void removeUser(final User user) {
         if (user != null) {
-            User removedUser = users.remove(user.getUserId());
-            if (removedUser == null) {
-                Log.e("removeUser", "User to remove was not found in user map.");
-            } else {
-                numUsers = users.size();
-                mAvailableChatsRef.child(id).child("users").child(user.getUserId()).removeValue();
-                mAvailableChatsRef.child(id).child("numUsers").setValue(numUsers);
-            }
+            users.remove(user.getId());
+            availableChatsRef.child(id).child("users").child(user.getId()).removeValue(new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                    if (databaseError == null) {
+                        for (ChatRoomObserver observer : observers) {
+                            observer.userRemoved(user);
+                        }
+                    }
+                }
+            });
+            availableChatsRef.child(id).child("numUsers").setValue(users.size(), new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                    numUsers = users.size();
+                }
+            });
+
         }
 
     }
 
-    public void addMessage(Message message) {
+    public void addMessage(final Message message) {
         if (message != null) {
-            DatabaseReference messageRef = mMessagesRef.child(id).push();
+            DatabaseReference messageRef = messagesRef.child(id).push();
             message.setMessageIdOnce(messageRef.getKey());
-            messageRef.setValue(message);
-            mAvailableChatsRef.child(this.id).child("lastMessage").setValue(message);
+            messageRef.setValue(message, new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                    if (databaseError == null) {
+                        for (ChatRoomObserver observer : observers) {
+                            observer.messageAdded(message);
+                        }
+                    }
+                    availableChatsRef.child(ChatRoom.this.id).child("lastMessage").setValue(message);
+                }
+            });
         }
     }
 
@@ -157,13 +208,13 @@ public class ChatRoom implements Serializable {
         if (message != null) {
             String messageId = message.getId();
             if (messageId != null) {
-                mMessagesRef.child(this.id).child(messageId).removeValue();
-                Query lastQuery = mMessagesRef.orderByChild("timestamp").limitToLast(1);
+                messagesRef.child(this.id).child(messageId).removeValue();
+                Query lastQuery = messagesRef.orderByChild("timestamp").limitToLast(1);
                 lastQuery.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Message newLastMessage = dataSnapshot.getValue(Message.class);
-                        mAvailableChatsRef.child(ChatRoom.this.id).child("lastMessage").setValue(newLastMessage);
+                        availableChatsRef.child(ChatRoom.this.id).child("lastMessage").setValue(newLastMessage);
                     }
 
                     @Override
@@ -202,9 +253,10 @@ public class ChatRoom implements Serializable {
             throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         observers = new ArrayList<>();
-        mDatabase = FirebaseDatabase.getInstance();
-        mAvailableChatsRef = mDatabase.getReference().child("availableChats");
-        mMessagesRef = mDatabase.getReference().child("messages");
+        database = FirebaseDatabase.getInstance();
+        availableChatsRef = DatabaseReferences.AVAILABLE_CHATS;
+        messagesRef = database.getReference().child("messages");
     }
+
 
 }

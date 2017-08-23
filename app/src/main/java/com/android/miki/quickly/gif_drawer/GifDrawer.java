@@ -26,18 +26,14 @@ public class GifDrawer {
     private static final String GIPHY_BASE_URL = "http://api.giphy.com";
     private static final String GIPHY_TRANSLATE_PATH = "/v1/gifs/translate?s=";
     private static final String GIPHY_SEARCH_PATH = "/v1/gifs/search?q=";
-    private ChatRoom chatRoom;
-    private User user;
     private boolean isShown;
     private boolean shouldShow;
 
 
-    public GifDrawer(View view, ChatRoom chatRoom, User user, GifDrawerAction gifDrawerAction) {
-        this.chatRoom = chatRoom;
-        this.user = user;
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.gif_recycler_view);
+    public GifDrawer(View view, ChatRoom chatRoom, GifDrawerAction gifDrawerAction) {
+        mRecyclerView = view.findViewById(R.id.gif_recycler_view);
         mLayoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
-        mAdapter = new GIFRecyclerAdapter(new ArrayList<String>(), chatRoom, user, gifDrawerAction); // No GIF data for now...
+        mAdapter = new GIFRecyclerAdapter(new ArrayList<String>(), chatRoom, gifDrawerAction); // No GIF data for now...
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
         isShown = false;

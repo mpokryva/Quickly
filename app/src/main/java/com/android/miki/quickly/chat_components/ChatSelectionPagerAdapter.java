@@ -8,16 +8,14 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.util.Log;
 import android.view.ViewGroup;
 
+import com.android.miki.quickly.core.FirebaseFragment;
+import com.android.miki.quickly.core.chat_room.ChatRoomFinder;
 import com.android.miki.quickly.core.network.ConnectivityStatusNotifier;
 import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.User;
-import com.android.miki.quickly.core.chat_room.ChatRoomManager;
 import com.android.miki.quickly.utils.FirebaseError;
 import com.android.miki.quickly.utils.FirebaseListener;
-
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Created by mpokr on 5/22/2017.
@@ -25,9 +23,7 @@ import java.util.Map;
 
 public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter implements ConnectivityStatusObserver {
 
-    private ChatRoomManager chatRoomManager;
-    private User user;
-    private ChatRoom chatRoom;
+    private ChatRoomFinder chatRoomFinder;
     private ChatRoom currentChatRoom;
     private FragmentManager fm;
     private static final String TAG = ChatSelectionPagerAdapter.class.getName();
@@ -37,16 +33,17 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     private ChatFragment currentFragment;
     private boolean shouldForceDisconnect;
     private CustomViewPager viewPager;
+    private User user;
 
 
-    public ChatSelectionPagerAdapter(FragmentManager fm, User user, Context context) {
+    public ChatSelectionPagerAdapter(FragmentManager fm, Context context) {
         super(fm);
         this.fm = fm;
-        chatRoomManager = ChatRoomManager.getInstance();
-        this.user = user;
-        mContext = context;
+        this.user = User.currentUser();
+        chatRoomFinder = ChatRoomFinder.getInstance();
         ConnectivityStatusNotifier notifier = ConnectivityStatusNotifier.getInstance();
         notifier.registerObserver(this);
+        mContext = context;
     }
 
 
@@ -55,78 +52,74 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
         Fragment fragment = new ChatFragment();
 
         Bundle args = new Bundle();
-        args.putSerializable("user", user);
         args.putInt("position", position);
         fragment.setArguments(args);
         return fragment;
-
     }
 
-    public void loadRoom(final CustomViewPager container, final int position) {
+    public ChatFragment getCurrentFragment() {
+        return currentFragment;
+    }
+
+    @Override
+    public void setPrimaryItem(ViewGroup container, int position, Object object) {
+        if (getCurrentFragment() != object) {
+            currentFragment = ((ChatFragment) object);
+        }
+        super.setPrimaryItem(container, position, object);
+    }
+
+    public void loadRoom(final CustomViewPager container, final int position, final FirebaseListener <ChatRoom> listener) {
         viewPager = container;
         final ChatFragment fragment = (ChatFragment) instantiateItem(container, position);
         if (position == container.getCurrentItem()) {
             currentFragment = fragment;
         }
-        ConnectivityStatusNotifier notifier = ConnectivityStatusNotifier.getInstance();
-        boolean isConnected = notifier.isConnected(container.getContext());
         Log.d(TAG, "isConnected from notifier: " + isConnected);
-        if (isConnected) {
-            chatRoomManager.getRoom(position, new FirebaseListener<ChatRoom>() {
-                @Override
-                public void onLoading() {
-                    fragment.onLoading();
-                }
 
-                // Connected to internet (according to ConnectivityNotifer), but not able to complete request.
-                @Override
-                public void onError(FirebaseError error) {
-                    Log.d(TAG, "Error message: " + error.getMessage());
-                    Log.d(TAG, "Error details: " + error.getDetails());
-                    forceDisconnect(container, currentPosition, FirebaseError.serverError());
-                    // TODO: Log real error to server.
-                }
+        chatRoomFinder.getRoom(position, new FirebaseListener<ChatRoom>() {
+            @Override
+            public void onLoading() {
+                //fragment.setState(FirebaseFragment.LOADING);
+                listener.onLoading();
+            }
 
-                @Override
-                public void onSuccess(ChatRoom chatRoom) {
-                    if (!viewPager.isPagingEnabled()) {
-                        viewPager.setPagingEnabled(true);
-                    }
-                    ChatSelectionPagerAdapter.this.chatRoom = chatRoom;
-                    ChatFragment prevFragment = instantiateItem(container, currentPosition);
-                    cleanChatRoom(currentChatRoom, prevFragment); // currentChatRoom is still old chat room.
-                    currentPosition = position;
-                    fragment.onSuccess(chatRoom);
-                    configureCurrentChatRoom(chatRoom, fragment);
+            // Connected to internet (according to ConnectivityNotifer), but not able to complete request.
+            @Override
+            public void onError(FirebaseError error) {
+                //fragment.setState(FirebaseFragment.ERROR);
+                listener.onError(error);
+                Log.d(TAG, "Error message: " + error.getMessage());
+                Log.d(TAG, "Error details: " + error.getDetails());
+                // TODO: Log real error to server.
+            }
 
-                }
-            });
-            // Not connected to internet.
-        } else {
-            // Current position didn't update yet. Still previous position.
-            forceDisconnect(container, currentPosition, FirebaseError.serverError());
-        }
+            @Override
+            public void onSuccess(ChatRoom chatRoom) {
+                ChatFragment prevFragment = instantiateItem(container, currentPosition);
+                cleanChatRoom(currentChatRoom, prevFragment); // currentChatRoom is still old chat room.
+                currentPosition = position;
+                configureCurrentChatRoom(chatRoom, fragment);
+                fragment.setChatRoom(chatRoom);
+                listener.onSuccess(chatRoom);
+            }
+        });
+        // Not connected to internet.
     }
 
-    /**
-     * Triggers the onDisconnect() method, along with disabling swiping.
-     *
-     * @param viewPager
-     * @param position
-     */
-    private void forceDisconnect(CustomViewPager viewPager, int position, FirebaseError error) {
-        Log.d(TAG, "Force disconnect");
-        shouldForceDisconnect = true;
-        onDisconnect(error);
-        shouldForceDisconnect = false;
-        viewPager.setPagingEnabled(false);
-        viewPager.setCurrentItem(position); // Position represents the previous position here.
-    }
-
-    @Override
-    public int getItemPosition(Object object) {
-        return super.getItemPosition(object);
-    }
+//    /**
+//     * Triggers the onDisconnect() method, along with disabling swiping.
+//     *
+//     * @param viewPager
+//     * @param position
+//     */
+//    private void forceDisconnect(CustomViewPager viewPager, int position, FirebaseError error) {
+//        Log.d(TAG, "Force disconnect");
+//        shouldForceDisconnect = true;
+//        shouldForceDisconnect = false;
+//        viewPager.setPagingEnabled(false);
+//        viewPager.setCurrentItem(position); // Position represents the previous position here.
+//    }
 
     /**
      * This method is supposed to be called when the user navigates away from the chat room.
@@ -140,7 +133,6 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
         if (chatRoom != null) { // Not the first chat room in session.
             chatRoom.removeUser(user); // Remove user from chat room they just exited.
             if (fragment != null) {
-                fragment.revertToStartState();
                 chatRoom.removeObserver(fragment);
             }
         }
@@ -157,7 +149,6 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
         currentChatRoom = chatRoom;// Set currentChatRoom to the chat room the user just entered.
         currentChatRoom.addObserver(fragment);
         currentChatRoom.addUser(user); // Add user to the chat room they just entered.
-        //                actionBar.setTitle(getUserString(currentChatRoom));
     }
 
 
@@ -168,43 +159,33 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
 
     @Override
     public int getCount() {
-        return chatRoomManager.getItemsInCache();
+        return 20;
     }
 
-    @Override
-    public void destroyItem(ViewGroup container, int position, Object object) {
-        super.destroyItem(container, position, object);
-    }
 
     @Override
     public void onConnect() {
-        if (!isConnected) {
-            isConnected = true;
-            if (viewPager != null) {
-                loadRoom(viewPager, viewPager.getCurrentItem());
-            } else {
-                if (currentFragment != null) {
-                    currentFragment.onConnect();
-                    Log.d(TAG, "Fragment is handling loading.");
-                }
-            }
-        }
+//        if (!isConnected) {
+//            isConnected = true;
+//            if (viewPager != null) {
+//                loadRoom(viewPager, viewPager.getCurrentItem());
+//            } else {
+//                if (currentFragment != null) {
+//                    currentFragment.onConnect();
+//                    Log.d(TAG, "Fragment is handling loading.");
+//                }
+//            }
+//        }
     }
 
     @Override
     public void onDisconnect(FirebaseError error) {
-        if (isConnected || shouldForceDisconnect) {
-            isConnected = false;
-            if (currentFragment != null) {
-                currentFragment.onDisconnect(error);
-            }
-        }
+//        if (isConnected || shouldForceDisconnect) {
+//            isConnected = false;
+//            if (currentFragment != null) {
+//                currentFragment.onDisconnect(error);
+//            }
+//        }
     }
-
-    @Override
-    public Context retrieveContext() {
-        return mContext;
-    }
-
 
 }

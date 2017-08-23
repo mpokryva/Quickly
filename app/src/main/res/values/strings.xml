@@ -9,7 +9,7 @@
     <string name="cancel">Cancel</string>
     <string name="dialog_text">dialogText</string>
     <string name="chat_room">chatRoom</string>
-    <string name="search_giphy">Search GIPHY...</string>
+    <string name="search_giphy">Search GIPHY&#8230;</string>
     <string name="sign_up">Sign up</string>
     <string name="password">Password</string>
     <string name="email">Email</string>
@@ -29,4 +29,7 @@
         In order to continue with Facebook, you must link your existing account to your Facebook account.</string>
     <string name="change_group_name">Change group name</string>
     <string name="is_dialog_open">isDialogOpen</string>
+    <string name="message_box_disconnected_hint">Not connected to the Internet&#8230;</string>
+    <string name="something_weird_happened">Something weird happened&#8230;</string>
+    <string name="gif">GIF</string>
 </resources>

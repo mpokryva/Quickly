@@ -9,7 +9,7 @@ import com.android.miki.quickly.utils.FirebaseListener;
  */
 
 
-public interface Callable<T> {
-    void call(final FirebaseListener<T> listener);
+public interface Callable<CallbackType> {
+    void call(final FirebaseListener<CallbackType> listener);
 }
 

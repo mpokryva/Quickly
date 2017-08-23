@@ -1,4 +1,4 @@
-package com.android.miki.quickly.firebase_queries;
+package com.android.miki.quickly.firebase_requests;
 
 import com.android.miki.quickly.core.Callable;
 import com.android.miki.quickly.models.ChatRoom;
@@ -15,7 +15,7 @@ import com.google.firebase.database.ValueEventListener;
  * Created by Miki on 7/14/2017.
  */
 
-public class ChatRoomQuery extends FirebaseQuery implements Callable<ChatRoom> {
+public class ChatRoomRetrievalRequest implements FirebaseRequest, Callable<ChatRoom> {
 
     private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
 
@@ -24,8 +24,7 @@ public class ChatRoomQuery extends FirebaseQuery implements Callable<ChatRoom> {
      */
     private String chatId;
 
-    public ChatRoomQuery(String chatId) {
-        super((FirebaseDatabase.getInstance().getReference().child("availableChats")));
+    public ChatRoomRetrievalRequest(String chatId) {
         this.chatId = chatId;
     }
 
@@ -34,8 +33,7 @@ public class ChatRoomQuery extends FirebaseQuery implements Callable<ChatRoom> {
      */
     @Override
     public void call(final FirebaseListener<ChatRoom> listener) {
-        DatabaseReference chatRoomRef = getBaseRef().child(chatId);
-        chatRoomRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        ref().addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 ChatRoom chatRoom = dataSnapshot.getValue(ChatRoom.class);
@@ -47,6 +45,11 @@ public class ChatRoomQuery extends FirebaseQuery implements Callable<ChatRoom> {
                 listener.onError(new FirebaseError(databaseError));
             }
         });
+    }
+
+    @Override
+    public DatabaseReference ref() {
+        return DatabaseReferences.AVAILABLE_CHATS.child(chatId);
     }
 
 }
