@@ -14,6 +14,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 
 import com.android.miki.quickly.Manifest;
 import com.android.miki.quickly.R;
+import com.android.miki.quickly.firebase_requests.FirebaseRefKeys;
 import com.android.miki.quickly.models.User;
 import com.android.miki.quickly.ui.CustomProgressWheel;
 import com.android.miki.quickly.utils.FirebaseError;
@@ -32,6 +34,11 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -55,15 +62,18 @@ public class MyAccountActivity extends AppCompatActivity {
     private Uri currentUri;
     private static final String TAG = MyAccountActivity.class.getName();
     private final int MAX_RETRY_MILLISECONDS = 4000;
+    private EditText bioEditText;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_account);
         photoGrid = findViewById(R.id.photo_grid);
+        bioEditText = findViewById(R.id.bio_edittext);
         FirebaseStorage.getInstance().setMaxUploadRetryTimeMillis(MAX_RETRY_MILLISECONDS);
         FirebaseStorage.getInstance().setMaxDownloadRetryTimeMillis(MAX_RETRY_MILLISECONDS);
         FirebaseStorage.getInstance().setMaxOperationRetryTimeMillis(MAX_RETRY_MILLISECONDS);
+        // Load photos, and set listeners.
         for (int i = 0; i < photoGrid.getChildCount(); i++) {
             final int j = i;
             RelativeLayout rl = (RelativeLayout) photoGrid.getChildAt(i);
@@ -85,6 +95,9 @@ public class MyAccountActivity extends AppCompatActivity {
             });
             setImageFromFromStorage(j);
         }
+        // Register listener for bio changes, and load bio.
+        registerBioChangeListener();
+
     }
 
     @Override
@@ -151,7 +164,7 @@ public class MyAccountActivity extends AppCompatActivity {
         imageView.setImageDrawable(null);
         final CustomProgressWheel progressWheel = getImageProgressWheel(imageIndex);
         progressWheel.setVisibility(View.VISIBLE);
-        getImageRef(imageIndex).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+        getImageRef(imageIndex).delete().addOnCompleteListener(this, new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 progressWheel.setVisibility(View.GONE);
@@ -205,7 +218,7 @@ public class MyAccountActivity extends AppCompatActivity {
             StorageReference uploadRef = getImageRef(imageIndex);
             // Create upload task
             UploadTask uploadTask = uploadRef.putStream(in);
-            uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            uploadTask.addOnCompleteListener(this, new OnCompleteListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                     progressWheel.setVisibility(View.GONE);
@@ -277,7 +290,7 @@ public class MyAccountActivity extends AppCompatActivity {
      */
     private void setImageFromFromStorage(final int imageIndex) {
         StorageReference downloadRef = getImageRef(imageIndex);
-        downloadRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
+        downloadRef.getDownloadUrl().addOnCompleteListener(this, new OnCompleteListener<Uri>() {
             @Override
             public void onComplete(@NonNull Task<Uri> task) {
                 if (task.isSuccessful()) {
@@ -319,7 +332,35 @@ public class MyAccountActivity extends AppCompatActivity {
     private StorageReference getImageRef(int imageIndex) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference rootRef = storage.getReference();
-        return rootRef.child("userImages").child(User.currentUser().getId()).child("" + imageIndex);
+        return rootRef.child(User.currentUser().getId()).child(FirebaseRefKeys.IMAGES).child("" + imageIndex);
     }
+
+    private void registerBioChangeListener() {
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference bioRef = database.getReference().child(FirebaseRefKeys.USER_DATA)
+                .child(User.currentUser().getId()).child(FirebaseRefKeys.BIO);
+        bioRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    Object bio = dataSnapshot.getValue();
+                    if (bio instanceof String) {
+                        if (!bioEditText.getText().equals(bio)) {
+                            bioEditText.setText((String) bio);
+                        }
+                    } else {
+                        throw new IllegalStateException("User bio must be a string.");
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
 
 }

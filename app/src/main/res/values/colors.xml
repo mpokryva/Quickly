@@ -12,6 +12,7 @@
     <color name="IncomingChatBubbleBackground">@android:color/white</color>
     <color name="LightGray1">#f5f5f5</color>
     <color name="LightGray2">#f2f2f2</color>
+    <color name="GooglePlusGray">#f1f1f1</color>
     <color name="LightGray3">#d6d6d6</color>
     <color name="MediumGray">#808080</color>
 </resources>
