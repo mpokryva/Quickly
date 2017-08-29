@@ -32,4 +32,6 @@
     <string name="message_box_disconnected_hint">Not connected to the Internet&#8230;</string>
     <string name="something_weird_happened">Something weird happened&#8230;</string>
     <string name="gif">GIF</string>
+    <string name="open_drawer">open drawer</string>
+    <string name="close_drawer">close drawer</string>
 </resources>

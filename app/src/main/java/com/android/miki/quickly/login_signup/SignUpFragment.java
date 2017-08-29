@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.android.miki.quickly.R;
+import com.android.miki.quickly.ui.CustomTextInputLayout;
 import com.android.miki.quickly.utils.FieldValidator;
 import com.android.miki.quickly.utils.FirebaseError;
 import com.android.miki.quickly.utils.TextValidator;

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -20,19 +19,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.miki.quickly.R;
+import com.android.miki.quickly.ui.CustomTextInputLayout;
 import com.android.miki.quickly.utils.FieldValidator;
 import com.android.miki.quickly.utils.FirebaseError;
 import com.android.miki.quickly.utils.FirebaseListener;
 import com.android.miki.quickly.utils.TextValidator;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.FirebaseNetworkException;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
-import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.FirebaseUser;
 
 /**

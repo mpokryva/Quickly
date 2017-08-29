@@ -104,8 +104,6 @@ public class ChatFragment extends Fragment implements ChatRoomObserver, Connecti
         state = LOADING;
         loadingView = view.findViewById(R.id.loading_view);
         progressWheel = loadingView.findViewById(R.id.progress_wheel);
-        int lightBlue = ContextCompat.getColor(getContext(), R.color.LightBlue); // Color the progress whel light blue.
-        progressWheel.getIndeterminateDrawable().setColorFilter(lightBlue, PorterDuff.Mode.MULTIPLY);
         errorView = view.findViewById(R.id.error_view);
         errorMessage = errorView.findViewById(R.id.error_message);
         errorDetais = errorView.findViewById(R.id.error_details);

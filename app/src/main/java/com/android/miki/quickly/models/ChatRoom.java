@@ -3,12 +3,8 @@ package com.android.miki.quickly.models;
 import android.util.Log;
 
 import com.android.miki.quickly.chat_components.ChatRoomObserver;
-import com.android.miki.quickly.core.network.FirebaseClient;
 import com.android.miki.quickly.firebase_requests.DatabaseReferences;
 import com.android.miki.quickly.firebase_requests.FirebaseRefKeys;
-import com.android.miki.quickly.firebase_requests.chatroom_model_requests.AddUserRequest;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;

@@ -10,7 +10,7 @@
         android:adjustViewBounds="true"
         android:padding="5dp" />
 
-    <ProgressBar
+    <com.android.miki.quickly.ui.CustomProgressWheel
         android:id="@+id/progress_wheel"
-        style="@style/gif_progress_wheel" />
+        style="@style/DefaultProgressWheel" />
 </RelativeLayout>

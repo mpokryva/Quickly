@@ -111,9 +111,6 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
         tv.setTypeface(tf);
         content = findViewById(R.id.content);
         loadingView = findViewById(R.id.loading_view);
-        ProgressBar progressWheel = loadingView.findViewById(R.id.progress_wheel);
-        int lightBlue = ContextCompat.getColor(this, R.color.LightBlue); // Color the progress whel light blue.
-        progressWheel.getIndeterminateDrawable().setColorFilter(lightBlue, PorterDuff.Mode.MULTIPLY);
     }
 
     private void enterChatRooms() {

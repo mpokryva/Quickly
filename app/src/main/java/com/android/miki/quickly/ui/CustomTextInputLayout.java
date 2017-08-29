@@ -1,4 +1,4 @@
-package com.android.miki.quickly.login_signup;
+package com.android.miki.quickly.ui;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;

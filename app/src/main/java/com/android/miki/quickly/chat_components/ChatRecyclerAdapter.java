@@ -351,10 +351,8 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         private OutgoingGifHolder(View itemView, ChatSelectionActivity activity) {
             super(itemView, activity);
-            gif = (ImageView) itemView.findViewById(R.id.gif_image_view);
-            progressWheel = (ProgressBar) itemView.findViewById(R.id.progress_wheel);
-            int lightBlue = ContextCompat.getColor(gif.getContext(), android.R.color.white);
-            progressWheel.getIndeterminateDrawable().setColorFilter(lightBlue, PorterDuff.Mode.MULTIPLY);
+            gif = itemView.findViewById(R.id.gif_image_view);
+            progressWheel = itemView.findViewById(R.id.progress_wheel);
         }
     }
 
@@ -366,9 +364,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         private IncomingGifHolder(View itemView, ChatSelectionActivity activity) {
             super(itemView, activity);
             gif = (ImageView) itemView.findViewById(R.id.gif_image_view);
-            progressWheel = (ProgressBar) itemView.findViewById(R.id.progress_wheel);
-            int lightBlue = ContextCompat.getColor(gif.getContext(), R.color.LightBlue);
-            progressWheel.getIndeterminateDrawable().setColorFilter(lightBlue, PorterDuff.Mode.MULTIPLY);
+            progressWheel = itemView.findViewById(R.id.progress_wheel);
         }
     }
 

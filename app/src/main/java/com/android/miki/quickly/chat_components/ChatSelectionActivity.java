@@ -1,12 +1,19 @@
 package com.android.miki.quickly.chat_components;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.android.miki.quickly.R;
@@ -14,6 +21,7 @@ import com.android.miki.quickly.core.network.ConnectivityStatusNotifier;
 import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.User;
+import com.android.miki.quickly.user.MyAccountActivity;
 import com.android.miki.quickly.utils.FirebaseError;
 import com.android.miki.quickly.utils.FirebaseListener;
 
@@ -31,19 +39,48 @@ public class ChatSelectionActivity extends AppCompatActivity implements ActionBa
     private ChatSelectionPagerAdapter mAdapter;
     private Toolbar actionBar;
     private MessageBoxFragment messageBoxFragment;
+    private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle drawerToggle;
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_selection);
+        // Set up navigation drawer
+        drawerLayout = findViewById(R.id.drawer_layout);
+        drawerToggle = new ActionBarDrawerToggle(
+                this, drawerLayout, R.string.open_drawer, R.string.close_drawer) {
+
+        };
+        drawerLayout.addDrawerListener(drawerToggle);
+        NavigationView navigationView = findViewById(R.id.drawer_navigation_view);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.my_account:
+                        Intent i = new Intent(ChatSelectionActivity.this, MyAccountActivity.class);
+                        startActivity(i);
+                        return true;
+                    default:
+                        return true;
+                }
+            }
+        });
+
+
+        // Set up action bar
         actionBar = findViewById(R.id.action_bar);
         setSupportActionBar(actionBar);
+        // Set up viewpager
         mViewPager = findViewById(R.id.chat_selection_pager);
         mAdapter = new ChatSelectionPagerAdapter(getSupportFragmentManager(), this);
         mViewPager.setAdapter(mAdapter);
         mViewPager.setPageMargin(30);
-        messageBoxFragment = (MessageBoxFragment) getSupportFragmentManager().findFragmentById(R.id.message_box_fragment);
+
+        messageBoxFragment = (MessageBoxFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.message_box_fragment);
         final ViewPager.OnPageChangeListener pageChangeListener = new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
