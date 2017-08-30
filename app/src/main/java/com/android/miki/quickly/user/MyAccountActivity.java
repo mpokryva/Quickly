@@ -2,6 +2,9 @@ package com.android.miki.quickly.user;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -11,8 +14,12 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.GridLayout;
@@ -70,6 +77,11 @@ public class MyAccountActivity extends AppCompatActivity {
         setContentView(R.layout.activity_my_account);
         photoGrid = findViewById(R.id.photo_grid);
         bioEditText = findViewById(R.id.bio_edittext);
+        Toolbar actionBar = findViewById(R.id.action_bar);
+        actionBar.setTitle("Account Info");
+        setSupportActionBar(actionBar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
         FirebaseStorage.getInstance().setMaxUploadRetryTimeMillis(MAX_RETRY_MILLISECONDS);
         FirebaseStorage.getInstance().setMaxDownloadRetryTimeMillis(MAX_RETRY_MILLISECONDS);
         FirebaseStorage.getInstance().setMaxOperationRetryTimeMillis(MAX_RETRY_MILLISECONDS);
@@ -98,6 +110,16 @@ public class MyAccountActivity extends AppCompatActivity {
         // Register listener for bio changes, and load bio.
         registerBioChangeListener();
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -318,15 +340,17 @@ public class MyAccountActivity extends AppCompatActivity {
         });
     }
 
+
     private void toggleImageButton(int imageIndex, boolean isImageSet) {
         ImageButton button = getImageButton(imageIndex);
         if (isImageSet) {
-            Drawable background = ContextCompat.getDrawable(this, R.drawable.ic_remove_circle_outline_black_24dp);
+            Drawable background = ContextCompat.getDrawable(this, R.drawable.ic_remove_circle_white_24dp);
             button.setImageDrawable(background);
         } else {
-            Drawable background = ContextCompat.getDrawable(this, R.drawable.ic_add_circle_outline_black_24dp);
+            Drawable background = ContextCompat.getDrawable(this, R.drawable.ic_add_circle_white_24dp);
             button.setImageDrawable(background);
         }
+        button.setColorFilter(ContextCompat.getColor(this, R.color.LightBlue));
     }
 
     private StorageReference getImageRef(int imageIndex) {

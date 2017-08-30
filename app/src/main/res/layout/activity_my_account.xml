@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+    android:background="@color/LightGray2">
+
+    <include
+        android:id="@+id/action_bar"
+        layout="@layout/action_bar"/>
 
     <GridLayout
         android:id="@+id/photo_grid"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginTop="?actionBarSize"
         android:columnCount="3"
-        android:background="@color/GooglePlusGray"
-        android:rowCount="2">
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:rowCount="2"
+        android:useDefaultMargins="true">
 
         <include
             layout="@layout/user_photo"
@@ -75,11 +80,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/photo_grid"
+        android:background="@color/GooglePlusGray"
+        android:paddingBottom="8dp"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingTop="8dp"
+        android:text="@string/about_me"
         android:textColor="@android:color/black"
-        android:textStyle="bold"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:text="@string/about_me" />
+        android:textSize="16sp"
+        android:textStyle="bold"/>
 
     <EditText
         android:id="@+id/bio_edittext"
@@ -89,7 +98,19 @@
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:background="@android:color/transparent"
-        android:textCursorDrawable="@null" />
+        android:hint="@string/say_something_interesting_about_yourself"
+        android:paddingBottom="8dp"
+        android:paddingTop="8dp"
+        android:textCursorDrawable="@null"/>
+
+    <TextView
+        android:id="@+id/bio_char_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="500"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_alignBottom="@id/bio_edittext"/>
 
 
 </RelativeLayout>

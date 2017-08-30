@@ -2,20 +2,21 @@
 <android.support.v4.widget.DrawerLayout
     android:id="@+id/drawer_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
 
     <!--Main content view-->
     <RelativeLayout
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <android.support.v7.widget.Toolbar
+
+        <include
             android:id="@+id/action_bar"
-            style="@style/ChatActionBar.Layout"
-            android:theme="@style/ChatActionBar">
-        </android.support.v7.widget.Toolbar>
+            layout="@layout/action_bar"
+            />
+
         <fragment
             android:id="@+id/message_box_fragment"
             android:name="com.android.miki.quickly.chat_components.MessageBoxFragment"

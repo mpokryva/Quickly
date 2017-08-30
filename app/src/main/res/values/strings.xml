@@ -35,4 +35,5 @@
     <string name="open_drawer">open drawer</string>
     <string name="close_drawer">close drawer</string>
     <string name="about_me">About Me</string>
+    <string name="say_something_interesting_about_yourself">Say something interesting about yourself</string>
 </resources>

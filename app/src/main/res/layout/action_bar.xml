@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.Toolbar
+    android:id="@+id/action_bar"
+    style="@style/ChatActionBar.Layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:theme="@style/ChatActionBar">
+</android.support.v7.widget.Toolbar>
