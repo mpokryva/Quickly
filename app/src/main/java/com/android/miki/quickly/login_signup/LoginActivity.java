@@ -129,6 +129,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
                 if (task.isSuccessful()) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.e(TAG, "signInWithCredential:success");
+                    Log.d(TAG, FirebaseAuth.getInstance().getCurrentUser().getProviderData().get(0).getDisplayName());
                     enterChatRooms();
                 } else {
                     try {

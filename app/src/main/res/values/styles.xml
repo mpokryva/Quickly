@@ -81,11 +81,6 @@
         <item name="android:adjustViewBounds">true</item>
     </style>
 
-    <style name="error_appearance" parent="@android:style/TextAppearance">
-        <item name="android:textColor">@android:color/holo_green_dark</item>
-        <item name="android:textSize">12sp</item>
-    </style>
-
     <style name="outgoing_bubble_outline">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>

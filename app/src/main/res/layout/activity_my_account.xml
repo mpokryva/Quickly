@@ -75,42 +75,56 @@
             android:layout_row="1"/>
     </GridLayout>
 
+    <View
+        android:id="@+id/divider"
+        android:layout_below="@id/photo_grid"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        style="@style/HorizontalDividerThin"/>
     <TextView
         android:id="@+id/bio_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/photo_grid"
+        android:layout_below="@id/divider"
         android:background="@color/GooglePlusGray"
         android:paddingBottom="8dp"
         android:paddingEnd="@dimen/activity_horizontal_margin"
         android:paddingStart="@dimen/activity_horizontal_margin"
         android:paddingTop="8dp"
         android:text="@string/about_me"
-        android:textColor="@android:color/black"
         android:textSize="16sp"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        />
 
-    <EditText
-        android:id="@+id/bio_edittext"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/bio_label"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:background="@android:color/transparent"
-        android:hint="@string/say_something_interesting_about_yourself"
-        android:paddingBottom="8dp"
-        android:paddingTop="8dp"
-        android:textCursorDrawable="@null"/>
+    <RelativeLayout
+        android:id="@+id/bio_edittext_wrapper"
+        android:layout_width="wrap_content"
+        android:layout_height="150dp"
+        android:layout_below="@id/bio_label">
+        <EditText
+            android:id="@+id/bio_edittext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:background="@android:color/transparent"
+            android:hint="@string/say_something_interesting_about_yourself"
+            android:paddingBottom="8dp"
+            android:textSize="16sp"
+            android:paddingTop="8dp"
+            android:textCursorDrawable="@null"/>
+    </RelativeLayout>
+
 
     <TextView
         android:id="@+id/bio_char_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="500"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_alignBottom="@id/bio_edittext"/>
+        android:layout_alignBottom="@id/bio_edittext_wrapper"/>
 
 
 </RelativeLayout>

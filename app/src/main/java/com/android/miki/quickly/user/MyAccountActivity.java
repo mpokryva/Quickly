@@ -18,6 +18,9 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,6 +29,7 @@ import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.miki.quickly.Manifest;
@@ -40,12 +44,14 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -55,6 +61,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by mpokr on 8/25/2017.
@@ -70,15 +78,46 @@ public class MyAccountActivity extends AppCompatActivity {
     private static final String TAG = MyAccountActivity.class.getName();
     private final int MAX_RETRY_MILLISECONDS = 4000;
     private EditText bioEditText;
+    private static final String REF_BUNDLE_KEY = "reference";
+    private ArrayList<String> uploadRefsUrlsInUsage;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_account);
+        uploadRefsUrlsInUsage = new ArrayList<>();
         photoGrid = findViewById(R.id.photo_grid);
         bioEditText = findViewById(R.id.bio_edittext);
+        InputFilter[] inputFilters = new InputFilter[1];
+        final int maxBioLength = 160;
+        inputFilters[0] = new InputFilter.LengthFilter(maxBioLength);
+        bioEditText.setFilters(inputFilters);
+        final TextView bioCharCountTV = findViewById(R.id.bio_char_count);
+        String initialText = "" + maxBioLength;
+        bioCharCountTV.setText(initialText);
+
+        bioEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String charCount = "" + editable.length();
+                String displayString = charCount + "/" + maxBioLength;
+                bioCharCountTV.setText(displayString);
+            }
+        });
+
+
         Toolbar actionBar = findViewById(R.id.action_bar);
-        actionBar.setTitle("Account Info");
+        actionBar.setTitle("Edit Info");
         setSupportActionBar(actionBar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -110,6 +149,41 @@ public class MyAccountActivity extends AppCompatActivity {
         // Register listener for bio changes, and load bio.
         registerBioChangeListener();
 
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        // If there's a download in progress, save the reference so you can query it later
+        if (!uploadRefsUrlsInUsage.isEmpty()) {
+            outState.putStringArrayList(REF_BUNDLE_KEY, uploadRefsUrlsInUsage);
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        // If there was a download in progress, get its reference and create a new StorageReference
+        final List<String> stringRef = savedInstanceState.getStringArrayList(REF_BUNDLE_KEY);
+        if (stringRef == null) {
+            return;
+        }
+        for (String refUrl : uploadRefsUrlsInUsage) {
+            StorageReference ref = FirebaseStorage.getInstance().getReferenceFromUrl(refUrl);
+            for (UploadTask uploadTask : ref.getActiveUploadTasks()) {
+                uploadTask.addOnCompleteListener(this, new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                        if (!task.isSuccessful()) {
+                            Toast.makeText(MyAccountActivity.this, FirebaseError.unknownError().getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                        // Succeed silently
+                    }
+                });
+            }
+        }
     }
 
     @Override
@@ -237,12 +311,14 @@ public class MyAccountActivity extends AppCompatActivity {
             final CustomProgressWheel progressWheel = getImageProgressWheel(imageIndex);
             progressWheel.setVisibility(View.VISIBLE);
             final InputStream in = this.getContentResolver().openInputStream(uri);
-            StorageReference uploadRef = getImageRef(imageIndex);
+            final StorageReference uploadRef = getImageRef(imageIndex);
+            uploadRefsUrlsInUsage.add(uploadRef.toString());
             // Create upload task
             UploadTask uploadTask = uploadRef.putStream(in);
             uploadTask.addOnCompleteListener(this, new OnCompleteListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                    uploadRefsUrlsInUsage.remove(uploadRef.toString());
                     progressWheel.setVisibility(View.GONE);
                     if (task.isSuccessful()) {
                         Toast.makeText(MyAccountActivity.this, "Uploaded!", Toast.LENGTH_SHORT).show();
