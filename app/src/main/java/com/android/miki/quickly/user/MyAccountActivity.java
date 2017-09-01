@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.RotateDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -30,6 +31,8 @@ import android.widget.Toast;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.android.miki.quickly.Manifest;
 import com.android.miki.quickly.R;
+import com.android.miki.quickly.core.network.ConnectivityStatusNotifier;
+import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
 import com.android.miki.quickly.firebase_requests.FirebaseRefKeys;
 import com.android.miki.quickly.models.User;
 import com.android.miki.quickly.ui.CustomProgressWheel;
@@ -51,6 +54,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.makeramen.roundedimageview.RoundedDrawable;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
@@ -64,7 +68,7 @@ import java.util.List;
  * Created by mpokr on 8/25/2017.
  */
 
-public class MyAccountActivity extends AppCompatActivity {
+public class MyAccountActivity extends AppCompatActivity implements ConnectivityStatusObserver {
 
     private GridLayout photoGrid;
     private static final int PICK_USER_PHOTO = 456;
@@ -80,6 +84,10 @@ public class MyAccountActivity extends AppCompatActivity {
     private RelativeLayout occupationField;
     private RelativeLayout ageField;
     private static final int EDUCATION = 0;
+    private static final int OCCUPATION = 1;
+    private static final int AGE = 2;
+    private boolean isConnected;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -134,7 +142,7 @@ public class MyAccountActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     Drawable image = getImageView(j).getDrawable();
-                    boolean hasImage = (image != null) && (image instanceof BitmapDrawable);
+                    boolean hasImage = (image != null) && (image instanceof RoundedDrawable);
                     if (hasImage) {
                         removeImageFromStorage(j);
                     } else {
@@ -153,8 +161,37 @@ public class MyAccountActivity extends AppCompatActivity {
     }
 
     private void initAccountFields() {
+        configureAccountField(EDUCATION);
+        configureAccountField(OCCUPATION);
+        configureAccountField(AGE);
+    }
+
+    private void configureAccountField(final int accountFieldType) {
         final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
                 .child(User.currentUser().getId());
+        final DatabaseReference ref;
+        final int hintRes;
+        RelativeLayout field = null;
+        switch (accountFieldType) {
+            case EDUCATION:
+                ref = userRef.child(FirebaseRefKeys.EDUCATION);
+                hintRes = R.string.change_education;
+                field = educationField;
+                break;
+            case OCCUPATION:
+                ref = userRef.child(FirebaseRefKeys.OCCUPATION);
+                hintRes = R.string.change_occupation;
+                field = occupationField;
+                break;
+            case AGE:
+                ref = userRef.child(FirebaseRefKeys.AGE);
+                hintRes = R.string.change_age;
+                field = ageField;
+                break;
+            default:
+                ref = null;
+                hintRes = 0;
+        }
         int lightBlue = ContextCompat.getColor(MyAccountActivity.this, R.color.LightBlue);
         final MaterialDialog progressDialog = new MaterialDialog.Builder(MyAccountActivity.this)
                 .progress(true, -1).widgetColor(lightBlue).build();
@@ -176,81 +213,72 @@ public class MyAccountActivity extends AppCompatActivity {
                 Toast.makeText(MyAccountActivity.this, "Success!", Toast.LENGTH_SHORT).show();
             }
         };
-        final DatabaseReference educationRef = userRef.child(FirebaseRefKeys.EDUCATION);
-        educationRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists() && dataSnapshot.getValue() instanceof String) {
-                    TextView label = educationField.findViewById(R.id.education_field_label);
-                    label.setCompoundDrawables(null, null, null, null); // Hide drawables
-                    TextView value = educationField.findViewById(R.id.education_field_value);
-                    value.setText((String) dataSnapshot.getValue());
+        if (ref != null) {
+            ref.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists() && dataSnapshot.getValue() instanceof String) {
+                        setAccountFieldValue(accountFieldType, (String) dataSnapshot.getValue());
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-            }
-        });
-        educationField.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                makeDialogAndSetValue(null, null, R.string.change_education, educationRef, listener).show();
-            }
-        });
-        final DatabaseReference occupationRef = userRef.child(FirebaseRefKeys.OCCUPATION);
-        occupationRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists() && dataSnapshot.getValue() instanceof String) {
-                    occupationField.setCompoundDrawables(null, null, null, null); // Hide drawables
-                    occupationField.setText((String) dataSnapshot.getValue());
                 }
-            }
+            });
+        }
+        if (hintRes != 0 && field != null) {
+            field.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (isConnected) {
+                        makeDialogAndSetValue(null, null, hintRes, ref, listener).show();
+                    } else {
+                        Toast.makeText(MyAccountActivity.this, "Please connect to the internet first.", Toast.LENGTH_SHORT).show();
+                    }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-        occupationField.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                makeDialogAndSetValue(null, null, R.string.change_occupation, occupationRef, listener).show();
-            }
-        });
-        final DatabaseReference ageRef = userRef.child(FirebaseRefKeys.AGE);
-        ageRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists() && dataSnapshot.getValue() instanceof String) {
-                    ageField.setCompoundDrawables(null, null, null, null); // Hide drawables
-                    ageField.setText((String) dataSnapshot.getValue());
                 }
-            }
+            });
+        }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-        ageField.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                makeDialogAndSetValue(null, null, R.string.change_age, ageRef, listener).show();
-            }
-        });
     }
 
-    private void setAccountFieldValue(RelativeLayout accountField, String value) {
-
+    private void setAccountFieldValue(int accountFieldType, String value) {
+        TextView labelTV = null;
+        TextView valueTV = null;
+        switch (accountFieldType) {
+            case EDUCATION:
+                labelTV = educationField.findViewById(R.id.education_field_label);
+                valueTV = educationField.findViewById(R.id.education_field_value);
+                break;
+            case OCCUPATION:
+                labelTV = educationField.findViewById(R.id.occupation_field_label);
+                valueTV = educationField.findViewById(R.id.occupation_field_value);
+                break;
+            case AGE:
+                labelTV = educationField.findViewById(R.id.age_field_label);
+                valueTV = educationField.findViewById(R.id.age_field_value);
+                break;
+        }
+        if (labelTV != null && valueTV != null) {
+            labelTV.setCompoundDrawables(null, null, null, null); // Hide drawables
+            valueTV.setText(value);
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         initAccountFields();
+        isConnected = ConnectivityStatusNotifier.getInstance().isConnected();
+        ConnectivityStatusNotifier.getInstance().registerObserver(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        ConnectivityStatusNotifier.getInstance().unregisterObserver(this);
     }
 
     @Override
@@ -573,7 +601,7 @@ public class MyAccountActivity extends AppCompatActivity {
                 .content(content)
                 .positiveText(android.R.string.ok)
                 .negativeText(android.R.string.cancel)
-                .input(hint, R.string.empty_string, new MaterialDialog.InputCallback() {
+                .input(hint, R.string.empty_string, false, new MaterialDialog.InputCallback() {
                     @Override
                     public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                         listener.onLoading();
@@ -593,5 +621,16 @@ public class MyAccountActivity extends AppCompatActivity {
                 }).build();
     }
 
+    @Override
+    public void onConnect() {
+        isConnected = true;
+        Toast.makeText(this, "Connected!", Toast.LENGTH_SHORT).show();
 
+    }
+
+    @Override
+    public void onDisconnect(FirebaseError error) {
+        isConnected = false;
+        FirebaseDatabase.getInstance().purgeOutstandingWrites();
+    }
 }

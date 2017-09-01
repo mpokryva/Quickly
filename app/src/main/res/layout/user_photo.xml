@@ -12,8 +12,7 @@
         android:background="@color/MediumGray"
         android:scaleType="fitCenter"
         app:riv_corner_radius="6dp"
-        app:riv_mutate_background="true"
-        app:riv_tile_mode="repeat"/>
+        app:riv_mutate_background="true"/>
 
     <ImageButton
         android:id="@+id/user_photo_button"
