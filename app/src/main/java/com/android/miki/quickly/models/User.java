@@ -1,9 +1,27 @@
 package com.android.miki.quickly.models;
 
 import android.net.Uri;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
 
+import com.android.miki.quickly.utils.FirebaseError;
+import com.android.miki.quickly.utils.FirebaseListener;
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.EmailAuthProvider;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthProvider;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
+import com.google.firebase.auth.UserProfileChangeRequest;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -25,21 +43,81 @@ public class User implements Serializable {
     }
 
     public static User currentUser() {
-        FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
+        return currentUser;
+    }
+
+    public static User createUser(FirebaseUser firebaseUser) {
+        if (firebaseUser.getDisplayName() != null) {
             currentUser = new User();
-            if (currentFirebaseUser != null) {
-                currentUser.id = currentFirebaseUser.getUid();
-                Uri photoUrl = currentFirebaseUser.getPhotoUrl();
-                if (photoUrl != null) {
-                    currentUser.photoUrl = photoUrl.toString();
+            currentUser = new User();
+            currentUser.id = firebaseUser.getUid();
+            Uri photoUrl = firebaseUser.getPhotoUrl();
+            if (photoUrl != null) {
+                currentUser.photoUrl = photoUrl.toString();
+            }
+            currentUser.displayName = firebaseUser.getDisplayName();
+            return currentUser;
+        } else {
+            return null;
+        }
+    }
+
+    public static void createCurrentUserAsync(AccessToken accessToken, final FirebaseListener<Void> listener) {
+        listener.onLoading();
+        final FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        for (UserInfo userInfo : currentFirebaseUser.getProviderData()) { // Get display name.
+            if (userInfo.getProviderId().equals(EmailAuthProvider.PROVIDER_ID)) { // Try to get Firebase user first.
+                User user = createUser(currentFirebaseUser);
+                if (user != null) {
+                    listener.onSuccess(null);
+                } else {
+                    listener.onError(FirebaseError.unknownError());
                 }
-                currentUser.displayName = currentFirebaseUser.getDisplayName();
-            } else {
-                throw new IllegalStateException("Cannot make user from a null current user.");
+            } else if (userInfo.getProviderId().equals(FacebookAuthProvider.PROVIDER_ID)) { // Else, get first name from Facebook.
+                if (accessToken != null) {
+                    GraphRequest request = GraphRequest.newMeRequest(accessToken, new GraphRequest.GraphJSONObjectCallback() {
+                        @Override
+                        public void onCompleted(JSONObject object, GraphResponse response) {
+                            try {
+                                String name = object.getString("first_name");
+                                currentUser = new User();
+                                currentUser.id = currentFirebaseUser.getUid();
+                                Uri photoUrl = currentFirebaseUser.getPhotoUrl();
+                                if (photoUrl != null) {
+                                    currentUser.photoUrl = photoUrl.toString();
+                                }
+                                currentUser.displayName = name;
+                                String displayName = currentFirebaseUser.getDisplayName();
+                                if (displayName != null) {
+                                    if (!displayName.equals(name)) {
+                                        final UserProfileChangeRequest updateName = new UserProfileChangeRequest.Builder().
+                                                setDisplayName(name).build();
+                                        currentFirebaseUser.updateProfile(updateName).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
+                                                    listener.onSuccess(null);
+                                                } else {
+                                                    listener.onError(FirebaseError.unknownError());
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        listener.onSuccess(null);
+                                    }
+                                }
+                            } catch (JSONException e) {
+                                listener.onError(FirebaseError.unknownError());
+                            }
+                        }
+                    });
+                    Bundle parameters = new Bundle();
+                    parameters.putString("fields", "first_name");
+                    request.setParameters(parameters);
+                    request.executeAsync();
+                }
             }
         }
-        return currentUser;
     }
 
     /*

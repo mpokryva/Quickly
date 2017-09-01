@@ -29,6 +29,7 @@ import com.android.miki.quickly.R;
 import com.android.miki.quickly.chat_components.ChatSelectionActivity;
 import com.android.miki.quickly.models.User;
 import com.android.miki.quickly.utils.FirebaseError;
+import com.android.miki.quickly.utils.FirebaseListener;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -47,6 +48,7 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.security.AuthProvider;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -78,7 +80,8 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
 
         initCustomFontsAndColors();
         if (IS_TESTING) {
-            auth.signOut();
+            FirebaseAuth.getInstance().signOut();
+            LoginManager.getInstance().logOut();
         }
         swapLogInSignUpButton = findViewById(R.id.swap_log_in_sign_up_button);
         callbackManager = CallbackManager.Factory.create();
@@ -120,7 +123,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
         startActivity(chatSelectionIntent); // Start ChatSelectionActivity
     }
 
-    private void handleFacebookAccessToken(AccessToken token) {
+    private void handleFacebookAccessToken(final AccessToken token) {
         Log.d(TAG, "handleFacebookAccessToken:" + token);
         final AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
         auth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -128,9 +131,25 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
                     // Sign in success, update UI with the signed-in user's information
-                    Log.e(TAG, "signInWithCredential:success");
-                    Log.d(TAG, FirebaseAuth.getInstance().getCurrentUser().getProviderData().get(0).getDisplayName());
-                    enterChatRooms();
+                    Log.d(TAG, "signInWithCredential:success");
+                    User.createCurrentUserAsync(token, new FirebaseListener<Void>() {
+                        @Override
+                        public void onLoading() {
+
+                        }
+
+                        @Override
+                        public void onError(FirebaseError error) {
+                            Toast.makeText(LoginActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onSuccess(Void nothing) {
+                            Log.d(TAG, FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
+                            enterChatRooms();
+                        }
+                    });
+
                 } else {
                     try {
                         throw task.getException();
@@ -204,11 +223,14 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
         });
     }
 
-    private void enterChatRoomsIfLoggedIn(FirebaseUser user) {
-        if (user == null) { // User is not logged in. Prompt log in.
+    private void enterChatRoomsIfLoggedIn(FirebaseUser firebaseUser) {
+        if (firebaseUser == null) { // User is not logged in. Prompt log in.
             updateCurrentState(LOG_IN);
         } else { // User is logged in. Enter chat rooms.
-            enterChatRooms();
+            User user = User.createUser(firebaseUser);
+            if (user != null) {
+                enterChatRooms();
+            }
         }
     }
 

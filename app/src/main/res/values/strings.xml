@@ -36,4 +36,7 @@
     <string name="close_drawer">close drawer</string>
     <string name="about_me">About Me</string>
     <string name="say_something_interesting_about_yourself">Say something interesting about yourself</string>
+    <string name="education">Education</string>
+    <string name="work">Work</string>
+    <string name="age">Age</string>
 </resources>

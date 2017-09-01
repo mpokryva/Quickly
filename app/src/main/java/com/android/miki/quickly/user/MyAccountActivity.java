@@ -46,6 +46,8 @@ import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -89,7 +91,7 @@ public class MyAccountActivity extends AppCompatActivity {
         photoGrid = findViewById(R.id.photo_grid);
         bioEditText = findViewById(R.id.bio_edittext);
         InputFilter[] inputFilters = new InputFilter[1];
-        final int maxBioLength = 160;
+        final int maxBioLength = 250;
         inputFilters[0] = new InputFilter.LengthFilter(maxBioLength);
         bioEditText.setFilters(inputFilters);
         final TextView bioCharCountTV = findViewById(R.id.bio_char_count);
@@ -109,8 +111,8 @@ public class MyAccountActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                String charCount = "" + editable.length();
-                String displayString = charCount + "/" + maxBioLength;
+                int charsLeft = maxBioLength - editable.length();
+                String displayString = "" + charsLeft;
                 bioCharCountTV.setText(displayString);
             }
         });
@@ -297,9 +299,10 @@ public class MyAccountActivity extends AppCompatActivity {
         Uri destination = Uri.parse(fileToDelete.toURI().toString());
         UCrop.Options options = new UCrop.Options();
         int lightBlue = ContextCompat.getColor(this, R.color.LightBlue);
+        int  statusBarColor = ContextCompat.getColor(this, R.color.LightBlueDark);
         options.setToolbarColor(lightBlue);
         options.setActiveWidgetColor(lightBlue);
-        options.setStatusBarColor(lightBlue);
+        options.setStatusBarColor(statusBarColor);
         UCrop.of(source, destination)
                 .withAspectRatio(1, 1)
                 .withOptions(options)
