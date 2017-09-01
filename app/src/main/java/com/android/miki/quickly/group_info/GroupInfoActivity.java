@@ -21,6 +21,7 @@ import com.android.miki.quickly.core.network.FirebaseClient;
 import com.android.miki.quickly.firebase_requests.chatroom_model_requests.ChangeGroupNameRequest;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.ui.VerticalSpaceItemDecoration;
+import com.android.miki.quickly.utils.DialogBuilderHelper;
 import com.android.miki.quickly.utils.FirebaseError;
 import com.android.miki.quickly.utils.FirebaseListener;
 
@@ -73,15 +74,13 @@ public class GroupInfoActivity extends FirebaseActivity {
         };
     }
 
-    private void makeDialog(String dialogText) {
+    private void makeDialog(String dialogPrefill) {
         String dialogHint = getResources().getString(R.string.change_group_name);
         int lightBlue = ContextCompat.getColor(this, R.color.LightBlue);
-        dialog = new MaterialDialog.Builder(this)
+        dialog = new DialogBuilderHelper().inputDialog(this, lightBlue)
                 .positiveText(android.R.string.ok)
                 .negativeText(android.R.string.cancel)
-                .positiveColor(lightBlue)
-                .negativeColor(lightBlue)
-                .input(dialogHint, dialogText, false, new MaterialDialog.InputCallback() {
+                .input(dialogHint, dialogPrefill, false, new MaterialDialog.InputCallback() {
                     @Override
                     public void onInput(@NonNull MaterialDialog dialog, final CharSequence input) {
                         final String newName = input.toString();
@@ -105,8 +104,6 @@ public class GroupInfoActivity extends FirebaseActivity {
                         });
                     }
                 })
-                .inputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_CAP_SENTENCES)
-                .widgetColor(lightBlue)
                 .onNegative(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {

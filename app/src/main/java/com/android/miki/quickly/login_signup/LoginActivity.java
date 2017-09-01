@@ -165,7 +165,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
                                 .content(R.string.linking_dialog_message)
                                 .positiveText(R.string.link_accounts)
                                 .positiveColor(lightBlue)
-                                .negativeText(R.string.cancel)
+                                .negativeText(android.R.string.cancel)
                                 .negativeColor(lightBlue)
                                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                                     @Override

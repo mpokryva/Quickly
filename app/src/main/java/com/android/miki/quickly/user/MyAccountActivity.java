@@ -2,9 +2,6 @@ package com.android.miki.quickly.user;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -14,8 +11,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -32,28 +27,27 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.android.miki.quickly.Manifest;
 import com.android.miki.quickly.R;
 import com.android.miki.quickly.firebase_requests.FirebaseRefKeys;
 import com.android.miki.quickly.models.User;
 import com.android.miki.quickly.ui.CustomProgressWheel;
+import com.android.miki.quickly.utils.DialogBuilderHelper;
 import com.android.miki.quickly.utils.FirebaseError;
+import com.android.miki.quickly.utils.FirebaseListener;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -82,6 +76,10 @@ public class MyAccountActivity extends AppCompatActivity {
     private EditText bioEditText;
     private static final String REF_BUNDLE_KEY = "reference";
     private ArrayList<String> uploadRefsUrlsInUsage;
+    private RelativeLayout educationField;
+    private RelativeLayout occupationField;
+    private RelativeLayout ageField;
+    private static final int EDUCATION = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -116,8 +114,9 @@ public class MyAccountActivity extends AppCompatActivity {
                 bioCharCountTV.setText(displayString);
             }
         });
-
-
+        educationField = findViewById(R.id.education_field);
+        occupationField = findViewById(R.id.occupation_field);
+        ageField = findViewById(R.id.age_field);
         Toolbar actionBar = findViewById(R.id.action_bar);
         actionBar.setTitle("Edit Info");
         setSupportActionBar(actionBar);
@@ -151,6 +150,107 @@ public class MyAccountActivity extends AppCompatActivity {
         // Register listener for bio changes, and load bio.
         registerBioChangeListener();
 
+    }
+
+    private void initAccountFields() {
+        final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
+                .child(User.currentUser().getId());
+        int lightBlue = ContextCompat.getColor(MyAccountActivity.this, R.color.LightBlue);
+        final MaterialDialog progressDialog = new MaterialDialog.Builder(MyAccountActivity.this)
+                .progress(true, -1).widgetColor(lightBlue).build();
+        final FirebaseListener<Void> listener = new FirebaseListener<Void>() {
+            @Override
+            public void onLoading() {
+                progressDialog.show();
+            }
+
+            @Override
+            public void onError(FirebaseError error) {
+                progressDialog.dismiss();
+                Toast.makeText(MyAccountActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onSuccess(Void nothing) {
+                progressDialog.dismiss();
+                Toast.makeText(MyAccountActivity.this, "Success!", Toast.LENGTH_SHORT).show();
+            }
+        };
+        final DatabaseReference educationRef = userRef.child(FirebaseRefKeys.EDUCATION);
+        educationRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists() && dataSnapshot.getValue() instanceof String) {
+                    TextView label = educationField.findViewById(R.id.education_field_label);
+                    label.setCompoundDrawables(null, null, null, null); // Hide drawables
+                    TextView value = educationField.findViewById(R.id.education_field_value);
+                    value.setText((String) dataSnapshot.getValue());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        educationField.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                makeDialogAndSetValue(null, null, R.string.change_education, educationRef, listener).show();
+            }
+        });
+        final DatabaseReference occupationRef = userRef.child(FirebaseRefKeys.OCCUPATION);
+        occupationRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists() && dataSnapshot.getValue() instanceof String) {
+                    occupationField.setCompoundDrawables(null, null, null, null); // Hide drawables
+                    occupationField.setText((String) dataSnapshot.getValue());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        occupationField.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                makeDialogAndSetValue(null, null, R.string.change_occupation, occupationRef, listener).show();
+            }
+        });
+        final DatabaseReference ageRef = userRef.child(FirebaseRefKeys.AGE);
+        ageRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists() && dataSnapshot.getValue() instanceof String) {
+                    ageField.setCompoundDrawables(null, null, null, null); // Hide drawables
+                    ageField.setText((String) dataSnapshot.getValue());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        ageField.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                makeDialogAndSetValue(null, null, R.string.change_age, ageRef, listener).show();
+            }
+        });
+    }
+
+    private void setAccountFieldValue(RelativeLayout accountField, String value) {
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        initAccountFields();
     }
 
     @Override
@@ -299,7 +399,7 @@ public class MyAccountActivity extends AppCompatActivity {
         Uri destination = Uri.parse(fileToDelete.toURI().toString());
         UCrop.Options options = new UCrop.Options();
         int lightBlue = ContextCompat.getColor(this, R.color.LightBlue);
-        int  statusBarColor = ContextCompat.getColor(this, R.color.LightBlueDark);
+        int statusBarColor = ContextCompat.getColor(this, R.color.LightBlueDark);
         options.setToolbarColor(lightBlue);
         options.setActiveWidgetColor(lightBlue);
         options.setStatusBarColor(statusBarColor);
@@ -463,6 +563,34 @@ public class MyAccountActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private MaterialDialog makeDialogAndSetValue(String title, String content, int hint,
+                                                 final DatabaseReference ref, final FirebaseListener<Void> listener) {
+        final int lightBlue = ContextCompat.getColor(this, R.color.LightBlue);
+        return new DialogBuilderHelper().inputDialog(this, lightBlue)
+                .title(title)
+                .content(content)
+                .positiveText(android.R.string.ok)
+                .negativeText(android.R.string.cancel)
+                .input(hint, R.string.empty_string, new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                        listener.onLoading();
+                        ref.setValue(input.toString()).addOnCompleteListener(MyAccountActivity.this,
+                                new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful()) {
+                                            listener.onSuccess(null);
+                                        } else {
+                                            listener.onError(FirebaseError.unknownError());
+                                            Log.d(TAG, task.getException().getMessage());
+                                        }
+                                    }
+                                });
+                    }
+                }).build();
     }
 
 
