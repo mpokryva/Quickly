@@ -7,11 +7,8 @@ package com.android.miki.quickly.chat_components;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -26,8 +23,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import com.android.miki.quickly.R;
@@ -35,7 +30,6 @@ import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.Gif;
 import com.android.miki.quickly.models.Message;
 import com.android.miki.quickly.models.User;
-import com.android.miki.quickly.utils.ColorGenerator;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
@@ -54,7 +48,6 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private ActionMode mActionMode;
     private ChatSelectionActivity mActivity;
     private ArrayList<Boolean> selectedMessages;
-    private HashMap<User, Integer> userToColorMap;
     private static final int OUTGOING_TEXT = 0;
     private static final int INCOMING_TEXT = 1;
     private static final int OUTGOING_GIF = 2;
@@ -66,16 +59,6 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         this.messages = messages;
         mActivity = activity;
         selectedMessages = new ArrayList<>();
-        userToColorMap = new HashMap<>();
-        Iterator<User> it = chatRoom.userIterator();
-        ColorGenerator colorGenerator = new ColorGenerator();
-        int[] randomColors = colorGenerator.goldenRationPalette(Color.rgb(255, 255, 255), 10);
-        int j = 0;
-        while (it.hasNext()) {
-            User currentUser = it.next();
-            userToColorMap.put(currentUser, randomColors[j]);
-            j++;
-        }
         for (int i = 0; i < messages.size(); i++) {
             selectedMessages.add(false); // fill up the array
         }
@@ -186,7 +169,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 incomingTextHolder.deselect();
             }
             incomingTextHolder.sender.setText(message.getSender().getDisplayName());
-            Integer color = userToColorMap.get(message.getSender());
+            Integer color = chatRoom.getUserIdColorMap().get(message.getSender().getId());
             incomingTextHolder.sender.setTextColor(color);
             incomingTextHolder.messageText.setText(message.getMessageText());
             incomingTextHolder.messageText.setText(message.getMessageText());

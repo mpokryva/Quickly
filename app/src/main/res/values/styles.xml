@@ -6,6 +6,7 @@
         <item name="windowActionModeOverlay">true</item>
         <item name="android:actionModeCloseDrawable">@drawable/ic_close_white_24dp</item>
         <item name="android:actionModeBackground">@color/LightBlue</item>
+        <item name="android:colorPrimaryDark">@color/LightBlueDarker</item>
         <!--<item name="android:actionOverflowButtonStyle">@style/OverflowButtonStyle</item>-->
     </style>
 

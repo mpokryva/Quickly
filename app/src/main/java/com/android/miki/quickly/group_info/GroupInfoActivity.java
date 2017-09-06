@@ -52,7 +52,7 @@ public class GroupInfoActivity extends FirebaseActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(layoutManager);
         initializeDialogListener();
-        mAdapter = new GroupInfoRecyclerAdapter(chatRoom, dialogListener);
+        mAdapter = new GroupInfoRecyclerAdapter(this, chatRoom, dialogListener);
         VerticalSpaceItemDecoration verticalSpaceItemDecoration = new VerticalSpaceItemDecoration(50); // 50dp
         mRecyclerView.addItemDecoration(verticalSpaceItemDecoration);
         mRecyclerView.setAdapter(mAdapter);

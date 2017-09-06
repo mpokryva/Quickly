@@ -14,4 +14,5 @@ public class FirebaseRefKeys {
     public static final String EDUCATION = "education";
     public static final String OCCUPATION = "occupation";
     public static final String AGE = "age";
+    public static final String USER_ID_COLOR_MAP = "userIdColorMap";
 }

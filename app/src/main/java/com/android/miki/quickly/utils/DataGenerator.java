@@ -41,6 +41,7 @@ public class DataGenerator {
             users.put(user.getId(), user); // Add user to user list
             randomUser = user;
         }
+
         String lastMessageText = randomSentences[r.nextInt(randomSentences.length)]; // Get random message
         Message lastMessage;
         if (randomUser == null) {
@@ -48,10 +49,12 @@ public class DataGenerator {
         } else {
             lastMessage = new Message(randomUser, lastMessageText);;
         }
-        ChatRoom chatRoom = new ChatRoom(chatId, users , lastMessage);
+
+        ChatRoom chatRoom = new ChatRoom(chatId, lastMessage);
         Iterator<User> it = users.values().iterator();
         while (it.hasNext()) {
             User user = it.next();
+            chatRoom.addUser(user);
             String text = randomSentences[r.nextInt(randomSentences.length)];
             Message message = new Message(user, text);
             chatRoom.addMessage(message);

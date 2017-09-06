@@ -2,9 +2,7 @@ package com.android.miki.quickly.user;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.RotateDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -76,7 +74,7 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123;
     private Uri currentUri;
     private static final String TAG = MyAccountActivity.class.getName();
-    private final int MAX_RETRY_MILLISECONDS = 4000;
+    private final int MAX_STORAGE_RETRY_MILLISECONDS = 4000;
     private EditText bioEditText;
     private static final String REF_BUNDLE_KEY = "reference";
     private ArrayList<String> uploadRefsUrlsInUsage;
@@ -130,9 +128,9 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
         setSupportActionBar(actionBar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        FirebaseStorage.getInstance().setMaxUploadRetryTimeMillis(MAX_RETRY_MILLISECONDS);
-        FirebaseStorage.getInstance().setMaxDownloadRetryTimeMillis(MAX_RETRY_MILLISECONDS);
-        FirebaseStorage.getInstance().setMaxOperationRetryTimeMillis(MAX_RETRY_MILLISECONDS);
+        FirebaseStorage.getInstance().setMaxUploadRetryTimeMillis(MAX_STORAGE_RETRY_MILLISECONDS);
+        FirebaseStorage.getInstance().setMaxDownloadRetryTimeMillis(MAX_STORAGE_RETRY_MILLISECONDS);
+        FirebaseStorage.getInstance().setMaxOperationRetryTimeMillis(MAX_STORAGE_RETRY_MILLISECONDS);
         // Load photos, and set listeners.
         for (int i = 0; i < photoGrid.getChildCount(); i++) {
             final int j = i;
@@ -153,7 +151,7 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
                     }
                 }
             });
-            setImageFromFromStorage(j);
+            setImageFromStorage(j);
         }
         // Register listener for bio changes, and load bio.
         registerBioChangeListener();
@@ -427,7 +425,7 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
         Uri destination = Uri.parse(fileToDelete.toURI().toString());
         UCrop.Options options = new UCrop.Options();
         int lightBlue = ContextCompat.getColor(this, R.color.LightBlue);
-        int statusBarColor = ContextCompat.getColor(this, R.color.LightBlueDark);
+        int statusBarColor = ContextCompat.getColor(this, R.color.LightBlueDarker);
         options.setToolbarColor(lightBlue);
         options.setActiveWidgetColor(lightBlue);
         options.setStatusBarColor(statusBarColor);
@@ -517,7 +515,7 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
      *
      * @param imageIndex
      */
-    private void setImageFromFromStorage(final int imageIndex) {
+    private void setImageFromStorage(final int imageIndex) {
         StorageReference downloadRef = getImageRef(imageIndex);
         downloadRef.getDownloadUrl().addOnCompleteListener(this, new OnCompleteListener<Uri>() {
             @Override
