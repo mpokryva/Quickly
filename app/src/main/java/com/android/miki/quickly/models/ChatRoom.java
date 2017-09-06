@@ -165,6 +165,16 @@ public class ChatRoom implements Serializable {
         userColorsRef.setValue(userIdColorMap);
     }
 
+
+    public void removeUserColor(User user) {
+        boolean removed = (userIdColorMap.remove(user.getId()) != null);
+        if (removed) {
+            DatabaseReference userColorsRef = DatabaseReferences.AVAILABLE_CHATS.child(id)
+                    .child(FirebaseRefKeys.USER_ID_COLOR_MAP);
+            userColorsRef.setValue(userIdColorMap);
+        }
+    }
+
     /**
      * Removes user from this ChatRoom's list of users, decrements numUsers, and pushes the data to Firebase
      *
@@ -183,12 +193,15 @@ public class ChatRoom implements Serializable {
                     }
                 }
             });
+            removeUserColor(user);
             availableChatsRef.child(id).child("numUsers").setValue(users.size(), new DatabaseReference.CompletionListener() {
                 @Override
                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                     numUsers = users.size();
                 }
             });
+
+
 
         }
 
