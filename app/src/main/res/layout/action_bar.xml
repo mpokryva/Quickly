@@ -4,4 +4,9 @@
     style="@style/ChatActionBar.Layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:theme="@style/ChatActionBar">
+    <TextView
+        android:id="@+id/toolbar_title"
+        style="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 </android.support.v7.widget.Toolbar>

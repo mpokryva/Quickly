@@ -104,7 +104,7 @@ public class ChatRoom implements Serializable {
             defaultName += user.getDisplayName() + ", ";
         }
         int lastIndex = defaultName.lastIndexOf(", ");
-        if (lastIndex > 0) {
+        if (lastIndex >= 0) {
             defaultName = defaultName.substring(0, lastIndex);
         }
         return defaultName;

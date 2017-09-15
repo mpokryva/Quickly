@@ -31,7 +31,7 @@ public class ChatRoomFinder {
 
     private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     private DataGenerator dataGenerator;
-    private final boolean IS_TESTING = true;
+    private final boolean IS_TESTING = false;
     private final int BATCH_SIZE = 100;
     private HashMap<Integer, String> positionToIdMap;
     private ChatRoom startingPointRoom;

@@ -2,6 +2,7 @@ package com.android.miki.quickly.chat_components;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,9 +12,13 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.miki.quickly.R;
@@ -41,7 +46,7 @@ public class ChatSelectionActivity extends AppCompatActivity implements ActionBa
     private MessageBoxFragment messageBoxFragment;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
-
+    private static final String TAG = ChatSelectionActivity.class.getName();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -143,7 +148,19 @@ public class ChatSelectionActivity extends AppCompatActivity implements ActionBa
 
     @Override
     public void setTitle(String title) {
-        actionBar.setTitle(title);
+        actionBar.setTitle("");
+        TextView titleTV = actionBar.findViewById(R.id.toolbar_title);
+        titleTV.setText(title);
+        int i = 0;
+        while (titleTV.getLineCount() > 1) {
+            String prevTitle = titleTV.getText().toString();
+            int index = prevTitle.lastIndexOf(',');
+            if (index >= 0) {
+                i++;
+                String newTitle = prevTitle.substring(0, index) + " + " + i;
+                titleTV.setText(newTitle);
+            }
+        }
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.android.miki.quickly.user;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -34,6 +35,7 @@ import com.android.miki.quickly.Manifest;
 import com.android.miki.quickly.R;
 import com.android.miki.quickly.core.network.ConnectivityStatusNotifier;
 import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
+import com.android.miki.quickly.firebase_requests.DatabaseReferences;
 import com.android.miki.quickly.firebase_requests.FirebaseRefKeys;
 import com.android.miki.quickly.models.User;
 import com.android.miki.quickly.ui.CustomProgressWheel;
@@ -64,6 +66,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created by mpokr on 8/25/2017.
@@ -102,6 +105,7 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
         inputFilters[0] = new InputFilter.LengthFilter(maxBioLength);
         bioEditText.setFilters(inputFilters);
         final TextView bioCharCountTV = findViewById(R.id.bio_char_count);
+        bioEditText.setTextColor(bioCharCountTV.getTextColors().getDefaultColor());
         String initialText = "" + maxBioLength;
         bioCharCountTV.setText(initialText);
 
@@ -168,7 +172,7 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
     }
 
     private void configureAccountField(final int accountFieldType) {
-        final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
+        final DatabaseReference userRef = DatabaseReferences.USERS
                 .child(User.currentUser().getId());
         final DatabaseReference ref;
         final int changeHintRes;
@@ -225,6 +229,8 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists() && dataSnapshot.getValue() instanceof String) {
                         setAccountFieldValue(accountFieldType, (String) dataSnapshot.getValue());
+                    } else {
+                        setAccountFieldValue(accountFieldType, null);
                     }
                 }
 
@@ -249,9 +255,10 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
             field.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
+                    final int lightBlue = ContextCompat.getColor(MyAccountActivity.this, R.color.LightBlue);
                     MaterialDialog removeFieldDialog = new DialogBuilderHelper()
-                            .generalDialog(MyAccountActivity.this, R.color.LightBlue)
-                            .title(removeHintRes)
+                            .generalDialog(MyAccountActivity.this, lightBlue)
+                            .content(removeHintRes)
                             .negativeText(android.R.string.cancel)
                             .positiveText(R.string.remove)
                             .onPositive(new MaterialDialog.SingleButtonCallback() {
@@ -261,6 +268,7 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
                                 }
                             })
                             .build();
+                    removeFieldDialog.show();
 
                     return true;
                 }
@@ -278,17 +286,25 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
                 valueTV = educationField.findViewById(R.id.education_field_value);
                 break;
             case OCCUPATION:
-                labelTV = educationField.findViewById(R.id.occupation_field_label);
-                valueTV = educationField.findViewById(R.id.occupation_field_value);
+                labelTV = occupationField.findViewById(R.id.occupation_field_label);
+                valueTV = occupationField.findViewById(R.id.occupation_field_value);
                 break;
             case AGE:
-                labelTV = educationField.findViewById(R.id.age_field_label);
-                valueTV = educationField.findViewById(R.id.age_field_value);
+                labelTV = ageField.findViewById(R.id.age_field_label);
+                valueTV = ageField.findViewById(R.id.age_field_value);
                 break;
         }
         if (labelTV != null && valueTV != null) {
-            labelTV.setCompoundDrawables(null, null, null, null); // Hide drawables
-            valueTV.setText(value);
+            if (value != null) {
+                labelTV.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, null, null); // Hide drawables.
+                valueTV.setText(value);
+            } else {
+                Drawable arrow = ContextCompat.getDrawable(this, R.drawable.ic_chevron_right_black_24dp);
+                final int lightBlue = ContextCompat.getColor(this, R.color.LightBlue);
+                arrow.setTint(lightBlue);
+                labelTV.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, arrow , null); // Show drawables.
+                valueTV.setText(null);
+            }
         }
     }
 
@@ -365,9 +381,9 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
     }
 
     private void pushBioChanges() {
-        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child(FirebaseRefKeys.USERS);
+        DatabaseReference userRef = DatabaseReferences.USERS;
         DatabaseReference bioRef = userRef.child(User.currentUser().getId()).child(FirebaseRefKeys.BIO);
-        String bio = bioEditText.getText().toString();
+        String bio = bioEditText.getText().toString().trim();
         if (bio.length() > 0) {
             bioRef.setValue(bio);
         }
@@ -615,7 +631,7 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
 
     private void registerBioChangeListener() {
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference bioRef = database.getReference().child(FirebaseRefKeys.USER_DATA)
+        final DatabaseReference bioRef = DatabaseReferences.USERS
                 .child(User.currentUser().getId()).child(FirebaseRefKeys.BIO);
         bioRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -652,7 +668,7 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
                     @Override
                     public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                         listener.onLoading();
-                        ref.setValue(input.toString()).addOnCompleteListener(MyAccountActivity.this,
+                        ref.setValue(input.toString().trim()).addOnCompleteListener(MyAccountActivity.this,
                                 new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
