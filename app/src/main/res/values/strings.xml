@@ -42,5 +42,11 @@
     <string name="change_education">Change education</string>
     <string name="change_occupation">Change occupation</string>
     <string name="change_age">Change age</string>
+    <string name="remove_education">Remove education</string>
+    <string name="remove_occupation">Remove occupation</string>
+    <string name="remove_age">Remove age</string>
     <string name="empty_string">\</string>
+    <string name="refresh">Refresh</string>
+    <string name="confirm_changes">Confirm Changes</string>
+    <string name="remove">Remove</string>
 </resources>

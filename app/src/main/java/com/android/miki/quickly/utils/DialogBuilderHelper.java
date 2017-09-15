@@ -12,10 +12,14 @@ import com.afollestad.materialdialogs.MaterialDialog;
 public class DialogBuilderHelper {
 
     public MaterialDialog.Builder inputDialog(Context context, int color) {
+        return generalDialog(context, color)
+                .inputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+    }
+
+    public MaterialDialog.Builder generalDialog(Context context, int color) {
         return new MaterialDialog.Builder(context)
                 .widgetColor(color)
                 .positiveColor(color)
-                .negativeColor(color)
-                .inputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+                .negativeColor(color);
     }
 }

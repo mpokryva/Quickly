@@ -16,6 +16,8 @@ import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -26,6 +28,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.android.miki.quickly.Manifest;
 import com.android.miki.quickly.R;
@@ -168,27 +171,32 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
         final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
                 .child(User.currentUser().getId());
         final DatabaseReference ref;
-        final int hintRes;
+        final int changeHintRes;
+        final int removeHintRes;
         RelativeLayout field = null;
         switch (accountFieldType) {
             case EDUCATION:
                 ref = userRef.child(FirebaseRefKeys.EDUCATION);
-                hintRes = R.string.change_education;
+                changeHintRes = R.string.change_education;
+                removeHintRes = R.string.remove_education;
                 field = educationField;
                 break;
             case OCCUPATION:
                 ref = userRef.child(FirebaseRefKeys.OCCUPATION);
-                hintRes = R.string.change_occupation;
+                changeHintRes = R.string.change_occupation;
+                removeHintRes = R.string.remove_occupation;
                 field = occupationField;
                 break;
             case AGE:
                 ref = userRef.child(FirebaseRefKeys.AGE);
-                hintRes = R.string.change_age;
+                changeHintRes = R.string.change_age;
+                removeHintRes = R.string.remove_age;
                 field = ageField;
                 break;
             default:
                 ref = null;
-                hintRes = 0;
+                changeHintRes = 0;
+                removeHintRes = 0;
         }
         int lightBlue = ContextCompat.getColor(MyAccountActivity.this, R.color.LightBlue);
         final MaterialDialog progressDialog = new MaterialDialog.Builder(MyAccountActivity.this)
@@ -226,16 +234,35 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
                 }
             });
         }
-        if (hintRes != 0 && field != null) {
+        if (changeHintRes != 0 && field != null) {
             field.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     if (isConnected) {
-                        makeDialogAndSetValue(null, null, hintRes, ref, listener).show();
+                        makeDialogAndSetValue(null, null, changeHintRes, ref, listener).show();
                     } else {
                         Toast.makeText(MyAccountActivity.this, "Please connect to the internet first.", Toast.LENGTH_SHORT).show();
                     }
 
+                }
+            });
+            field.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    MaterialDialog removeFieldDialog = new DialogBuilderHelper()
+                            .generalDialog(MyAccountActivity.this, R.color.LightBlue)
+                            .title(removeHintRes)
+                            .negativeText(android.R.string.cancel)
+                            .positiveText(R.string.remove)
+                            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                @Override
+                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                    ref.removeValue();
+                                }
+                            })
+                            .build();
+
+                    return true;
                 }
             });
         }
@@ -315,13 +342,35 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.my_account_action_bar, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                pushBioChanges();
                 onBackPressed();
                 return true;
+            case R.id.check_mark:
+                pushBioChanges();
+                onBackPressed();
+                return true;
+
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void pushBioChanges() {
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child(FirebaseRefKeys.USERS);
+        DatabaseReference bioRef = userRef.child(User.currentUser().getId()).child(FirebaseRefKeys.BIO);
+        String bio = bioEditText.getText().toString();
+        if (bio.length() > 0) {
+            bioRef.setValue(bio);
+        }
     }
 
     @Override
