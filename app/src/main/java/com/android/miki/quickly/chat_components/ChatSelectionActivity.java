@@ -151,16 +151,16 @@ public class ChatSelectionActivity extends AppCompatActivity implements ActionBa
         actionBar.setTitle("");
         TextView titleTV = actionBar.findViewById(R.id.toolbar_title);
         titleTV.setText(title);
-        int i = 0;
-        while (titleTV.getLineCount() > 1) {
-            String prevTitle = titleTV.getText().toString();
-            int index = prevTitle.lastIndexOf(',');
-            if (index >= 0) {
-                i++;
-                String newTitle = prevTitle.substring(0, index) + " + " + i;
-                titleTV.setText(newTitle);
-            }
-        }
+//        int i = 0;
+//        while (titleTV.getLineCount() > 1) {
+//            String prevTitle = titleTV.getText().toString();
+//            int index = prevTitle.lastIndexOf(',');
+//            if (index >= 0) {
+//                i++;
+//                String newTitle = prevTitle.substring(0, index) + " + " + i;
+//                titleTV.setText(newTitle);
+//            }
+//        }
     }
 
     @Override
