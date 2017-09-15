@@ -32,4 +32,21 @@
     <string name="message_box_disconnected_hint">Not connected to the Internet&#8230;</string>
     <string name="something_weird_happened">Something weird happened&#8230;</string>
     <string name="gif">GIF</string>
+    <string name="open_drawer">open drawer</string>
+    <string name="close_drawer">close drawer</string>
+    <string name="about_me">About Me</string>
+    <string name="say_something_interesting_about_yourself">Say something interesting about yourself</string>
+    <string name="education">Education</string>
+    <string name="occupation">Occupation</string>
+    <string name="age">Age</string>
+    <string name="change_education">Change education</string>
+    <string name="change_occupation">Change occupation</string>
+    <string name="change_age">Change age</string>
+    <string name="remove_education">Remove education</string>
+    <string name="remove_occupation">Remove occupation</string>
+    <string name="remove_age">Remove age</string>
+    <string name="empty_string">\</string>
+    <string name="refresh">Refresh</string>
+    <string name="confirm_changes">Confirm Changes</string>
+    <string name="remove">Remove</string>
 </resources>

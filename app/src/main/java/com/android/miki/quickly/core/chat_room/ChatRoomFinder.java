@@ -6,6 +6,7 @@ import com.android.miki.quickly.core.network.FirebaseClient;
 import com.android.miki.quickly.firebase_requests.ChatRoomBatchRetrievalRequest;
 import com.android.miki.quickly.firebase_requests.ChatRoomRetrievalRequest;
 import com.android.miki.quickly.firebase_requests.DatabaseReferences;
+import com.android.miki.quickly.firebase_requests.FirebaseRefKeys;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.utils.DataGenerator;
 import com.android.miki.quickly.utils.FirebaseError;
@@ -30,7 +31,7 @@ public class ChatRoomFinder {
 
     private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     private DataGenerator dataGenerator;
-    private final boolean IS_TESTING = true;
+    private final boolean IS_TESTING = false;
     private final int BATCH_SIZE = 100;
     private HashMap<Integer, String> positionToIdMap;
     private ChatRoom startingPointRoom;
@@ -48,7 +49,7 @@ public class ChatRoomFinder {
         DatabaseReferences.AVAILABLE_CHATS_COUNTER.keepSynced(true);
     }
 
-    public static  ChatRoomFinder getInstance() {
+    public static ChatRoomFinder getInstance() {
         if (roomFinder == null) {
             roomFinder = new ChatRoomFinder();
         }
@@ -99,13 +100,15 @@ public class ChatRoomFinder {
         } else {
             Query query = availableChatsRef;//(startingPointRoom == null) ? availableChatsRef : availableChatsRef.startAt(startingPointRoom.getId());
             // 1 is added to BATCH_SIZE so we can save the last as the marker for getRoom next time.
-            query.limitToFirst(BATCH_SIZE + 1).addListenerForSingleValueEvent(new ValueEventListener() {
+            query.orderByChild(FirebaseRefKeys.NUM_USERS).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     List<ChatRoom> chatRooms = new ArrayList<>();
                     for (DataSnapshot chat : dataSnapshot.getChildren()) {
                         ChatRoom chatRoom = chat.getValue(ChatRoom.class);
-                        chatRooms.add(chatRoom);
+                        if (chatRoom != null) {
+                            chatRooms.add(chatRoom);
+                        }
                     }
                     Random r = new Random();
                     int randomPosition = r.nextInt(chatRooms.size());

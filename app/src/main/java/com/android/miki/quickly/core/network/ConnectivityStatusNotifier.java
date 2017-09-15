@@ -29,6 +29,7 @@ public class ConnectivityStatusNotifier {
     private static int MAX_CONNECTION_TRIES = 5;
     public static final String TAG = ConnectivityStatusNotifier.class.getName();
     private HashSet<ConnectivityStatusObserver> observerSet;
+    private boolean isConnected;
 
     public static ConnectivityStatusNotifier getInstance() {
         if (notifier == null) {
@@ -41,6 +42,7 @@ public class ConnectivityStatusNotifier {
         observerSet = new HashSet<>();
         listenForConnectionChanges();
     }
+
 
 
     public void registerObserver(ConnectivityStatusObserver observer) {
@@ -88,6 +90,7 @@ public class ConnectivityStatusNotifier {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 boolean isConnected = dataSnapshot.getValue(Boolean.class);
+                ConnectivityStatusNotifier.this.isConnected = isConnected;
                 notifyObservers(isConnected);
             }
 
@@ -124,5 +127,9 @@ public class ConnectivityStatusNotifier {
                 }
             }
         }).run();
+    }
+
+    public boolean isConnected() {
+        return isConnected;
     }
 }

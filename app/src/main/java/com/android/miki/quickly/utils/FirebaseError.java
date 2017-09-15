@@ -62,7 +62,7 @@ public class FirebaseError {
     }
 
     public static FirebaseError unknownError() {
-        String message = "Hmmm... Something weird happened. Try again later.";
+        String message = "Hmm... Something weird happened. Try again later.";
         String details = "We're not sure what happened." + " " + IF_ISSUE_PERSISTS;
         return new FirebaseError(message, details);
     }

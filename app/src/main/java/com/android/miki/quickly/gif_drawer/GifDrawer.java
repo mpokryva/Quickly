@@ -26,7 +26,6 @@ public class GifDrawer {
     private static final String GIPHY_BASE_URL = "http://api.giphy.com";
     private static final String GIPHY_TRANSLATE_PATH = "/v1/gifs/translate?s=";
     private static final String GIPHY_SEARCH_PATH = "/v1/gifs/search?q=";
-    private boolean isShown;
     private boolean shouldShow;
 
 
@@ -36,7 +35,6 @@ public class GifDrawer {
         mAdapter = new GIFRecyclerAdapter(new ArrayList<String>(), chatRoom, gifDrawerAction); // No GIF data for now...
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
-        isShown = false;
         shouldShow = false;
     }
 
@@ -47,21 +45,21 @@ public class GifDrawer {
 
     private void show() {
         mRecyclerView.setVisibility(View.VISIBLE);
-        isShown = true;
     }
 
     public void hide() {
         mRecyclerView.setVisibility(View.GONE);
-        isShown = false;
     }
 
 
     public void getTrendingGifs() {
+        if (shouldShow) {
+            show();
+        }
         final GiphyAPIRequest request = new GiphyAPIRequest(new GiphyAPIResponse() {
             @Override
             public void gifURLsRetrieved(List<String> urls) {
                 if (shouldShow) {
-                    show();
                     setGifs(urls);
                 }
             }
@@ -70,6 +68,9 @@ public class GifDrawer {
     }
 
     public void translateTextToGif(String query) {
+        if (shouldShow) {
+            show();
+        }
         String formattedQuery = "";
         for (int i = 0; i < query.length(); i++) {
             char ch = query.charAt(i);
@@ -80,7 +81,7 @@ public class GifDrawer {
             @Override
             public void gifURLsRetrieved(List<String> urls) {
                 if (shouldShow) {
-                    show();
+
                     setGifs(urls);
                 }
             }

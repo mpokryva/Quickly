@@ -1,25 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout android:id="@+id/user_details"
                 xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_centerVertical="true"
                 android:orientation="vertical"
                 android:paddingBottom="10dp"
-                android:paddingStart="15dp"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingTop="10dp">
+
+   <RelativeLayout
+       android:id="@+id/user_photo_wrapper"
+       android:layout_width="40dp"
+       android:layout_height="40dp">
+       <com.makeramen.roundedimageview.RoundedImageView
+           android:id="@+id/user_photo"
+           android:layout_width="match_parent"
+           android:layout_height="match_parent"
+           android:background="@color/LightGray2"
+           android:scaleType="fitCenter"
+           app:riv_corner_radius="1000dp"
+           app:riv_mutate_background="true"/>
+
+       <TextView
+           android:id="@+id/no_user_photo_textview"
+           android:layout_width="match_parent"
+           android:layout_height="match_parent"
+           android:textSize="26sp"
+           android:textAlignment="center"
+           android:background="@drawable/solid_circle"
+           android:scaleType="fitCenter"/>
+
+       <com.android.miki.quickly.ui.CustomProgressWheel
+           android:id="@+id/progress_wheel"
+           style="@style/DefaultProgressWheel"/>
+   </RelativeLayout>
+
+
 
     <TextView
         android:id="@+id/user_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@id/user_photo_wrapper"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
         android:textColor="@android:color/black"
         android:textSize="16sp"/>
 
-    <TextView
-        android:id="@+id/university"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/user_name"
-        android:textColor="@color/MediumGray"/>
 
 </RelativeLayout>

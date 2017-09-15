@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/LightGray2"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/action_bar"
+        layout="@layout/action_bar" />
+
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:background="@color/LightGray2">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusable="true"
+            android:focusableInTouchMode="true">
+
+
+            <GridLayout
+                android:id="@+id/photo_grid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="3"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:paddingTop="@dimen/activity_vertical_margin"
+                android:rowCount="2"
+                android:useDefaultMargins="true">
+
+                <include
+                    layout="@layout/user_photo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="0"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:layout_row="0" />
+
+                <include
+                    layout="@layout/user_photo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="1"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:layout_row="0" />
+
+                <include
+                    layout="@layout/user_photo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="2"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:layout_row="0" />
+
+                <include
+                    layout="@layout/user_photo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="0"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:layout_row="1" />
+
+                <include
+                    layout="@layout/user_photo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="1"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:layout_row="1" />
+
+                <include
+                    layout="@layout/user_photo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="2"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:layout_row="1" />
+            </GridLayout>
+
+            <View
+                android:id="@+id/divider_1"
+                style="@style/HorizontalDividerThin.WithActivityMargins" />
+
+            <TextView
+                android:id="@+id/bio_label"
+                style="@style/ActivityMarginsAndPadding"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/divider_1"
+                android:background="@color/GooglePlusGray"
+                android:text="@string/about_me"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
+
+            <RelativeLayout
+                android:id="@+id/bio_edittext_wrapper"
+                android:layout_width="wrap_content"
+                android:layout_height="150dp"
+                android:layout_below="@id/bio_label">
+
+                <EditText
+                    android:id="@+id/bio_edittext"
+                    style="@style/ActivityMarginsAndPadding"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:hint="@string/say_something_interesting_about_yourself"
+                    android:paddingTop="0dp"
+                    android:textCursorDrawable="@null"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+
+            <TextView
+                android:id="@+id/bio_char_count"
+                style="@style/ActivityMarginsAndPadding"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_below="@id/divider_1" />
+
+            <View
+                android:id="@+id/divider_2"
+                style="@style/HorizontalDividerThin.WithActivityMargins"
+                android:layout_below="@id/bio_edittext_wrapper" />
+
+            <RelativeLayout
+                android:id="@+id/education_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/divider_2">
+
+                <TextView
+                    android:id="@+id/education_field_label"
+                    style="@style/AccountActivityField"
+                    android:text="@string/education" />
+
+                <TextView
+                    android:id="@+id/education_field_value"
+                    style="@style/AccountActivityFieldValue" />
+            </RelativeLayout>
+
+
+            <View
+                android:id="@+id/divider_3"
+                style="@style/HorizontalDividerThin.WithActivityMargins"
+                android:layout_below="@id/education_field" />
+
+            <RelativeLayout
+                android:id="@+id/occupation_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/divider_3">
+
+                <TextView
+                    android:id="@+id/occupation_field_label"
+                    style="@style/AccountActivityField"
+                    android:text="@string/occupation" />
+
+                <TextView
+                    android:id="@+id/occupation_field_value"
+                    style="@style/AccountActivityFieldValue" />
+            </RelativeLayout>
+
+
+            <View
+                android:id="@+id/divider_4"
+                style="@style/HorizontalDividerThin.WithActivityMargins"
+                android:layout_below="@id/occupation_field" />
+
+            <RelativeLayout
+                android:id="@+id/age_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/divider_4">
+
+                <TextView
+                    android:id="@+id/age_field_label"
+                    style="@style/AccountActivityField"
+                    android:text="@string/age" />
+
+                <TextView
+                    android:id="@+id/age_field_value"
+                    style="@style/AccountActivityFieldValue" />
+            </RelativeLayout>
+
+
+        </RelativeLayout>
+
+
+    </ScrollView>
+
+</LinearLayout>

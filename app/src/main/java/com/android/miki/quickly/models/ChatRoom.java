@@ -1,14 +1,12 @@
 package com.android.miki.quickly.models;
 
+import android.graphics.Color;
 import android.util.Log;
 
 import com.android.miki.quickly.chat_components.ChatRoomObserver;
-import com.android.miki.quickly.core.network.FirebaseClient;
 import com.android.miki.quickly.firebase_requests.DatabaseReferences;
 import com.android.miki.quickly.firebase_requests.FirebaseRefKeys;
-import com.android.miki.quickly.firebase_requests.chatroom_model_requests.AddUserRequest;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.android.miki.quickly.utils.ColorGenerator;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -22,7 +20,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -45,14 +42,15 @@ public class ChatRoom implements Serializable {
     private Message lastMessage;
     private String name;
     private transient List<ChatRoomObserver> observers = new ArrayList<>();
+    private HashMap<String, Integer> userIdColorMap = new HashMap<>();
 
 
     public ChatRoom() {
 
     }
 
-    public ChatRoom(String id, HashMap<String, User> users, Message lastMessage) {
-        this.users = users;
+    public ChatRoom(String id, Message lastMessage) {
+        this.users = new HashMap<>();
         this.numUsers = (users == null) ? 0 : users.size();
         this.lastMessage = lastMessage;
         this.id = id;
@@ -66,6 +64,10 @@ public class ChatRoom implements Serializable {
 
     public int getNumUsers() {
         return numUsers;
+    }
+
+    public Map<String, Integer> getUserIdColorMap() {
+        return userIdColorMap;
     }
 
     public Message getLastMessage() {
@@ -102,7 +104,7 @@ public class ChatRoom implements Serializable {
             defaultName += user.getDisplayName() + ", ";
         }
         int lastIndex = defaultName.lastIndexOf(", ");
-        if (lastIndex > 0) {
+        if (lastIndex >= 0) {
             defaultName = defaultName.substring(0, lastIndex);
         }
         return defaultName;
@@ -138,6 +140,7 @@ public class ChatRoom implements Serializable {
             DatabaseReference numUsersRef = DatabaseReferences.AVAILABLE_CHATS.child(id).
                     child(FirebaseRefKeys.NUM_USERS);
             users.put(user.getId(), user);
+            addUserColor(user);
             usersRef.setValue(user, new DatabaseReference.CompletionListener() {
                 @Override
                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
@@ -148,12 +151,27 @@ public class ChatRoom implements Serializable {
                     }
                 }
             });
-            numUsersRef.setValue(users.size(), new DatabaseReference.CompletionListener() {
-                @Override
-                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                    numUsers = users.size();
-                }
-            });
+            numUsers = users.size();
+            numUsersRef.setValue(users.size());
+        }
+    }
+
+    public void addUserColor(User user) {
+        ColorGenerator colorGenerator = new ColorGenerator();
+        int[] randomColors = colorGenerator.goldenRationPalette(Color.rgb(255, 255, 255), users.size());
+        userIdColorMap.put(user.getId(), randomColors[randomColors.length - 1]);
+        DatabaseReference userColorsRef = DatabaseReferences.AVAILABLE_CHATS.child(id)
+                .child(FirebaseRefKeys.USER_ID_COLOR_MAP);
+        userColorsRef.setValue(userIdColorMap);
+    }
+
+
+    public void removeUserColor(User user) {
+        boolean removed = (userIdColorMap.remove(user.getId()) != null);
+        if (removed) {
+            DatabaseReference userColorsRef = DatabaseReferences.AVAILABLE_CHATS.child(id)
+                    .child(FirebaseRefKeys.USER_ID_COLOR_MAP);
+            userColorsRef.setValue(userIdColorMap);
         }
     }
 
@@ -175,12 +193,15 @@ public class ChatRoom implements Serializable {
                     }
                 }
             });
+            removeUserColor(user);
             availableChatsRef.child(id).child("numUsers").setValue(users.size(), new DatabaseReference.CompletionListener() {
                 @Override
                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                     numUsers = users.size();
                 }
             });
+
+
 
         }
 
