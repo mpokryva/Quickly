@@ -46,8 +46,9 @@ dependencies {
     compile 'uk.co.chrisjenx:calligraphy:2.3.0'
     compile 'com.afollestad.material-dialogs:core:0.9.4.7'
     compile 'com.google.firebase:firebase-storage:11.2.0'
-    compile 'com.github.yalantis:ucrop:2.2.1'
+    compile 'com.github.yalantis:ucrop:2.2.1-native'
     compile 'com.makeramen:roundedimageview:2.3.0'
+    compile 'com.ss.bannerslider:bannerslider:1.8.0'
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.0.0-RC0'
 }

@@ -400,8 +400,6 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
                             throw new IllegalStateException();
                         }
                         currentUri = data.getData();
-                        int maxWidth = 100;
-                        int maxHeight = 100;
                         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                                 != PackageManager.PERMISSION_GRANTED) {
                             // Should we show an explanation?
@@ -494,10 +492,10 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
         options.setToolbarColor(lightBlue);
         options.setActiveWidgetColor(lightBlue);
         options.setStatusBarColor(statusBarColor);
+        options.setCompressionQuality(100);
         UCrop.of(source, destination)
                 .withAspectRatio(1, 1)
-                .withOptions(options)
-                .withMaxResultSize(100, 100).start(this);
+                .withOptions(options).start(this);
     }
 
     private void uploadImageToFirebaseAndApply(final Uri uri, final int imageIndex, final boolean shouldDeleteImage) {
