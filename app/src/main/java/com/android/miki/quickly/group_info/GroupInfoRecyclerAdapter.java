@@ -1,5 +1,6 @@
 package com.android.miki.quickly.group_info;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -23,6 +24,7 @@ import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.Message;
 import com.android.miki.quickly.models.User;
 import com.android.miki.quickly.ui.CustomProgressWheel;
+import com.android.miki.quickly.user.UserProfileActivity;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
@@ -123,6 +125,14 @@ public class GroupInfoRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.
                             noPhotoView.setVisibility(View.GONE);
                             progressWheel.setVisibility(View.GONE);
                             imageView.setVisibility(View.VISIBLE);
+                            imageView.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    Intent i = new Intent(GroupInfoRecyclerAdapter.this.activity, UserProfileActivity.class);
+                                    i.putExtra("user", user);
+                                    GroupInfoRecyclerAdapter.this.activity.startActivity(i);
+                                }
+                            });
                             return false;
                         }
                     }).into(imageView);
