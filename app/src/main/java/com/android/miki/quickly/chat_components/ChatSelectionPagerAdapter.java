@@ -21,7 +21,7 @@ import com.android.miki.quickly.utils.FirebaseListener;
  * Created by mpokr on 5/22/2017.
  */
 
-public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter implements ConnectivityStatusObserver {
+public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter {
 
     private ChatRoomFinder chatRoomFinder;
     private ChatRoom currentChatRoom;
@@ -41,8 +41,6 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
         this.fm = fm;
         this.user = User.currentUser();
         chatRoomFinder = ChatRoomFinder.getInstance();
-        ConnectivityStatusNotifier notifier = ConnectivityStatusNotifier.getInstance();
-        notifier.registerObserver(this);
         mContext = context;
     }
 
@@ -107,19 +105,6 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
         // Not connected to internet.
     }
 
-//    /**
-//     * Triggers the onDisconnect() method, along with disabling swiping.
-//     *
-//     * @param viewPager
-//     * @param position
-//     */
-//    private void forceDisconnect(CustomViewPager viewPager, int position, FirebaseError error) {
-//        Log.d(TAG, "Force disconnect");
-//        shouldForceDisconnect = true;
-//        shouldForceDisconnect = false;
-//        viewPager.setPagingEnabled(false);
-//        viewPager.setCurrentItem(position); // Position represents the previous position here.
-//    }
 
     /**
      * This method is supposed to be called when the user navigates away from the chat room.
@@ -160,32 +145,6 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter impleme
     @Override
     public int getCount() {
         return 20;
-    }
-
-
-    @Override
-    public void onConnect() {
-//        if (!isConnected) {
-//            isConnected = true;
-//            if (viewPager != null) {
-//                loadRoom(viewPager, viewPager.getCurrentItem());
-//            } else {
-//                if (currentFragment != null) {
-//                    currentFragment.onConnect();
-//                    Log.d(TAG, "Fragment is handling loading.");
-//                }
-//            }
-//        }
-    }
-
-    @Override
-    public void onDisconnect(FirebaseError error) {
-//        if (isConnected || shouldForceDisconnect) {
-//            isConnected = false;
-//            if (currentFragment != null) {
-//                currentFragment.onDisconnect(error);
-//            }
-//        }
     }
 
 }
