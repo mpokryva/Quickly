@@ -1,9 +1,11 @@
 package com.android.miki.quickly.user;
 
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -15,6 +17,7 @@ import com.android.miki.quickly.R;
 import com.android.miki.quickly.firebase_requests.DatabaseReferences;
 import com.android.miki.quickly.firebase_requests.FirebaseRefKeys;
 import com.android.miki.quickly.models.User;
+import com.android.miki.quickly.ui.CustomProgressWheel;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
@@ -159,13 +162,16 @@ public class UserProfileActivity extends AppCompatActivity {
         ref.child("" + i).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
-                banners.add(new RemoteBanner(uri.toString()));
+                CustomProgressWheel progressWheel = findViewById(R.id.progress_wheel);
+                banners.add(new RemoteBanner(uri.toString()).setPlaceHolder(progressWheel.getIndeterminateDrawable()));
                 Log.d(TAG, "Got " + i + "th image.");
                 fillBannerSlider(bannerSlider, banners, i + 1);
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
+                CustomProgressWheel progressWheel = findViewById(R.id.progress_wheel);
+                progressWheel.setVisibility(View.INVISIBLE);
                 bannerSlider.setBanners(banners);
             }
         });

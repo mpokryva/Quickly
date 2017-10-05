@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#fff</color>
+    <color name="colorPrimaryDark">#aaaaaa</color>
+    <color name="colorAccent">#2facb2</color>
+    <color name="toolbarColor">#eeee</color>
+    <color name="holo_gray">#717171</color>
+</resources>
