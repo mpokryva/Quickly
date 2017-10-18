@@ -281,10 +281,6 @@ public class ChatFragment extends Fragment implements ChatRoomObserver, Connecti
         }
     }
 
-    private void hideKeyboard(View view) {
-        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-    }
 
 
     @Override

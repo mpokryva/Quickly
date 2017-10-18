@@ -66,6 +66,9 @@ public class UserProfileActivity extends AppCompatActivity {
         fillBannerSlider(bannerSlider, banners, 0);
         initUserFields();
         Toolbar actionBar = findViewById(R.id.action_bar);
+        actionBar.setTitle("");
+        TextView titleTV = actionBar.findViewById(R.id.toolbar_title);
+        titleTV.setText("");
         setSupportActionBar(actionBar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);

@@ -1,5 +1,6 @@
 package com.android.miki.quickly.user;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
@@ -21,6 +22,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
@@ -302,7 +304,7 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
                 Drawable arrow = ContextCompat.getDrawable(this, R.drawable.ic_chevron_right_black_24dp);
                 final int lightBlue = ContextCompat.getColor(this, R.color.LightBlue);
                 arrow.setTint(lightBlue);
-                labelTV.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, arrow , null); // Show drawables.
+                labelTV.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, arrow, null); // Show drawables.
                 valueTV.setText(null);
             }
         }
@@ -368,10 +370,12 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                hideKeyboard();
                 pushBioChanges();
                 onBackPressed();
                 return true;
             case R.id.check_mark:
+                hideKeyboard();
                 pushBioChanges();
                 onBackPressed();
                 return true;
@@ -379,6 +383,15 @@ public class MyAccountActivity extends AppCompatActivity implements Connectivity
         }
         return super.onOptionsItemSelected(item);
     }
+
+    private void hideKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
+
 
     private void pushBioChanges() {
         DatabaseReference userRef = DatabaseReferences.USERS;
