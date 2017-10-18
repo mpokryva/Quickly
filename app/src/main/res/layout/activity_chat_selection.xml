@@ -34,18 +34,30 @@
         </com.android.miki.quickly.chat_components.CustomViewPager>
 
     </RelativeLayout>
+    <!--&lt;!&ndash;Navigation drawer&ndash;&gt;-->
+    <!--<android.support.design.widget.NavigationView-->
+        <!--android:id="@+id/drawer_navigation_view"-->
+        <!--android:layout_width="240dp"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_gravity="start"-->
+        <!--android:choiceMode="singleChoice"-->
+        <!--android:divider="@android:color/transparent"-->
+        <!--android:dividerHeight="0dp">-->
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:layout_gravity="bottom"-->
+            <!--android:clickable="true"-->
+            <!--android:orientation="vertical">-->
+            <!--<TextView-->
+                <!--android:id="@+id/log_out"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="48dp"-->
+                <!--android:gravity="bottom"-->
+                <!--android:text="@string/log_out"/>-->
+        <!--</LinearLayout>-->
 
-    <!--Navigation drawer-->
-    <android.support.design.widget.NavigationView
-        android:id="@+id/drawer_navigation_view"
-        android:layout_width="240dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:choiceMode="singleChoice"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="0dp"
-        app:menu="@menu/drawer">
-    </android.support.design.widget.NavigationView>
+    <!--</android.support.design.widget.NavigationView>-->
 
 
 </android.support.v4.widget.DrawerLayout>
