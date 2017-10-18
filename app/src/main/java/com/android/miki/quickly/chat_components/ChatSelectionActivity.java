@@ -16,6 +16,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -24,11 +25,19 @@ import android.widget.Toast;
 import com.android.miki.quickly.R;
 import com.android.miki.quickly.core.network.ConnectivityStatusNotifier;
 import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
+import com.android.miki.quickly.login_signup.LoginActivity;
 import com.android.miki.quickly.models.ChatRoom;
 import com.android.miki.quickly.models.User;
 import com.android.miki.quickly.user.MyAccountActivity;
 import com.android.miki.quickly.utils.FirebaseError;
 import com.android.miki.quickly.utils.FirebaseListener;
+import com.facebook.login.LoginManager;
+import com.google.firebase.auth.FirebaseAuth;
+import com.mikepenz.materialdrawer.Drawer;
+import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.model.DividerDrawerItem;
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -53,31 +62,42 @@ public class ChatSelectionActivity extends AppCompatActivity implements ActionBa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_selection);
         // Set up navigation drawer
-        drawerLayout = findViewById(R.id.drawer_layout);
-        drawerToggle = new ActionBarDrawerToggle(
-                this, drawerLayout, R.string.open_drawer, R.string.close_drawer) {
-
-        };
-        drawerLayout.addDrawerListener(drawerToggle);
-        NavigationView navigationView = findViewById(R.id.drawer_navigation_view);
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.my_account:
-                        Intent i = new Intent(ChatSelectionActivity.this, MyAccountActivity.class);
-                        startActivity(i);
-                        return true;
-                    default:
-                        return true;
-                }
-            }
-        });
+        final int MY_ACCOUNT = 1;
+        final int LOG_OUT = 2;
+        Drawer drawer = new DrawerBuilder()
+                .withActivity(this)
+                .addDrawerItems(
+                        new PrimaryDrawerItem().withIdentifier(MY_ACCOUNT).withName(R.string.my_account).withSelectable(false),
+                        new DividerDrawerItem(),
+                        new PrimaryDrawerItem().withIdentifier(LOG_OUT).withName(R.string.log_out).withSelectable(false)
+                )
+                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                    @Override
+                    public boolean onItemClick(View view, int i, IDrawerItem iDrawerItem) {
+                        switch ((int) iDrawerItem.getIdentifier()) {
+                            case MY_ACCOUNT:
+                                Intent myAccountIntent = new Intent(ChatSelectionActivity.this, MyAccountActivity.class);
+                                startActivity(myAccountIntent);
+                                return true;
+                            case LOG_OUT:
+                                FirebaseAuth.getInstance().signOut();
+                                LoginManager.getInstance().logOut();
+                                Intent loginIntent = new Intent(ChatSelectionActivity.this, LoginActivity.class);
+                                startActivity(loginIntent);
+                            default:
+                                return true;
+                        }
+                    }
+                })
+                .withSelectedItem(-1)
+                .build();
 
 
         // Set up action bar
         actionBar = findViewById(R.id.action_bar);
         setSupportActionBar(actionBar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+//        drawer.getActionBarDrawerToggle().setDrawerIndicatorEnabled(true);
         // Set up viewpager
         mViewPager = findViewById(R.id.chat_selection_pager);
         mAdapter = new ChatSelectionPagerAdapter(getSupportFragmentManager(), this);

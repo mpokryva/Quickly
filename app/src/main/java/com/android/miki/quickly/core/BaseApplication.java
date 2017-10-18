@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.android.miki.quickly.R;
+import com.google.firebase.database.FirebaseDatabase;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
@@ -22,7 +23,7 @@ public class BaseApplication extends Application {
                 .setFontAttrId(R.attr.fontPath)
                 .build()
         );
-        //....
+        FirebaseDatabase.getInstance().setPersistenceEnabled(false);
     }
 
     @Override

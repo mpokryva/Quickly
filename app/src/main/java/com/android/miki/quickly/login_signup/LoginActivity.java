@@ -75,9 +75,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpListener, 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_signup);
-        FirebaseDatabase.getInstance().setPersistenceEnabled(false);
         auth = FirebaseAuth.getInstance();
-
         initCustomFontsAndColors();
         if (IS_TESTING) {
             FirebaseAuth.getInstance().signOut();

@@ -49,4 +49,6 @@
     <string name="refresh">Refresh</string>
     <string name="confirm_changes">Confirm Changes</string>
     <string name="remove">Remove</string>
+    <string name="my_account">My Account</string>
+    <string name="log_out">Log Out</string>
 </resources>
