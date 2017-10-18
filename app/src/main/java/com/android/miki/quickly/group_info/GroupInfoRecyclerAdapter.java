@@ -97,7 +97,8 @@ public class GroupInfoRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.
         CustomProgressWheel progressWheel = userDetailsLayout.findViewById(R.id.progress_wheel);
         TextView noPhotoView = userDetailsLayout.findViewById(R.id.no_user_photo_textview);
         setImageFromFromStorage(userPhotoImageView, noPhotoView, progressWheel, user);
-        name.setText(user.getDisplayName());
+        String userName = (user.equals(User.currentUser())) ? user.getDisplayName() + " (You)" : user.getDisplayName();
+        name.setText(userName);
     }
 
     private void setImageFromFromStorage(final RoundedImageView imageView, final TextView noPhotoView, final CustomProgressWheel progressWheel, final User user) {
