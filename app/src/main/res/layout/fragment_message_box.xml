@@ -57,7 +57,6 @@
             android:layout_centerVertical="true"
             android:layout_margin="8dp"
             android:background="@drawable/ic_send_black_24dp"
-            android:backgroundTint="@color/LightBlue"
             android:gravity="center_vertical"/>
     </RelativeLayout>
 </LinearLayout>

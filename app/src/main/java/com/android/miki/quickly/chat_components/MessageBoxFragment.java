@@ -2,11 +2,12 @@ package com.android.miki.quickly.chat_components;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.annotation.ColorRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -71,6 +72,7 @@ public class MessageBoxFragment extends Fragment implements ChatRoomObserver, Co
         final View view = inflater.inflate(R.layout.fragment_message_box, container, false);
         mSendButton = view.findViewById(R.id.send_button);
         mMessageEditText = view.findViewById(R.id.message_box);
+        setSendButtonState(mMessageEditText.length() > 0);
         gifButton = view.findViewById(R.id.gif_button);
         // TODO: Handle null user/position?
         messages = new ArrayList<>();
@@ -93,13 +95,13 @@ public class MessageBoxFragment extends Fragment implements ChatRoomObserver, Co
             RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.message_box_layout);
             LinearLayout.LayoutParams llp = (LinearLayout.LayoutParams) rl.getLayoutParams();
             private int originalMessageBoxHeight = llp.height;
-            private int typingInterval = 600;   // 600 ms
+            final private int TYPING_INTERVAL = 600;   // 600 ms
             private Runnable runnableTextWatcher = new Runnable() {
                 @Override
                 public void run() {
                     //
                     while (true) {
-                        if ((System.currentTimeMillis() - lastEdited) > typingInterval) {
+                        if ((System.currentTimeMillis() - lastEdited) > TYPING_INTERVAL) {
                             getGifs(query);
                             thread = null;
                             break;
@@ -158,6 +160,7 @@ public class MessageBoxFragment extends Fragment implements ChatRoomObserver, Co
                         thread.start();
                     }
                 }
+                setSendButtonState(text.length() > 0);
             }
         });
 
@@ -183,6 +186,14 @@ public class MessageBoxFragment extends Fragment implements ChatRoomObserver, Co
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+    }
+
+    private void setSendButtonState(boolean isEnabled) {
+        int colorResId = (isEnabled) ? R.color.LightBlue : R.color.DarkerGray;
+        int color = ContextCompat.getColor(getContext(), colorResId);
+        Drawable newIcon = mSendButton.getBackground().mutate();
+        newIcon.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        mSendButton.setBackground(newIcon);
     }
 
     @Override
