@@ -19,6 +19,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -97,15 +98,19 @@ public class ChatRoom implements Serializable {
      */
     @Exclude
     public String getDefaultName() {
-        Iterator<User> it = userIterator();
+        User[] users = this.users.values().toArray(new User[this.users.size()]);
         String defaultName = "";
-        while (it.hasNext()) {
-            User user = it.next();
-            defaultName += user.getDisplayName() + ", ";
+        int MAX_USERS_IN_NAME = 4;
+        int i;
+        for (i = 0;i < users.length && i < MAX_USERS_IN_NAME; i++) {
+            defaultName += users[i].getDisplayName() + ", ";
         }
         int lastIndex = defaultName.lastIndexOf(", ");
-        if (lastIndex >= 0) {
+        if (lastIndex >= 0) { // Remove trailing comma if it exists.
             defaultName = defaultName.substring(0, lastIndex);
+        }
+        if (i < users.length) { // Add "+" to title, if necessary.
+            defaultName += " + " + (users.length - i);
         }
         return defaultName;
     }
