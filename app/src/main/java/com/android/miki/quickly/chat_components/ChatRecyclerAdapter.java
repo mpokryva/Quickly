@@ -170,7 +170,9 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
             incomingTextHolder.sender.setText(message.getSender().getDisplayName());
             Integer color = chatRoom.getUserIdColorMap().get(message.getSender().getId());
-            incomingTextHolder.sender.setTextColor(color);
+            if (color != null) {
+                incomingTextHolder.sender.setTextColor(color);
+            }
             incomingTextHolder.messageText.setText(message.getMessageText());
             incomingTextHolder.messageText.setText(message.getMessageText());
         } else if (holder instanceof OutgoingGifHolder) {

@@ -152,6 +152,9 @@ public class ChatRoom implements Serializable {
                     if (databaseError == null) {
                         for (ChatRoomObserver observer : observers) {
                             observer.userAdded(user);
+                            if (name == null) {
+                                observer.nameChanged(getDefaultName());
+                            }
                         } // TODO: Maybe move to second call?
                     }
                 }
@@ -194,6 +197,9 @@ public class ChatRoom implements Serializable {
                     if (databaseError == null) {
                         for (ChatRoomObserver observer : observers) {
                             observer.userRemoved(user);
+                            if (name == null) {
+                                observer.nameChanged(getDefaultName());
+                            }
                         }
                     }
                 }
@@ -205,9 +211,6 @@ public class ChatRoom implements Serializable {
                     numUsers = users.size();
                 }
             });
-
-
-
         }
 
     }

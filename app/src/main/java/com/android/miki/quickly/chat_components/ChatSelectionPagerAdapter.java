@@ -69,7 +69,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter {
 
     public void loadRoom(final CustomViewPager container, final int position, final FirebaseListener <ChatRoom> listener) {
         viewPager = container;
-        final ChatFragment fragment = (ChatFragment) instantiateItem(container, position);
+        final ChatFragment fragment = instantiateItem(container, position);
         if (position == container.getCurrentItem()) {
             currentFragment = fragment;
         }

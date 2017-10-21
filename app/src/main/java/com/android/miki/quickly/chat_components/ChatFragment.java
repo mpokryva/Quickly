@@ -282,7 +282,6 @@ public class ChatFragment extends Fragment implements ChatRoomObserver, Connecti
     }
 
 
-
     @Override
     public void numUsersChanged(int numUsers) {
 
@@ -310,7 +309,9 @@ public class ChatFragment extends Fragment implements ChatRoomObserver, Connecti
 
     @Override
     public void nameChanged(String name) {
-
+        if (callbackToActivity != null) {
+            callbackToActivity.setTitle(name);
+        }
     }
 
     @Override
@@ -345,12 +346,26 @@ public class ChatFragment extends Fragment implements ChatRoomObserver, Connecti
         }
     }
 
+//    @Override
+//    public void onStop() {
+//        super.onStop();
+//        if (chatRoom != null) {
+//            chatRoom.removeUser(User.currentUser());
+//            chatRoom.removeObserver(this);
+//        }
+//    }
+
+    public ChatRoom getChatRoom() {
+        return chatRoom;
+    }
+
     public void onGifDrawerOpened() {
 //        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
 //        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin + GIF_KEYBOARD_SHIFT);
 //        mMessagesRecyclerView.setLayoutParams(layoutParams);
 //        scrollToBottom();
     }
+
     public void onGifDrawerClosed() {
 //        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mMessagesRecyclerView.getLayoutParams();
 //        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin - GIF_KEYBOARD_SHIFT);
