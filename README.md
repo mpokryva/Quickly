@@ -1,3 +1,5 @@
+### Note: Names and messages in the screenshots were randomly generated. They are NOT real people.
+
 # Registration screens
 
 | Login | Signup | Reset password |
@@ -5,9 +7,9 @@
 | <img src="demo-pics/Signup.png" width="280">  |  <img src="demo-pics/Login.png" width="280"> | <img src="demo-pics/Reset-password.png" width="280"> |
 
 # Chatroom screens
-| Normal chat | Sending a gif | Chat with sent messages |
+| Normal chat | GIPHY keyboard open | Chat with some sent messages |
 | :-------------: |:-------------:| :------------------:|
-| <img src="demo-pics/Normal-chat.png" width="280"> | <img src="demo-pics/Message-sending.png" width="280">| <img src="demo-pics/Gif-keyboard-open.png" width="280"> |
+| <img src="demo-pics/Normal-chat.png" width="280"> | <img src="demo-pics/Gif-keyboard-open.png" width="280"> | <img src="demo-pics/Message-sending.png" width="280"> |
 
 # Extra screens
 
