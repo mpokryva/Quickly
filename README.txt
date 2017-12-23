@@ -1,1 +1,1 @@
-![Alt text](./demo-pics/Login.png?raw=true "Title")
+[Login screen](demo-pics/Login.png?raw=true)
