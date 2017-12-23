@@ -13,4 +13,4 @@
 
 | Account view | Group view | Chatroom with no connection (automatically reconnects) |
 | :----------: | :--------: | :---------------------------------------------------: |
-| <img src="demo-pics/Account-view.png" width="350"> | <img src="demo-pics/Disconnected-chat.png" width="350"> | <img src="demo-pics/Group-view.png" width="350"> |
+| <img src="demo-pics/Account-view.png" width="350"> | <img src="demo-pics/Group-view.png" width="350"> | <img src="demo-pics/Disconnected-chat.png" width="350"> |
