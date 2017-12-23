@@ -1,1 +1,1 @@
-![Login screen](demo-pics/Login.png)
+![Login](demo-pics/Login.png)
