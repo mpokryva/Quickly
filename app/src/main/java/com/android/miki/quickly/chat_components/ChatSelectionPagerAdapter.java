@@ -99,6 +99,7 @@ public class ChatSelectionPagerAdapter extends FragmentStatePagerAdapter {
                 currentPosition = position;
                 configureCurrentChatRoom(chatRoom, fragment);
                 fragment.setChatRoom(chatRoom);
+//                user.setCurrentRoomId(chatRoom.getId());
                 listener.onSuccess(chatRoom);
             }
         });

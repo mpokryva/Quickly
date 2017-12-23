@@ -121,7 +121,7 @@ public class ChatRoom implements Serializable {
 
     public void changeName(final String name) {
         ChatRoom.this.name = name;
-        chatRef.child("name").setValue(name, new DatabaseReference.CompletionListener() {
+        getChatRef().child("name").setValue(name, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 if (databaseError == null) {
@@ -150,12 +150,15 @@ public class ChatRoom implements Serializable {
                 @Override
                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                     if (databaseError == null) {
+//                        user.setCurrentRoomId(getId());
                         for (ChatRoomObserver observer : observers) {
                             observer.userAdded(user);
                             if (name == null) {
                                 observer.nameChanged(getDefaultName());
                             }
                         } // TODO: Maybe move to second call?
+                    } else {
+                        Log.e(TAG, databaseError.toString());
                     }
                 }
             });
@@ -191,7 +194,7 @@ public class ChatRoom implements Serializable {
     public void removeUser(final User user) {
         if (user != null) {
             users.remove(user.getId());
-            availableChatsRef.child(id).child("users").child(user.getId()).removeValue(new DatabaseReference.CompletionListener() {
+            getChatRef().child("users").child(user.getId()).removeValue(new DatabaseReference.CompletionListener() {
                 @Override
                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                     if (databaseError == null) {
@@ -205,7 +208,7 @@ public class ChatRoom implements Serializable {
                 }
             });
             removeUserColor(user);
-            availableChatsRef.child(id).child("numUsers").setValue(users.size(), new DatabaseReference.CompletionListener() {
+            getChatRef().child("numUsers").setValue(users.size(), new DatabaseReference.CompletionListener() {
                 @Override
                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                     numUsers = users.size();
@@ -213,6 +216,10 @@ public class ChatRoom implements Serializable {
             });
         }
 
+    }
+
+    private DatabaseReference getChatRef() {
+        return availableChatsRef.child(this.id);
     }
 
     public void addMessage(final Message message) {
@@ -223,11 +230,12 @@ public class ChatRoom implements Serializable {
                 @Override
                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                     if (databaseError == null) {
+//                        User.currentUser().setLastMessage(message);
                         for (ChatRoomObserver observer : observers) {
                             observer.messageAdded(message);
                         }
                     }
-                    availableChatsRef.child(ChatRoom.this.id).child("lastMessage").setValue(message);
+                    getChatRef().child("lastMessage").setValue(message);
                 }
             });
         }
@@ -243,7 +251,7 @@ public class ChatRoom implements Serializable {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Message newLastMessage = dataSnapshot.getValue(Message.class);
-                        availableChatsRef.child(ChatRoom.this.id).child("lastMessage").setValue(newLastMessage);
+                        getChatRef().child("lastMessage").setValue(newLastMessage);
                     }
 
                     @Override
