@@ -11,7 +11,7 @@ import java.util.Map;
  * Created by mpokr on 5/22/2017.
  */
 
-public class Message implements Serializable{
+public class Message implements Serializable {
 
     private Long timestamp;
     private User sender;

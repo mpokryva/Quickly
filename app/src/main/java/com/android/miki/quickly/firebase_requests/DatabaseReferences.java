@@ -10,7 +10,7 @@ import com.google.firebase.database.FirebaseDatabase;
 public class DatabaseReferences {
 
     private static final FirebaseDatabase root = FirebaseDatabase.getInstance();
-    public static final DatabaseReference AVAILABLE_CHATS = root.getReference().child("availableChats");
+    public static final DatabaseReference AVAILABLE_CHATS = root.getReference().child(FirebaseRefKeys.AVAILABLE_CHATS);
     public static final DatabaseReference AVAILABLE_CHATS_COUNTER = root.getReference().child("availableChatsCounter");
     public static final DatabaseReference USERS = root.getReference().child(FirebaseRefKeys.USERS);
 

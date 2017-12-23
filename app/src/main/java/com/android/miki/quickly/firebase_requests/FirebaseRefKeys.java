@@ -15,4 +15,7 @@ public class FirebaseRefKeys {
     public static final String OCCUPATION = "occupation";
     public static final String AGE = "age";
     public static final String USER_ID_COLOR_MAP = "userIdColorMap";
+    public static final String AVAILABLE_CHATS = "availableChats";
+    public static final String LAST_MESSAGE = "lastMessage";
+    public static final String CURRENT_ROOM_ID = "currentRoomId";
 }

@@ -31,6 +31,7 @@ import android.widget.Toast;
 import com.android.miki.quickly.BuildConfig;
 import com.android.miki.quickly.R;
 import com.android.miki.quickly.core.chat_room.CleanChatRoomJobService;
+import com.android.miki.quickly.core.chat_room.GeneralUserRemovalService;
 import com.android.miki.quickly.core.network.ConnectivityStatusNotifier;
 import com.android.miki.quickly.core.network.ConnectivityStatusObserver;
 import com.android.miki.quickly.login_signup.LoginActivity;
@@ -198,6 +199,18 @@ public class ChatSelectionActivity extends AppCompatActivity implements ActionBa
                 jobScheduler.cancel(jobInfo.getId());
             }
         }
+    }
+
+    private void startAutomaticCleaningJob() {
+        JobScheduler jobScheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+        ComponentName serviceComponent = new ComponentName(this, GeneralUserRemovalService.class);
+        final int GENERAL_USER_REMOVAL_JOB_ID = 1;
+        final int PERIODIC_INTERVAL = (BuildConfig.DEBUG) ? 10000 : 120000; // 2 mins. 10 sec when in debug mode.
+        JobInfo userRemovalJob = new JobInfo.Builder(GENERAL_USER_REMOVAL_JOB_ID, serviceComponent)
+                .setPersisted(true)
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .setPeriodic(PERIODIC_INTERVAL)
+                .build();
     }
 
     @Override

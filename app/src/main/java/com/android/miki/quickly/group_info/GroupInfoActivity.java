@@ -84,24 +84,7 @@ public class GroupInfoActivity extends FirebaseActivity {
                     @Override
                     public void onInput(@NonNull MaterialDialog dialog, final CharSequence input) {
                         final String newName = input.toString();
-                        ChangeGroupNameRequest changeGroupNameQuery = new ChangeGroupNameRequest(chatRoom.getId(), newName);
-                        FirebaseClient client = FirebaseClient.getInstance();
-                        client.execute(changeGroupNameQuery, new FirebaseListener<Void>() {
-                            @Override
-                            public void onLoading() {
-                                setState(LOADING);
-                            }
-
-                            @Override
-                            public void onError(FirebaseError error) {
-                                Toast.makeText(GroupInfoActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
-                            }
-
-                            @Override
-                            public void onSuccess(Void nothing) {
-                                chatRoom.changeName(newName);
-                            }
-                        });
+                        chatRoom.changeName(newName);
                     }
                 })
                 .onNegative(new MaterialDialog.SingleButtonCallback() {

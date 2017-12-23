@@ -4,6 +4,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
+import com.android.miki.quickly.firebase_requests.DatabaseReferences;
+import com.android.miki.quickly.firebase_requests.FirebaseRefKeys;
 import com.android.miki.quickly.utils.FirebaseError;
 import com.android.miki.quickly.utils.FirebaseListener;
 import com.facebook.AccessToken;
@@ -19,6 +21,8 @@ import com.google.firebase.auth.FirebaseAuthProvider;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Exclude;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,7 +39,10 @@ public class User implements Serializable {
     private String id;
     private String displayName;
     private String photoUrl;
+    @Exclude
     private static User currentUser;
+//    private String currentRoomId;
+//    private Message lastMessage;
 
 
     public User() {
@@ -140,6 +147,24 @@ public class User implements Serializable {
     public String getPhotoUrl() {
         return photoUrl;
     }
+
+//    public String getCurrentRoomId() {
+//        return currentRoomId;
+//    }
+//
+//    public void setCurrentRoomId(String roomId) {
+//        this.currentRoomId = roomId;
+//        DatabaseReferences.USERS.child(this.id).child(FirebaseRefKeys.CURRENT_ROOM_ID).setValue(roomId);
+//    }
+//
+//    public Message getLastMessage() {
+//        return lastMessage;
+//    }
+//
+//    public void setLastMessage(Message message) {
+//        this.lastMessage = message;
+//        DatabaseReferences.USERS.child(this.id).child(FirebaseRefKeys.LAST_MESSAGE).setValue(2);
+//    }
 
     @Override
     public boolean equals(Object other) {

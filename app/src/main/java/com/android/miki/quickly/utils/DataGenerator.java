@@ -34,8 +34,7 @@ public class DataGenerator {
         Random r = new Random();
         HashMap<String, User> users = new HashMap<>();
         User randomUser = null;
-        for (String userName : userNames) {
-            String university = "Stony Brook University";
+        for (String userName : userNames) { // Create users. Stored in "users" field.
             String url = "https://www.google.com";
             User user = new User(userName, url);
             users.put(user.getId(), user); // Add user to user list
@@ -47,7 +46,8 @@ public class DataGenerator {
         if (randomUser == null) {
             lastMessage = null;
         } else {
-            lastMessage = new Message(randomUser, lastMessageText);;
+            lastMessage = new Message(randomUser, lastMessageText);
+//            randomUser.setLastMessage(lastMessage);
         }
 
         ChatRoom chatRoom = new ChatRoom(chatId, lastMessage);
@@ -55,6 +55,7 @@ public class DataGenerator {
         while (it.hasNext()) {
             User user = it.next();
             chatRoom.addUser(user);
+//            user.setCurrentRoomId(chatRoom.getId());
             String text = randomSentences[r.nextInt(randomSentences.length)];
             Message message = new Message(user, text);
             chatRoom.addMessage(message);
@@ -113,17 +114,6 @@ public class DataGenerator {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
     private final String[] randomSentences = new String[]{"I love eating toasted cheese and tuna sandwiches.", "If I don’t like something, I’ll stay away from it.",
             "They got there early, and they got really good seats.",
             "Cats are good pets, for they are clean and are not noisy.",
@@ -137,7 +127,7 @@ public class DataGenerator {
             "The clock within this blog and the clock on my laptop are 1 hour different from each other.",
             "I love eating toasted cheese and tuna sandwiches.",
             "Should we start class now, or should we wait for everyone to get here?",
-            "I hear that Nancy is very pretty.\n",
+            "I hear that Nancy is very pretty.",
             "Sometimes, all you need to do is completely make an ass of yourself and laugh it off to realise that life isn’t so bad after all.",
             "We have a lot of rain in June.",
             "The stranger officiates the meal.",
