@@ -2,7 +2,7 @@
 
 # Registration screens
 
-| Login | Signup | Reset password |
+| Signup | Login | Reset password |
 | :---: |:------:| :-------------:|
 | <img src="demo-pics/Signup.png" width="280">  |  <img src="demo-pics/Login.png" width="280"> | <img src="demo-pics/Reset-password.png" width="280"> |
 
