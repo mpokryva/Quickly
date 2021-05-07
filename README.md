@@ -1,4 +1,4 @@
-### Note: Names and messages in the screenshots were randomly generated. They are NOT real people.
+### Note: Names and messages in the screenshots were randomly generated.
 
 # Registration screens
 
